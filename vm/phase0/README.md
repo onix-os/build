@@ -122,9 +122,9 @@ It should be safe and non-mutating.
 
 Runs from the repo root. This is common, not a phase.
 
-It exists because interrupted disk builds can leave loop/NBD mount trees behind.
-Use it only when a previous disk build was interrupted or the scripts tell you
-there are stale mounts.
+It first stops the Onix forge QEMU process (`onix-quarry`), then cleans stale
+loop/NBD mount trees left behind by interrupted disk builds. It does **not** kill
+unrelated QEMU VMs.
 
 ## Step details
 

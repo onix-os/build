@@ -13,7 +13,7 @@ help: ## show top-level help and phase map
 	@echo
 	@echo "Common:"
 	@echo "  make doctor          common health check"
-	@echo "  make cleanup         common stale host-mount cleanup"
+	@echo "  make cleanup         stop forge QEMU, then stale host-mount cleanup"
 	@echo
 	@echo "Phase flow:"
 	@echo "  make phases          list numbered phase steps"
@@ -41,5 +41,5 @@ doctor: ## common health check; not a phase step
 	[ $$missing -eq 0 ] || exit 1; \
 	echo "doctor    : host tools OK"
 
-cleanup: ## common cleanup for stale host loop/NBD mounts
-	@$(MAKE) --no-print-directory -C $(PHASE0) cleanup-stale
+cleanup: ## stop forge QEMU, then common cleanup for stale host loop/NBD mounts
+	@$(MAKE) --no-print-directory -C $(PHASE0) cleanup

@@ -12,7 +12,7 @@ export BUILD_USER
 PHASE_ARG := $(word 2,$(MAKECMDGOALS))
 
 .PHONY: help phases phase 0 00 1 01 2 02 3 03 4 04 5 05 6 06 list \
-	check rootfs disk inspect-disk cleanup-stale forge run direct \
+	check rootfs disk inspect-disk kill-qemu cleanup cleanup-stale forge run direct \
 	headless snapshot ssh provision stone-hello state-smoke config dry-run \
 	passwordless clean clean-all
 
@@ -49,7 +49,7 @@ phase: ## run a learning phase alias, e.g. `make phase 01`
 	@:
 
 check: ## cheap non-mutating validation (syntax, cached rootfs, dry-run construction)
-	@bash -n $(VM)/config.sh $(VM)/fetch-rootfs.sh $(VM)/build-disk.sh $(VM)/launch.sh $(VM)/ssh.sh $(VM)/install-sudoers.sh $(VM)/clean.sh $(VM)/build-hello-stone.sh $(VM)/state-smoke.sh
+	@bash -n $(VM)/config.sh $(VM)/fetch-rootfs.sh $(VM)/build-disk.sh $(VM)/launch.sh $(VM)/ssh.sh $(VM)/install-sudoers.sh $(VM)/clean.sh $(VM)/kill-qemu.sh $(VM)/build-hello-stone.sh $(VM)/state-smoke.sh
 	@sh -n $(VM)/chroot-setup.sh $(VM)/provision.sh
 	@bash -c 'source $(VM)/config.sh; \
 	  if [[ -f "$$ROOTFS_PATH" ]]; then \
@@ -74,6 +74,11 @@ inspect-disk: ## read-only inspect ESP/root boot files inside the disk image
 
 cleanup-stale: ## cleanup stale loop mounts from interrupted/failed disk builds
 	$(VM)/build-disk.sh --cleanup-stale
+
+kill-qemu:
+	$(VM)/kill-qemu.sh
+
+cleanup: kill-qemu cleanup-stale
 
 forge: rootfs disk ## fetch rootfs + build disk in one go
 	@echo "forge disk ready — run 'make phase 03' from the repo root to boot it"

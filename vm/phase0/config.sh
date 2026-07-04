@@ -50,6 +50,7 @@ VM_RAM="${VM_RAM:-6G}"
 DISK_SIZE="${DISK_SIZE:-20G}"      # sparse raw image; room for rust builds + .stone output
 DISK_FORMAT="${DISK_FORMAT:-raw}"
 DISK_IMG="${ONIX_DISK_IMG:-$STATE_DIR/${VM_NAME}.raw}"
+QEMU_PROCESS_NAME="${QEMU_PROCESS_NAME:-onix-$VM_NAME}"  # launch.sh sets this via QEMU -name process=
 
 # --- networking ---------------------------------------------------------------
 # User-mode NAT + one host->guest forward for SSH. Host port = the magic number.

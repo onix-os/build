@@ -48,7 +48,7 @@ Only common operations are named at the top level:
 
 ```sh
 make doctor    # common health check
-make cleanup   # common stale host-mount cleanup
+make cleanup   # stop forge QEMU, then stale host-mount cleanup
 make phases    # print the numbered phase map
 ```
 
@@ -63,8 +63,9 @@ passwordless root for your user — no Unix group can grant `mount`/`chroot`/loo
 so sudo is the mechanism. Skip it and `build-disk.sh` just prompts normally.
 
 `make doctor` runs the cheap non-mutating validation lane plus host tool checks.
-`make cleanup` runs the stale loop/NBD mount cleanup path for interrupted disk
-builds. `make phases` prints the numbered flow.
+`make cleanup` first stops the Onix forge QEMU process (`onix-quarry`), then
+runs the stale loop/NBD mount cleanup path for interrupted disk builds.
+`make phases` prints the numbered flow.
 
 `make phase 05` is the Phase 0 packaging smoke test. It runs inside the
 already-booted forge VM and writes only under `~/stone-lab/onix-hello` in the
