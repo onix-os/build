@@ -1,0 +1,23 @@
+# Nix / direnv
+.direnv/
+result
+
+# Large / machine-local VM artifacts — never commit these.
+# downloaded Alpine minirootfs tarballs
+vm/downloads/
+# qcow2 disk, UEFI NVRAM, exported kernel/initrd, generated SSH key
+vm/state/
+
+# Explicit artifact patterns in case paths are overridden into the repo.
+*.qcow2
+*.raw
+*_OVMF_VARS.fd
+OVMF_VARS.fd
+vmlinuz-*
+initramfs-*
+id_ed25519
+id_ed25519.pub
+
+# Editors / OS cruft
+*.swp
+.DS_Store
