@@ -23,7 +23,7 @@ export PATH="$HOME/.local/bin:$PATH"
 
 need_tool() {
     if ! command -v "$1" >/dev/null 2>&1; then
-        echo "error: missing '$1' in the forge. Run: make provision" >&2
+        echo "error: missing '$1' in the forge. From the host, run: make phase 04" >&2
         exit 1
     fi
 }

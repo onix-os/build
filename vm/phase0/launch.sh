@@ -12,9 +12,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/config.sh"
 DIRECT=0
 SNAPSHOT=0
 DRY_RUN=0
-if [[ -n "${DISPLAY_MODE:-}" ]]; then :
-elif [[ -n "${WAYLAND_DISPLAY:-}" || -n "${DISPLAY:-}" ]]; then DISPLAY_MODE=gtk
-else DISPLAY_MODE=vnc; fi
+DISPLAY_MODE="${DISPLAY_MODE:-vnc}"
 
 usage() {
   cat >&2 <<EOF

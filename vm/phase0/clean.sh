@@ -19,4 +19,4 @@ case "${1:-}" in
           rm -f "$SSH_KEY" "$SSH_KEY.pub" "$ROOTFS_PATH" ;;
 esac
 
-log "clean. next: make disk && make run"
+log "clean. next from repo root: make phase 02 && make phase 03"

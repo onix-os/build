@@ -78,12 +78,15 @@ cleanup-stale: ## cleanup stale loop mounts from interrupted/failed disk builds
 kill-qemu:
 	$(VM)/kill-qemu.sh
 
-cleanup: kill-qemu cleanup-stale
+cleanup:
+	@$(MAKE) --no-print-directory kill-qemu
+	@$(MAKE) --no-print-directory cleanup-stale
+	@$(MAKE) --no-print-directory clean
 
 forge: rootfs disk ## fetch rootfs + build disk in one go
 	@echo "forge disk ready — run 'make phase 03' from the repo root to boot it"
 
-run: ## boot the forge (grub-efi + OVMF)
+run: ## boot the forge (grub-efi + OVMF, VNC by default)
 	$(VM)/launch.sh
 
 direct: ## boot via QEMU direct-kernel (grub bypass / safety net)

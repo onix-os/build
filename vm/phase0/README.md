@@ -123,8 +123,11 @@ It should be safe and non-mutating.
 Runs from the repo root. This is common, not a phase.
 
 It first stops the Onix forge QEMU process (`onix-quarry`), then cleans stale
-loop/NBD mount trees left behind by interrupted disk builds. It does **not** kill
-unrelated QEMU VMs.
+loop/NBD mount trees left behind by interrupted disk builds, then removes the
+generated forge disk/NVRAM/kernel/initrd under `vm/state/`.
+
+It does **not** kill unrelated QEMU VMs. It keeps the cached Alpine rootfs and
+the generated SSH key.
 
 ## Step details
 

@@ -101,6 +101,10 @@ if have_stale_mounts; then
   die "stale Onix disk mounts exist under /tmp; run 'make cleanup' before building"
 fi
 
+if [[ "$INSPECT" -ne 1 ]]; then
+  find_ovmf >/dev/null 2>&1 || die "no OVMF_CODE/OVMF_VARS firmware — run 'direnv reload' so flake.nix exports ONIX_OVMF_CODE, or set ONIX_OVMF_CODE + ONIX_OVMF_VARS_TEMPLATE"
+fi
+
 mount_chroot_api() {
   log "mounting isolated /proc /sys /dev for chroot"
   mkdir -p "$MNT/proc" "$MNT/sys" "$MNT/dev"
