@@ -48,6 +48,8 @@ make phase 103  # assemble first named local ONIX repo and install from it
 make phase 104  # prepare publishable ONIX repo layout and verify it
 make phase 105  # export publishable ONIX repo from forge to host artifacts
 make phase 106  # verify exported host ONIX repo artifact
+make phase 107  # verify no-upload ONIX repo publishing plan
+make phase 108  # preview repo publication without upload/network
 ```
 
 Only common operations are named at the top level:
@@ -108,13 +110,19 @@ publishable repo layout with metadata and checksums, ready for a future
 `repo.onix-os.com`-style host. `make phase 105` copies that publishable layout
 back from the forge VM to the host under `artifacts/onix-publish/`.
 `make phase 106` verifies that exported host artifact is clean, checksummed,
-gitignored, and self-consistent.
+gitignored, and self-consistent. `make phase 107` checks the tracked no-upload
+publication plan in [`docs/repo-publishing.md`](./docs/repo-publishing.md).
+`make phase 108` prints the exact local-file to future-public-URL mapping, but
+still performs no upload and contacts no network.
 
 ## Layout
 
 ```
 ONIX.md             architecture + roadmap
 Makefile            top-level router; forwards targets into per-phase Makefiles
+docs/
+  repo-publishing.md
+                    no-upload plan for future repo.onix-os.com hosting
 recipes/
   README.md         recipe tree overview
   onix-branding/    first real ONIX stone: os-release + default login text
@@ -149,6 +157,10 @@ vm/
                     copies the publishable repo from the VM to host artifacts/
     verify-exported-repo.sh
                     verifies the host artifact without SSH or publishing
+    prepare-publish-plan.sh
+                    verifies docs/repo-publishing.md against the host artifact
+    publish-dry-run.sh
+                    previews publish mapping without upload/network
   downloads/        tarballs (gitignored)
   state/            disk, NVRAM, kernel/initrd, ssh key (gitignored)
 ```

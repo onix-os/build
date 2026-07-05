@@ -7,7 +7,7 @@ export BUILD_USER
 
 PHASE_ARG := $(word 2,$(MAKECMDGOALS))
 
-.PHONY: help phases phase phase-1 1 100 101 102 103 104 105 106 check ready branding filesystem filesystem-only local-repo local-repo-only publishable-repo publishable-repo-only export-publishable-repo export-publishable-repo-only verify-exported-repo
+.PHONY: help phases phase phase-1 1 100 101 102 103 104 105 106 107 108 check ready branding filesystem filesystem-only local-repo local-repo-only publishable-repo publishable-repo-only export-publishable-repo export-publishable-repo-only verify-exported-repo publish-plan publish-dry-run
 
 help: ## show Phase 1 help
 	@echo "ONIX Phase 1 targets:"
@@ -15,7 +15,7 @@ help: ## show Phase 1 help
 	  awk -F':.*?## ' '{printf "  \033[36m%-13s\033[0m %s\n", $$1, $$2}'
 
 phases: ## list the learning-phase aliases
-	@printf "  \033[36mmake phase 1\033[0m    run all Phase 1 steps: 100..106\n"
+	@printf "  \033[36mmake phase 1\033[0m    run all Phase 1 steps: 100..108\n"
 	@printf "  \033[36mmake phase 100\033[0m  verify Phase 1 forge readiness\n"
 	@printf "  \033[36mmake phase 101\033[0m  build/check/install first real ONIX stone: onix-branding\n"
 	@printf "  \033[36mmake phase 102\033[0m  build/check/install onix-filesystem with onix-branding\n"
@@ -23,6 +23,8 @@ phases: ## list the learning-phase aliases
 	@printf "  \033[36mmake phase 104\033[0m  prepare publishable ONIX repo layout and verify it\n"
 	@printf "  \033[36mmake phase 105\033[0m  export publishable ONIX repo from forge to host artifacts\n"
 	@printf "  \033[36mmake phase 106\033[0m  verify exported host ONIX repo artifact\n"
+	@printf "  \033[36mmake phase 107\033[0m  verify no-upload ONIX repo publishing plan\n"
+	@printf "  \033[36mmake phase 108\033[0m  preview repo publication without upload/network\n"
 
 phase: ## run a Phase 1 learning alias
 	@case "$(PHASE_ARG)" in \
@@ -34,10 +36,12 @@ phase: ## run a Phase 1 learning alias
 	  104) $(MAKE) --no-print-directory publishable-repo ;; \
 	  105) $(MAKE) --no-print-directory export-publishable-repo ;; \
 	  106) $(MAKE) --no-print-directory verify-exported-repo ;; \
+	  107) $(MAKE) --no-print-directory publish-plan ;; \
+	  108) $(MAKE) --no-print-directory publish-dry-run ;; \
 	  *) echo "unknown Phase 1 step: $(PHASE_ARG)" >&2; $(MAKE) --no-print-directory phases; exit 2 ;; \
 	esac
 
-1 100 101 102 103 104 105 106:
+1 100 101 102 103 104 105 106 107 108:
 	@:
 
 phase-1: ## run every Phase 1 step in order
@@ -61,10 +65,16 @@ phase-1: ## run every Phase 1 step in order
 	$(MAKE) --no-print-directory export-publishable-repo-only; \
 	echo; \
 	echo "==> make phase 106"; \
-	$(MAKE) --no-print-directory verify-exported-repo
+	$(MAKE) --no-print-directory verify-exported-repo; \
+	echo; \
+	echo "==> make phase 107"; \
+	$(MAKE) --no-print-directory publish-plan; \
+	echo; \
+	echo "==> make phase 108"; \
+	$(MAKE) --no-print-directory publish-dry-run
 
 check: ## host-side syntax validation only
-	@bash -n build-branding-stone.sh build-filesystem-stone.sh build-local-repo.sh build-publishable-repo.sh export-publishable-repo.sh verify-exported-repo.sh
+	@bash -n build-branding-stone.sh build-filesystem-stone.sh build-local-repo.sh build-publishable-repo.sh export-publishable-repo.sh verify-exported-repo.sh prepare-publish-plan.sh publish-dry-run.sh
 	@echo "phase1   : check OK"
 
 ready: ## verify the running forge has boulder+moss available
@@ -99,3 +109,9 @@ export-publishable-repo-only:
 
 verify-exported-repo: ## verify exported host ONIX repo artifact
 	./verify-exported-repo.sh
+
+publish-plan: ## verify no-upload ONIX repo publishing plan
+	./prepare-publish-plan.sh
+
+publish-dry-run: ## preview repo publication without upload/network
+	./publish-dry-run.sh

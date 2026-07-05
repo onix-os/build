@@ -33,10 +33,12 @@ make phase 103
 make phase 104
 make phase 105
 make phase 106
+make phase 107
+make phase 108
 ```
 
 The format is three digits. `102` means "Phase 1, step 02". Running
-`make phase 1` runs all Phase 1 steps, `100..106`, in order.
+`make phase 1` runs all Phase 1 steps, `100..108`, in order.
 
 ### Phase 100 — forge readiness
 
@@ -220,3 +222,49 @@ It verifies:
 - `artifacts/` is gitignored
 
 This gives us a clean gate before any future upload/publish phase.
+
+### Phase 107 — verify no-upload publishing plan
+
+Phase 107 is also host-only. It does not SSH into the forge VM and does not
+publish anything.
+
+It verifies two things:
+
+1. the exported artifact still passes Phase 106 checks
+2. [`docs/repo-publishing.md`](../../docs/repo-publishing.md) contains the
+   current publication contract
+
+The publication contract records:
+
+- homepage: `https://onix-os.com`
+- source: `https://github.com/onix-os`
+- future repo root: `https://repo.onix-os.com`
+- future Moss index: `https://repo.onix-os.com/unstable/x86_64/stone.index`
+- local artifact source: `artifacts/onix-publish/`
+- the rule that no current phase uploads or changes DNS
+
+This gives us a safe stopping point before any future real hosting work.
+
+### Phase 108 — preview publication without upload
+
+Phase 108 is still host-only and still safe. It does **not** upload anything,
+does **not** contact the network, and does **not** change DNS.
+
+It verifies the Phase 107 plan, then prints:
+
+- local artifact root
+- future public root
+- every file that would be published
+- the future public URL for every file
+- critical URLs to check after a real upload
+- the `rsync`/`curl` commands that a future real publish phase might run, but
+  refuses to run them
+- the future user-facing `moss repo add` command
+
+You can optionally preview a concrete upload destination without using it:
+
+```sh
+ONIX_REPO_UPLOAD_TARGET='user@host:/srv/repo.onix-os.com' make phase 108
+```
+
+It will print the target, but still not upload.
