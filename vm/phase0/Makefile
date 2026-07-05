@@ -24,7 +24,7 @@ help: ## show Phase 0 help
 phases: ## list the learning-phase aliases
 	@printf "  \033[36mmake phase 0\033[0m    run all Phase 0 steps: 000..006\n"
 	@printf "  \033[36mmake phase 000\033[0m  validate scripts/config\n"
-	@printf "  \033[36mmake phase 001\033[0m  ensure sudoers setup for disk builds\n"
+	@printf "  \033[36mmake phase 001\033[0m  ensure sudoers setup for rootful ONIX builders\n"
 	@printf "  \033[36mmake phase 002\033[0m  fetch rootfs + build bootable forge disk\n"
 	@printf "  \033[36mmake phase 003\033[0m  boot the forge VM\n"
 	@printf "  \033[36mmake phase 004\033[0m  build moss + boulder inside the forge\n"
@@ -84,7 +84,7 @@ check: ## cheap non-mutating validation (syntax, cached rootfs, dry-run construc
 rootfs: ## download + verify the Alpine minirootfs tarball
 	$(VM)/fetch-rootfs.sh
 
-passwordless: ## ensure build-disk.sh can run without a sudo password
+passwordless: ## ensure rootful ONIX builders can run without a sudo password
 	$(VM)/install-sudoers.sh --ensure
 
 disk: ## build the bootable musl forge disk (root via sudo re-exec)

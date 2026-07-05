@@ -51,6 +51,15 @@ make phase 106  # verify exported host ONIX repo artifact
 make phase 107  # verify no-upload ONIX repo publishing plan
 make phase 108  # preview repo publication without upload/network
 make phase 200  # verify Phase 2 image-assembly readiness
+make phase 201  # assemble first ONIX root tree from exported repo
+make phase 202  # build host-side moss from pinned os-tools
+make phase 203  # assemble ONIX root tree using host-side moss only
+make phase 204  # verify ONIX image/disk assembly contract
+make phase 205  # create first non-booting ONIX disk/root skeleton
+make phase 206  # install systemd-boot/BLS skeleton into the image
+make phase 207  # verify kernel + initramfs contract
+make phase 208  # verify systemd userspace contract
+make phase 209  # check systemd-on-musl feasibility
 ```
 
 Only common operations are named at the top level:
@@ -68,20 +77,30 @@ that family:
 - `make phase 002` = Phase 0, step 02
 - `make phase 102` = Phase 1, step 02
 - `make phase 200` = Phase 2, step 00
+- `make phase 201` = Phase 2, step 01
+- `make phase 202` = Phase 2, step 02
+- `make phase 203` = Phase 2, step 03
+- `make phase 204` = Phase 2, step 04
+- `make phase 205` = Phase 2, step 05
+- `make phase 206` = Phase 2, step 06
+- `make phase 207` = Phase 2, step 07
+- `make phase 208` = Phase 2, step 08
+- `make phase 209` = Phase 2, step 09
 - `make phase 0` = run all `0xx` steps in order
 - `make phase 1` = run all `1xx` steps in order
 - `make phase 2` = run all `2xx` steps in order
 
-`make doctor` also ensures the disk-builder sudoers rule. `build-disk.sh` needs
-root (`losetup`/`mount`/`chroot`), and it re-execs itself via `sudo`. The
-drop-in (`vm/phase0/install-sudoers.sh`) grants NOPASSWD on *this repo's*
-`build-disk.sh` so the build runs unattended. If the rule is already correct,
-doctor uses `sudo -n` to check it and does **not** prompt. If the rule is
-missing/stale, doctor prompts once to install it. Revert with
-`vm/phase0/install-sudoers.sh --uninstall`.
-**Tradeoff:** `build-disk.sh` is writable by you, so this is effectively
-passwordless root for your user — no Unix group can grant `mount`/`chroot`/loop setup,
-so sudo is the mechanism. Skip it and `build-disk.sh` just prompts normally.
+`make doctor` also ensures the rootful image-builder sudoers rules.
+`build-disk.sh` and the Phase 205 image skeleton builder need root
+(`losetup`/`mount`/`chroot`/filesystem formatting), and they re-exec themselves
+via `sudo`. The drop-in (`vm/phase0/install-sudoers.sh`) grants NOPASSWD on
+*this repo's* rootful builder scripts so the build runs unattended. If the
+rules are already correct, doctor uses `sudo -n` to check them and does **not**
+prompt. If the rules are missing/stale, doctor prompts once to install them.
+Revert with `vm/phase0/install-sudoers.sh --uninstall`.
+**Tradeoff:** these scripts are writable by you, so this is effectively
+passwordless root for your user — no Unix group can grant `mount`/`chroot`/loop
+setup, so sudo is the mechanism. Skip it and the scripts just prompt normally.
 
 `make doctor` runs the cheap non-mutating validation lane plus host tool checks.
 `make cleanup` first stops the ONIX forge QEMU process (`onix-quarry`), then
@@ -119,6 +138,28 @@ publication plan section inside [`vm/phase1/README.md`](./vm/phase1/README.md).
 still performs no upload and contacts no network.
 `make phase 200` starts Phase 2 by checking that the exported repo artifact and
 host image-assembly tools are ready for the first ONIX image work.
+`make phase 201` assembles the first generated ONIX root tree under
+`artifacts/onix-root-tree/` from the exported repo artifact.
+`make phase 202` builds a host-side `moss` binary under
+`artifacts/host-tools/bin/moss` from the same pinned `os-tools` source as the
+forge.
+`make phase 203` rebuilds `artifacts/onix-root-tree/` using that host-side
+`moss`, without SSHing into the forge.
+`make phase 204` verifies the written image/disk assembly contract before any
+future phase creates partitions, filesystems, or mounts.
+`make phase 205` creates `artifacts/onix-image/onix.raw`, partitions it,
+formats the planned filesystems, copies `artifacts/onix-root-tree/` into the
+root partition as root-owned files, verifies the result, and leaves the image
+non-booting on purpose.
+`make phase 206` mounts that image again and installs a systemd-boot/BLS
+skeleton: EFI loader files, `loader.conf`, and the future ONIX boot entry. It
+still does not install a kernel, initramfs, or systemd userspace.
+`make phase 207` verifies the written kernel/initramfs contract before ONIX
+packages or image assembly start placing real kernel boot artifacts.
+`make phase 208` verifies the written systemd userspace contract before ONIX
+tries to run `/usr/lib/systemd/systemd` as PID 1.
+`make phase 209` checks whether our pinned tooling can represent a musl-targeted
+systemd build before we commit to systemd as ONIX PID 1.
 
 ## Layout
 
@@ -168,6 +209,22 @@ vm/
     Makefile        Phase 2 targets; top-level make delegates here
     check-readiness.sh
                     verifies exported repo artifact + host image tools
+    build-root-tree.sh
+                    assembles artifacts/onix-root-tree from exported stones
+    build-host-moss.sh
+                    builds artifacts/host-tools/bin/moss from pinned os-tools
+    build-root-tree-host.sh
+                    assembles artifacts/onix-root-tree using host-side moss only
+    verify-image-contract.sh
+                    verifies the Phase 204 disk/image layout contract
+    build-image-skeleton.sh
+                    creates artifacts/onix-image/onix.raw and installs the Phase 206 boot skeleton
+    verify-kernel-initramfs-plan.sh
+                    verifies the Phase 207 kernel/initramfs contract
+    verify-systemd-userspace-plan.sh
+                    verifies the Phase 208 systemd userspace contract
+    check-systemd-musl.sh
+                    checks systemd-on-musl feasibility against pinned nixpkgs
   downloads/        tarballs (gitignored)
   state/            disk, NVRAM, kernel/initrd, ssh key (gitignored)
 ```
@@ -195,4 +252,5 @@ vm/
 `qemu-system-x86_64`, loop-device support (`losetup`), `edk2-ovmf`, `sgdisk`
 (gptfdisk), `partprobe` (parted), `e2fsprogs`, `dosfstools`, `curl`,
 `sha256sum`, `sudo`/`visudo`, OpenSSH client tools, and membership in the `kvm`
-group.
+group. Phase 206 also uses `bootctl`/`systemd-bootx64.efi`, provided by the
+flake dev shell.

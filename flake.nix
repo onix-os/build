@@ -83,6 +83,9 @@
           pkgs.mkShell {
             packages = with pkgs; [
               bashInteractive
+              cargo
+              clang
+              cmake
               coreutils
               curl
               dosfstools
@@ -94,14 +97,22 @@
               gnumake
               gnutar
               gptfdisk
+              just
               kmod
+              openssl
               openssh
               OVMF.fd
               parted
+              pkg-config
               qemu
+              rustc
               shellcheck
+              sqlite
+              systemd
               util-linux
               xfsprogs
+              xz
+              zstd
 
               nixGLAlias
               nixVulkanAlias
@@ -117,6 +128,7 @@
             shellHook = ''
               export ONIX_OVMF_CODE="${pkgs.OVMF.fd}/FV/OVMF_CODE.fd"
               export ONIX_OVMF_VARS_TEMPLATE="${pkgs.OVMF.fd}/FV/OVMF_VARS.fd"
+              export ONIX_SYSTEMD_BOOT_EFI="${pkgs.systemd}/lib/systemd/boot/efi/systemd-bootx64.efi"
             '';
           };
       });

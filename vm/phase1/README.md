@@ -67,6 +67,8 @@ inside the forge, then verifies:
 - the `.stone` passes `moss inspect --check`
 - `/usr/lib/os-info.json` exists
 - Moss generates `/usr/lib/os-release` from that metadata during install
+- `/usr/share/onix/branding/logo.txt` contains the plain terminal ONIX logo
+- `/usr/share/onix/branding/logo.ansi` contains the ANSI-colored terminal logo
 - default `/etc` text lives under `/usr/share/defaults/etc/`
 - installing into a disposable target root works
 
@@ -78,6 +80,16 @@ assembly or first-boot glue creates the compatibility symlink:
 ```text
 /etc/os-release -> ../usr/lib/os-release
 ```
+
+The branding colors come from the real ONIX logo assets:
+
+```text
+orange: #e7590f  /  38;2;231;89;15
+blue:   #4f6e91  /  38;2;79;110;145
+```
+
+`ANSI_COLOR` in `os-release` uses the ONIX blue. The default MOTD includes the
+terminal logo with orange on the left and blue on the right.
 
 ## Why defaults under `/usr/share/defaults/etc`?
 

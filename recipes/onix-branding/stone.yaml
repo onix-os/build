@@ -9,6 +9,7 @@ description : |
     generate os-release, plus default login text for future ONIX images.
 install     : |
     install -dm00755 %(installroot)/usr/lib
+    install -dm00755 %(installroot)/usr/share/onix/branding
     install -dm00755 %(installroot)/usr/share/defaults/etc
 
     cat > %(installroot)/usr/lib/os-info.json <<'EOF_OS_INFO'
@@ -21,7 +22,7 @@ install     : |
           "id": "onix",
           "name": "ONIX",
           "display": "ONIX (atomic musl base + Nix toolbox)",
-          "ansi_color": "38;2;140;120;100",
+          "ansi_color": "38;2;79;110;145",
           "former_identities": []
         },
         "maintainers": {
@@ -105,7 +106,43 @@ install     : |
     ONIX \r (\l)
     EOF_ISSUE
 
-    cat > %(installroot)/usr/share/defaults/etc/motd <<'EOF_MOTD'
+    cat > %(installroot)/usr/share/onix/branding/logo.txt <<'EOF_LOGO'
+                  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+              ▓▓▓  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+             ▓▓▓▓▓  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+            ▓▓▓▓▓▓▓  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+           ▓▓▓▓▓▓▓▓▓               ▒▒▒▒▒▒▒▒▒▒
+          ▓▓▓▓▓▓▓▓▓                  ▒▒▒▒▒▒▒▒▒▒
+         ▓▓▓▓▓▓▓▓▓                    ▒▒▒▒▒▒▒▒▒▒
+        ▓▓▓▓▓▓▓▓▓                      ▒▒▒▒▒▒▒▒▒▒
+       ▓▓▓▓▓▓▓▓▓                        ▒▒▒▒▒▒▒▒▒
+      ▓▓▓▓▓▓▓▓▓                          ▒▒▒▒▒▒▒▒▒
+     ▓▓▓▓▓▓▓▓▓                            ▒▒▒▒▒▒▒▒▒
+     ▓▓▓▓▓▓▓▓▓                            ▒▒▒▒▒▒▒▒▒
+      ▓▓▓▓▓▓▓▓▓                          ▒▒▒▒▒▒▒▒▒
+       ▓▓▓▓▓▓▓▓▓                        ▒▒▒▒▒▒▒▒▒
+        ▓▓▓▓▓▓▓▓▓                      ▒▒▒▒▒▒▒▒▒▒
+        ▓▓▓▓▓▓▓▓▓▓                    ▒▒▒▒▒▒▒▒▒▒
+          ▓▓▓▓▓▓▓▓▓                  ▒▒▒▒▒▒▒▒▒▒
+           ▓▓▓▓▓▓▓▓▓▓               ▒▒▒▒▒▒▒▒▒▒
+            ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ▒▒▒▒▒▒▒
+             ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ▒▒▒▒▒
+              ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ▒▒▒
+                ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+    EOF_LOGO
+
+    orange="$(printf '\033[38;2;231;89;15m')"
+    blue="$(printf '\033[38;2;79;110;145m')"
+    reset="$(printf '\033[0m')"
+    sed -E \
+        -e "s/(▓+)/${orange}\1${reset}/g" \
+        -e "s/(▒+)/${blue}\1${reset}/g" \
+        %(installroot)/usr/share/onix/branding/logo.txt \
+        > %(installroot)/usr/share/onix/branding/logo.ansi
+
+    cat %(installroot)/usr/share/onix/branding/logo.ansi > %(installroot)/usr/share/defaults/etc/motd
+    cat >> %(installroot)/usr/share/defaults/etc/motd <<'EOF_MOTD'
+
     Welcome to ONIX.
 
     moss controls the machine. Nix controls the toolbox.
@@ -113,6 +150,8 @@ install     : |
 
     chmod 0644 \
         %(installroot)/usr/lib/os-info.json \
+        %(installroot)/usr/share/onix/branding/logo.txt \
+        %(installroot)/usr/share/onix/branding/logo.ansi \
         %(installroot)/usr/share/defaults/etc/issue \
         %(installroot)/usr/share/defaults/etc/motd
 
@@ -123,5 +162,7 @@ install     : |
         %(installroot)/usr \
         %(installroot)/usr/lib \
         %(installroot)/usr/share \
+        %(installroot)/usr/share/onix \
+        %(installroot)/usr/share/onix/branding \
         %(installroot)/usr/share/defaults \
         %(installroot)/usr/share/defaults/etc

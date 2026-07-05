@@ -80,14 +80,24 @@ set -- "$EXTRACT"/*
 PAYLOAD="$1"
 
 test -f "$PAYLOAD/usr/lib/os-info.json"
+test -f "$PAYLOAD/usr/share/onix/branding/logo.txt"
+test -f "$PAYLOAD/usr/share/onix/branding/logo.ansi"
 test -f "$PAYLOAD/usr/share/defaults/etc/issue"
 test -f "$PAYLOAD/usr/share/defaults/etc/motd"
 grep -q '"id": "onix"' "$PAYLOAD/usr/lib/os-info.json"
 grep -q '"name": "ONIX"' "$PAYLOAD/usr/lib/os-info.json"
+grep -q '▓' "$PAYLOAD/usr/share/onix/branding/logo.txt"
+grep -q '▒' "$PAYLOAD/usr/share/onix/branding/logo.txt"
+grep -Fq "$(printf '\033[38;2;231;89;15m')" "$PAYLOAD/usr/share/onix/branding/logo.ansi"
+grep -Fq "$(printf '\033[38;2;79;110;145m')" "$PAYLOAD/usr/share/onix/branding/logo.ansi"
 
 echo
 echo "==> /usr/lib/os-info.json"
 sed -n '1,160p' "$PAYLOAD/usr/lib/os-info.json"
+
+echo
+echo "==> plain ONIX logo"
+cat "$PAYLOAD/usr/share/onix/branding/logo.txt"
 
 echo
 echo "==> index local repo and install into disposable target"
@@ -101,11 +111,16 @@ moss -D "$ROOT" --cache "$CACHE" -y install --to "$TARGET" onix-branding
 
 test -f "$TARGET/usr/lib/os-release"
 test -f "$TARGET/usr/lib/os-info.json"
+test -f "$TARGET/usr/share/onix/branding/logo.txt"
+test -f "$TARGET/usr/share/onix/branding/logo.ansi"
 test -f "$TARGET/usr/share/defaults/etc/issue"
 test -f "$TARGET/usr/share/defaults/etc/motd"
 grep -q '^PRETTY_NAME="ONIX (atomic musl base + Nix toolbox)"$' "$TARGET/usr/lib/os-release"
 grep -q '^ID="onix"$' "$TARGET/usr/lib/os-release"
 grep -q '^HOME_URL="https://onix-os.com"$' "$TARGET/usr/lib/os-release"
+grep -q '^ANSI_COLOR="38;2;79;110;145"$' "$TARGET/usr/lib/os-release"
+grep -Fq "$(printf '\033[38;2;231;89;15m')" "$TARGET/usr/share/onix/branding/logo.ansi"
+grep -Fq "$(printf '\033[38;2;79;110;145m')" "$TARGET/usr/share/onix/branding/logo.ansi"
 
 echo
 echo "==> installed target proof"
@@ -114,6 +129,9 @@ cat "$TARGET/usr/lib/os-release"
 printf '\n'
 echo "--- default issue ---"
 cat "$TARGET/usr/share/defaults/etc/issue"
+printf '\n'
+echo "--- default motd preview ---"
+cat "$TARGET/usr/share/defaults/etc/motd"
 
 echo
 echo "==> success"

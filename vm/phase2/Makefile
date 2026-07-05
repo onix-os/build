@@ -3,7 +3,7 @@
 
 PHASE_ARG := $(word 2,$(MAKECMDGOALS))
 
-.PHONY: help phases phase phase-2 2 200 list check ready
+.PHONY: help phases phase phase-2 2 200 201 202 203 204 205 206 207 208 209 list check cleanup ready root-tree host-moss host-root-tree image-contract image-skeleton boot-skeleton kernel-plan systemd-plan systemd-musl
 
 help: ## show Phase 2 help
 	@echo "ONIX Phase 2 targets:"
@@ -11,25 +11,78 @@ help: ## show Phase 2 help
 	  awk -F':.*?## ' '{printf "  \033[36m%-13s\033[0m %s\n", $$1, $$2}'
 
 phases: ## list the learning-phase aliases
-	@printf "  \033[36mmake phase 2\033[0m    run all Phase 2 steps: 200\n"
+	@printf "  \033[36mmake phase 2\033[0m    run all Phase 2 steps: 200..209\n"
 	@printf "  \033[36mmake phase 200\033[0m  verify Phase 2 image-assembly readiness\n"
+	@printf "  \033[36mmake phase 201\033[0m  assemble first ONIX root tree from exported repo\n"
+	@printf "  \033[36mmake phase 202\033[0m  build host-side moss from pinned os-tools\n"
+	@printf "  \033[36mmake phase 203\033[0m  assemble ONIX root tree with host-side moss only\n"
+	@printf "  \033[36mmake phase 204\033[0m  verify the ONIX image/disk assembly contract\n"
+	@printf "  \033[36mmake phase 205\033[0m  create first non-booting ONIX disk/root skeleton\n"
+	@printf "  \033[36mmake phase 206\033[0m  install systemd-boot/BLS skeleton into the image\n"
+	@printf "  \033[36mmake phase 207\033[0m  verify kernel + initramfs contract\n"
+	@printf "  \033[36mmake phase 208\033[0m  verify systemd userspace contract\n"
+	@printf "  \033[36mmake phase 209\033[0m  check systemd-on-musl feasibility\n"
 
 phase: ## run a Phase 2 learning alias
 	@case "$(PHASE_ARG)" in \
 	  2) $(MAKE) --no-print-directory phase-2 ;; \
 	  200) $(MAKE) --no-print-directory ready ;; \
+	  201) $(MAKE) --no-print-directory root-tree ;; \
+	  202) $(MAKE) --no-print-directory host-moss ;; \
+	  203) $(MAKE) --no-print-directory host-root-tree ;; \
+	  204) $(MAKE) --no-print-directory image-contract ;; \
+	  205) $(MAKE) --no-print-directory image-skeleton ;; \
+	  206) $(MAKE) --no-print-directory boot-skeleton ;; \
+	  207) $(MAKE) --no-print-directory kernel-plan ;; \
+	  208) $(MAKE) --no-print-directory systemd-plan ;; \
+	  209) $(MAKE) --no-print-directory systemd-musl ;; \
 	  *) echo "unknown Phase 2 step: $(PHASE_ARG)" >&2; $(MAKE) --no-print-directory phases; exit 2 ;; \
 	esac
 
-2 200 list:
+2 200 201 202 203 204 205 206 207 208 209 list:
 	@:
 
 phase-2: ## run every Phase 2 step in order
-	@$(MAKE) --no-print-directory phase 200
+	@set -e; \
+	for phase in 200 201 202 203 204 205 206 207 208 209; do \
+	  echo; \
+	  echo "==> make phase $$phase"; \
+	  $(MAKE) --no-print-directory phase $$phase; \
+	done
 
 check: ## host-side syntax validation only
-	@bash -n check-readiness.sh
+	@bash -n check-readiness.sh build-root-tree.sh build-host-moss.sh build-root-tree-host.sh verify-image-contract.sh build-image-skeleton.sh verify-kernel-initramfs-plan.sh verify-systemd-userspace-plan.sh check-systemd-musl.sh
 	@echo "phase2   : check OK"
+
+cleanup: ## cleanup stale Phase 2 image mounts and remove generated image
+	./build-image-skeleton.sh --clean
 
 ready: ## verify Phase 2 image-assembly readiness
 	./check-readiness.sh
+
+root-tree: ## assemble first ONIX root tree from exported repo
+	./build-root-tree.sh
+
+host-moss: ## build host-side moss from pinned os-tools
+	./build-host-moss.sh
+
+host-root-tree: ## assemble ONIX root tree with host-side moss only
+	./build-root-tree-host.sh
+
+image-contract: ## verify the ONIX image/disk assembly contract
+	./verify-image-contract.sh
+
+image-skeleton: ## create first non-booting ONIX disk/root skeleton
+	./build-image-skeleton.sh
+
+boot-skeleton: ## install systemd-boot/BLS skeleton into the image
+	./build-image-skeleton.sh --boot-skeleton
+
+kernel-plan: ## verify kernel + initramfs contract
+	./verify-kernel-initramfs-plan.sh
+
+systemd-plan: ## verify systemd userspace contract
+	./verify-systemd-userspace-plan.sh
+
+systemd-musl: ## check systemd-on-musl feasibility
+	./check-systemd-musl.sh

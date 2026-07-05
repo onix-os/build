@@ -46,6 +46,7 @@ echo "==> Phase 2 readiness: host image tools"
 missing=0
 for cmd in \
   awk \
+  bootctl \
   find \
   grep \
   losetup \
@@ -54,6 +55,7 @@ for cmd in \
   mkfs.fat \
   mkfs.xfs \
   partprobe \
+  readlink \
   sed \
   sgdisk \
   sha256sum \
@@ -81,6 +83,14 @@ EOF
   exit 1
 fi
 echo "tools     : OK"
+
+boot_efi="${ONIX_SYSTEMD_BOOT_EFI:-}"
+if [[ -z "$boot_efi" && -n "$(command -v bootctl 2>/dev/null)" ]]; then
+  bootctl_path="$(readlink -f "$(command -v bootctl)")"
+  boot_efi="${bootctl_path%/bin/bootctl}/lib/systemd/boot/efi/systemd-bootx64.efi"
+fi
+[[ -f "$boot_efi" ]] || die "missing systemd-boot EFI binary; run direnv reload so ONIX_SYSTEMD_BOOT_EFI is exported"
+echo "bootloader: OK (${boot_efi})"
 
 echo
 echo "==> Phase 2 readiness: repo hygiene"
