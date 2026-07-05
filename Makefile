@@ -6,7 +6,7 @@ PHASE1 := vm/phase1
 
 PHASE_ARG := $(word 2,$(MAKECMDGOALS))
 
-.PHONY: help phases phase 0 1 000 001 002 003 004 005 006 100 101 102 list \
+.PHONY: help phases phase 0 1 000 001 002 003 004 005 006 100 101 102 103 104 105 106 list \
 	doctor cleanup
 
 help: ## show top-level help and phase map
@@ -34,13 +34,13 @@ phase: ## run a learning phase alias, e.g. `make phase 002`
 	@case "$(PHASE_ARG)" in \
 	  ""|list) $(MAKE) --no-print-directory phases ;; \
 	  0|000|001|002|003|004|005|006) $(MAKE) --no-print-directory -C $(PHASE0) phase "$(PHASE_ARG)" ;; \
-	  1|100|101|102) $(MAKE) --no-print-directory -C $(PHASE1) phase "$(PHASE_ARG)" ;; \
+	  1|100|101|102|103|104|105|106) $(MAKE) --no-print-directory -C $(PHASE1) phase "$(PHASE_ARG)" ;; \
 	  *) echo "unknown phase: $(PHASE_ARG)" >&2; $(MAKE) --no-print-directory phases; exit 2 ;; \
 	esac
 
 # Absorb the second goal in commands like `make phase 002`, otherwise Make
 # would try to build a separate target named `002` after `phase` completes.
-0 1 000 001 002 003 004 005 006 100 101 102 list:
+0 1 000 001 002 003 004 005 006 100 101 102 103 104 105 106 list:
 	@:
 
 doctor: ## common health check; not a phase step

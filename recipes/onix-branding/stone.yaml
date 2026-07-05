@@ -3,7 +3,7 @@ version     : 0.1.0
 release     : 1
 summary     : ONIX identity and default login text
 license     : MIT
-homepage    : https://github.com/onix-os
+homepage    : https://onix-os.com
 description : |
     Identity package for ONIX. It provides os-info metadata used by Moss to
     generate os-release, plus default login text for future ONIX images.
@@ -85,8 +85,8 @@ install     : |
       "resources": {
         "websites": {
           "homepage": {
-            "url": "https://github.com/onix-os",
-            "display_name": "ONIX source",
+            "url": "https://onix-os.com",
+            "display_name": "ONIX homepage",
             "scope": "home"
           },
           "source": {

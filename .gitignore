@@ -18,6 +18,9 @@ initramfs-*
 id_ed25519
 id_ed25519.pub
 
+# Host-side exported package/repo artifacts.
+artifacts/
+
 # Editors / OS cruft
 *.swp
 .DS_Store

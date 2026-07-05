@@ -105,6 +105,7 @@ test -f "$TARGET/usr/share/defaults/etc/issue"
 test -f "$TARGET/usr/share/defaults/etc/motd"
 grep -q '^PRETTY_NAME="ONIX (atomic musl base + Nix toolbox)"$' "$TARGET/usr/lib/os-release"
 grep -q '^ID="onix"$' "$TARGET/usr/lib/os-release"
+grep -q '^HOME_URL="https://onix-os.com"$' "$TARGET/usr/lib/os-release"
 
 echo
 echo "==> installed target proof"

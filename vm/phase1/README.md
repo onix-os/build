@@ -29,10 +29,14 @@ That makes it a good first Phase 1 lesson:
 make phase 100
 make phase 101
 make phase 102
+make phase 103
+make phase 104
+make phase 105
+make phase 106
 ```
 
 The format is three digits. `102` means "Phase 1, step 02". Running
-`make phase 1` runs all Phase 1 steps, `100..102`, in order.
+`make phase 1` runs all Phase 1 steps, `100..106`, in order.
 
 ### Phase 100 — forge readiness
 
@@ -113,3 +117,106 @@ This package does **not** own live `/etc`, `/var`, `/run`, `/dev`, `/proc`, or
 
 The Phase 102 test installs both `onix-branding` and `onix-filesystem` into the
 same disposable target root, so we prove the first two real ONIX stones compose.
+
+### Phase 103 — assemble first named local ONIX repo
+
+Phase 101 and 102 prove individual stones work. Phase 103 proves the next
+layer: those stones can live in a named repository.
+
+It collects:
+
+```text
+~/stone-lab/onix-branding/out/*.stone
+~/stone-lab/onix-filesystem/out/*.stone
+```
+
+then creates:
+
+```text
+~/stone-lab/onix-repo/repo/stone.index
+```
+
+and adds that index to a disposable Moss root as repo name `onix-local`.
+
+The important proof is that the install happens by package name:
+
+```sh
+moss ... install --to <target> onix-branding onix-filesystem
+```
+
+So this is the bridge from "we have loose package files" to "ONIX has the
+beginning of a package repository."
+
+### Phase 104 — prepare publishable ONIX repo layout
+
+Phase 103 proves a named repo works locally. Phase 104 reshapes that idea into
+a directory layout we could later upload to static hosting.
+
+It creates:
+
+```text
+~/stone-lab/onix-publish/
+  README.txt
+  repo.json
+  unstable/x86_64/
+    stone.index
+    SHA256SUMS
+    onix-branding-*.stone
+    onix-filesystem-*.stone
+```
+
+`repo.json` records the public identity:
+
+```text
+homepage: https://onix-os.com
+source:   https://github.com/onix-os
+hint:     https://repo.onix-os.com/unstable/x86_64/stone.index
+```
+
+This phase does **not** upload anything. It only proves the publish-style
+layout works by adding the local `stone.index` as repo `onix-unstable` and
+installing `onix-branding` + `onix-filesystem` from it.
+
+### Phase 105 — export publishable repo to the host
+
+Phase 104 creates the publishable repo inside the forge VM. Phase 105 copies it
+back to the host:
+
+```text
+forge: ~/stone-lab/onix-publish/
+host:  artifacts/onix-publish/
+```
+
+The host artifact is gitignored because it contains generated `.stone` package
+files and checksums.
+
+After this phase, the important host files are:
+
+```text
+artifacts/onix-publish/repo.json
+artifacts/onix-publish/README.txt
+artifacts/onix-publish/unstable/x86_64/stone.index
+artifacts/onix-publish/unstable/x86_64/SHA256SUMS
+artifacts/onix-publish/unstable/x86_64/*.stone
+```
+
+This still does **not** publish anything. It gives us a local host-side artifact
+that a later phase can upload to `repo.onix-os.com` or another static host.
+
+### Phase 106 — verify exported host artifact
+
+Phase 106 is host-only. It does not SSH into the forge VM.
+
+It verifies:
+
+- `artifacts/onix-publish/repo.json` exists and names ONIX correctly
+- homepage is `https://onix-os.com`
+- source is `https://github.com/onix-os`
+- future repo hint is `https://repo.onix-os.com/unstable/x86_64/stone.index`
+- exactly one `onix-branding` stone exists
+- exactly one `onix-filesystem` stone exists
+- `SHA256SUMS` validates
+- no Moss test state (`.moss`, `moss-root`, `moss-cache`, `install-target`) leaked into the artifact
+- `artifacts/` is gitignored
+
+This gives us a clean gate before any future upload/publish phase.

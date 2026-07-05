@@ -3,7 +3,7 @@ version     : 0.1.0
 release     : 1
 summary     : ONIX filesystem layout policy and default templates
 license     : MIT
-homepage    : https://github.com/onix-os
+homepage    : https://onix-os.com
 description : |
     Filesystem layout policy for ONIX. This package documents the intended
     machine/user/persistence boundaries and ships default templates under

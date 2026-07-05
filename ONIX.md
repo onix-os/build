@@ -38,7 +38,7 @@ ID=onix
 PRETTY_NAME="ONIX (atomic musl base + Nix toolbox)"
 VERSION_ID=rolling
 BUILD_ID=<txid injected at image build>
-HOME_URL="https://github.com/onix-os"
+HOME_URL="https://onix-os.com"
 ANSI_COLOR="38;2;140;120;100"
 ```
 

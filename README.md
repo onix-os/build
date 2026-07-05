@@ -44,6 +44,10 @@ make phase 006  # real Moss state install/remove/rollback smoke test
 make phase 100  # verify Phase 1 forge readiness
 make phase 101  # build/check/install first real ONIX stone: onix-branding
 make phase 102  # build/check/install onix-filesystem with onix-branding
+make phase 103  # assemble first named local ONIX repo and install from it
+make phase 104  # prepare publishable ONIX repo layout and verify it
+make phase 105  # export publishable ONIX repo from forge to host artifacts
+make phase 106  # verify exported host ONIX repo artifact
 ```
 
 Only common operations are named at the top level:
@@ -97,7 +101,14 @@ disposable root back to the installed package.
 recipe work. `make phase 101` builds the first real ONIX package,
 `onix-branding`, from [`recipes/onix-branding/stone.yaml`](./recipes/onix-branding/stone.yaml).
 `make phase 102` builds `onix-filesystem` and installs it together with
-`onix-branding` into a disposable target root.
+`onix-branding` into a disposable target root. `make phase 103` creates the
+first named local ONIX repo from those stones and proves Moss can install from
+that repo by package name. `make phase 104` prepares the same stones in a
+publishable repo layout with metadata and checksums, ready for a future
+`repo.onix-os.com`-style host. `make phase 105` copies that publishable layout
+back from the forge VM to the host under `artifacts/onix-publish/`.
+`make phase 106` verifies that exported host artifact is clean, checksummed,
+gitignored, and self-consistent.
 
 ## Layout
 
@@ -130,6 +141,14 @@ vm/
                     runs inside the booted VM: build + verify onix-branding
     build-filesystem-stone.sh
                     runs inside the booted VM: build + verify onix-filesystem
+    build-local-repo.sh
+                    runs inside the booted VM: assemble named local repo + install from it
+    build-publishable-repo.sh
+                    runs inside the booted VM: prepare publishable repo layout + verify it
+    export-publishable-repo.sh
+                    copies the publishable repo from the VM to host artifacts/
+    verify-exported-repo.sh
+                    verifies the host artifact without SSH or publishing
   downloads/        tarballs (gitignored)
   state/            disk, NVRAM, kernel/initrd, ssh key (gitignored)
 ```
