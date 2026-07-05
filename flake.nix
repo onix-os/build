@@ -101,6 +101,7 @@
               qemu
               shellcheck
               util-linux
+              xfsprogs
 
               nixGLAlias
               nixVulkanAlias

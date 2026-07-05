@@ -6,7 +6,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 ONIX_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-PLAN="$ONIX_ROOT/docs/repo-publishing.md"
+PLAN="$SCRIPT_DIR/README.md"
 
 die() {
   printf 'error: %s\n' "$*" >&2
@@ -19,14 +19,15 @@ need_cmd() {
 
 need_cmd grep
 
-[[ -f "$PLAN" ]] || die "missing publish plan: ${PLAN#$ONIX_ROOT/}"
+[[ -f "$PLAN" ]] || die "missing Phase 1 README: ${PLAN#$ONIX_ROOT/}"
 
 echo "==> verify exported artifact first"
 "$SCRIPT_DIR/verify-exported-repo.sh"
 
 echo
 echo "==> verify publish plan contract"
-grep -q '^# ONIX repo publishing plan$' "$PLAN"
+grep -q '^### Phase 107 — verify no-upload publishing plan$' "$PLAN"
+grep -q '^#### Phase 107 publication contract$' "$PLAN"
 grep -q 'https://onix-os.com' "$PLAN"
 grep -q 'https://github.com/onix-os' "$PLAN"
 grep -q 'https://repo.onix-os.com/unstable/x86_64/stone.index' "$PLAN"
@@ -42,9 +43,9 @@ fi
 
 echo
 echo "==> publication plan"
-sed -n '1,220p' "$PLAN"
+sed -n '/^### Phase 107 /,/^### Phase 108 /p' "$PLAN" | sed '$d'
 
 echo
 echo "==> success"
-echo "publish plan is tracked, no-upload, and matches the exported repo artifact"
+echo "Phase 1 README publish plan is no-upload and matches the exported repo artifact"
 echo "plan: ${PLAN#$ONIX_ROOT/}"

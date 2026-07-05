@@ -50,6 +50,7 @@ make phase 105  # export publishable ONIX repo from forge to host artifacts
 make phase 106  # verify exported host ONIX repo artifact
 make phase 107  # verify no-upload ONIX repo publishing plan
 make phase 108  # preview repo publication without upload/network
+make phase 200  # verify Phase 2 image-assembly readiness
 ```
 
 Only common operations are named at the top level:
@@ -66,8 +67,10 @@ that family:
 
 - `make phase 002` = Phase 0, step 02
 - `make phase 102` = Phase 1, step 02
+- `make phase 200` = Phase 2, step 00
 - `make phase 0` = run all `0xx` steps in order
 - `make phase 1` = run all `1xx` steps in order
+- `make phase 2` = run all `2xx` steps in order
 
 `make doctor` also ensures the disk-builder sudoers rule. `build-disk.sh` needs
 root (`losetup`/`mount`/`chroot`), and it re-execs itself via `sudo`. The
@@ -111,18 +114,17 @@ publishable repo layout with metadata and checksums, ready for a future
 back from the forge VM to the host under `artifacts/onix-publish/`.
 `make phase 106` verifies that exported host artifact is clean, checksummed,
 gitignored, and self-consistent. `make phase 107` checks the tracked no-upload
-publication plan in [`docs/repo-publishing.md`](./docs/repo-publishing.md).
+publication plan section inside [`vm/phase1/README.md`](./vm/phase1/README.md).
 `make phase 108` prints the exact local-file to future-public-URL mapping, but
 still performs no upload and contacts no network.
+`make phase 200` starts Phase 2 by checking that the exported repo artifact and
+host image-assembly tools are ready for the first ONIX image work.
 
 ## Layout
 
 ```
 ONIX.md             architecture + roadmap
 Makefile            top-level router; forwards targets into per-phase Makefiles
-docs/
-  repo-publishing.md
-                    no-upload plan for future repo.onix-os.com hosting
 recipes/
   README.md         recipe tree overview
   onix-branding/    first real ONIX stone: os-release + default login text
@@ -158,9 +160,14 @@ vm/
     verify-exported-repo.sh
                     verifies the host artifact without SSH or publishing
     prepare-publish-plan.sh
-                    verifies docs/repo-publishing.md against the host artifact
+                    verifies the Phase 107 section of vm/phase1/README.md
     publish-dry-run.sh
                     previews publish mapping without upload/network
+  phase2/
+    README.md       educational guide for first bootable ONIX image work
+    Makefile        Phase 2 targets; top-level make delegates here
+    check-readiness.sh
+                    verifies exported repo artifact + host image tools
   downloads/        tarballs (gitignored)
   state/            disk, NVRAM, kernel/initrd, ssh key (gitignored)
 ```

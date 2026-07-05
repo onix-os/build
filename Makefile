@@ -3,10 +3,11 @@
 
 PHASE0 := vm/phase0
 PHASE1 := vm/phase1
+PHASE2 := vm/phase2
 
 PHASE_ARG := $(word 2,$(MAKECMDGOALS))
 
-.PHONY: help phases phase 0 1 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 list \
+.PHONY: help phases phase 0 1 2 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 list \
 	doctor cleanup
 
 help: ## show top-level help and phase map
@@ -29,23 +30,28 @@ phases: ## list learning-phase aliases
 	@printf "\n"
 	@printf "  \033[1m--- Phase 1: first real ONIX stones ---\033[0m\n"
 	@$(MAKE) --no-print-directory -C $(PHASE1) phases
+	@printf "\n"
+	@printf "  \033[1m--- Phase 2: first bootable ONIX image ---\033[0m\n"
+	@$(MAKE) --no-print-directory -C $(PHASE2) phases
 
 phase: ## run a learning phase alias, e.g. `make phase 002`
 	@case "$(PHASE_ARG)" in \
 	  ""|list) $(MAKE) --no-print-directory phases ;; \
 	  0|000|001|002|003|004|005|006) $(MAKE) --no-print-directory -C $(PHASE0) phase "$(PHASE_ARG)" ;; \
 	  1|100|101|102|103|104|105|106|107|108) $(MAKE) --no-print-directory -C $(PHASE1) phase "$(PHASE_ARG)" ;; \
+	  2|200) $(MAKE) --no-print-directory -C $(PHASE2) phase "$(PHASE_ARG)" ;; \
 	  *) echo "unknown phase: $(PHASE_ARG)" >&2; $(MAKE) --no-print-directory phases; exit 2 ;; \
 	esac
 
 # Absorb the second goal in commands like `make phase 002`, otherwise Make
 # would try to build a separate target named `002` after `phase` completes.
-0 1 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 list:
+0 1 2 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 list:
 	@:
 
 doctor: ## common health check; not a phase step
 	@$(MAKE) --no-print-directory -C $(PHASE0) check
 	@$(MAKE) --no-print-directory -C $(PHASE1) check
+	@$(MAKE) --no-print-directory -C $(PHASE2) check
 	@missing=0; \
 	for c in qemu-system-x86_64 losetup findmnt sgdisk partprobe mkfs.fat mkfs.ext4 mount umount chroot modprobe truncate curl sha256sum sudo ssh ssh-keygen visudo; do \
 	  if ! command -v $$c >/dev/null 2>&1; then echo "missing   : $$c"; missing=1; fi; \
