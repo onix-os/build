@@ -1,13 +1,13 @@
-# Onix — Architecture & Build Plan
+# ONIX — Architecture & Build Plan
 
 **An atomic, moss-managed machine with a persistent Nix toolbox — built from scratch on musl.**
-Onix is the hard machine layer everything else sits on. The moss-managed machine plane is the foundation; the Nix toolbox is the living soil on top. It borrows AerynOS's *tooling* (moss, boulder, the `.stone` format) and its naming world — you're extending the geology, not breaking it.
+ONIX is the hard machine layer everything else sits on. The moss-managed machine plane is the foundation; the Nix toolbox is the living soil on top. It borrows AerynOS's *tooling* (moss, boulder, the `.stone` format) and its naming world — you're extending the geology, not breaking it.
 
 **Core rule:** *moss controls the machine. Nix controls the toolbox.*
 
-> **Direction change (2026-07).** Onix does **not** consume AerynOS's ISO or its glibc package repos. Their live image is desktop-first (GNOME) and their whole `volatile` repo is glibc; neither fits. Onix keeps only the *tooling* — **moss** (atomic package/state manager) and **boulder** (the `.stone` builder) — and bootstraps its **own smallest-possible base on musl, from scratch**. **Alpine** is the throwaway *forge*: a tiny musl host where moss+boulder are built and the first stones are cut. The endgame is our own musl distro, managed by moss, with Nix supplying the (glibc) software long tail on top.
+> **Direction change (2026-07).** ONIX does **not** consume AerynOS's ISO or its glibc package repos. Their live image is desktop-first (GNOME) and their whole `volatile` repo is glibc; neither fits. ONIX keeps only the *tooling* — **moss** (atomic package/state manager) and **boulder** (the `.stone` builder) — and bootstraps its **own smallest-possible base on musl, from scratch**. **Alpine** is the throwaway *forge*: a tiny musl host where moss+boulder are built and the first stones are cut. The endgame is our own musl distro, managed by moss, with Nix supplying the (glibc) software long tail on top.
 
-> Naming note: this project was renamed from Bedrock to **Onix** to avoid colliding with the existing Bedrock Linux project. All public names below use Onix from here on.
+> Naming note: this project was renamed from Bedrock to **ONIX** to avoid colliding with the existing Bedrock Linux project. Public branding is always `ONIX`; machine IDs and package names use `onix`.
 
 ---
 
@@ -17,7 +17,7 @@ Locked in up front so every later artifact is consistent.
 
 | Thing | Name | Notes |
 |---|---|---|
-| Distro name | `Onix` | Pretty name |
+| Distro name | `ONIX` | Pretty name |
 | Machine-readable ID | `onix` | Lowercase everywhere machine-readable |
 | C library | **musl** | Non-negotiable; the whole base is musl. Nix apps bring their own glibc (see §3) |
 | Magic number | `6649` | "ONIX" on a phone keypad — nixbld GID, VM MAC suffix, port offsets |
@@ -33,16 +33,16 @@ Locked in up front so every later artifact is consistent.
 **/usr/lib/os-release** (shipped by `onix-branding`):
 
 ```ini
-NAME="Onix"
+NAME="ONIX"
 ID=onix
-PRETTY_NAME="Onix (atomic musl base + Nix toolbox)"
+PRETTY_NAME="ONIX (atomic musl base + Nix toolbox)"
 VERSION_ID=rolling
 BUILD_ID=<txid injected at image build>
 HOME_URL="https://github.com/onix-os"
 ANSI_COLOR="38;2;140;120;100"
 ```
 
-No `ID_LIKE`: Onix is not a downstream of any distro's package set — it shares AerynOS's *tooling*, not its packages, and its libc (musl) diverges from AerynOS (glibc). It stands on its own foundation.
+No `ID_LIKE`: ONIX is not a downstream of any distro's package set — it shares AerynOS's *tooling*, not its packages, and its libc (musl) diverges from AerynOS (glibc). It stands on its own foundation.
 
 ---
 
@@ -98,7 +98,7 @@ You cannot build `.stone` packages without moss + boulder, and you can't run the
 
 1. **Build a minimal Alpine/musl VM from scratch** — from the 3.7 MB minirootfs tarball, not their ISO — into a bootable disk (`vm/` in this repo already does this). Hostname `quarry`.
 2. **Build moss + boulder** from `github.com/AerynOS/os-tools` (`just get-started`). They're ordinary Rust binaries; they build and run on musl. boulder explicitly supports non-AerynOS hosts (`--data-dir`, `--config-dir`, `--moss-root`).
-3. Alpine is **scaffolding, thrown away.** Nothing Alpine ships (apk, its kernel, its packages) ends up in Onix. The forge only provides a musl toolchain + userns to run boulder.
+3. Alpine is **scaffolding, thrown away.** Nothing Alpine ships (apk, its kernel, its packages) ends up in ONIX. The forge only provides a musl toolchain + userns to run boulder.
 
 ### 2.2 Bootstrap the musl base as `.stone` packages
 
@@ -122,10 +122,10 @@ Assemble a bootable image from the musl base stones (an `onix-os/image` repo):
 
 Target **BLS Type #1 entries** exactly as moss/blsforme do: entries named `onix-<txid>.conf`, kernel+initrd promoted to `$BOOT` (XBOOTLDR), transaction ID on the kernel cmdline, old entries pruned by moss. blsforme is a bootloader-spec tool and does not itself require systemd as PID 1 — but the surrounding glue (sysusers/tmpfiles) is systemd-flavored, which forces the **init decision** below. UKI + Secure Boot is Phase 7+ future work.
 
-> **The open architectural question — init on musl.** The preferred Onix target is **systemd as PID 1** plus **systemd-boot/BLS** rather than GRUB, because moss/Nix integration already speaks the systemd vocabulary (`sysusers.d`, `tmpfiles.d`, `nix-daemon.service`). The hard part is that upstream systemd does not support musl. Two paths, decided by Phase 2:
+> **The open architectural question — init on musl.** The preferred ONIX target is **systemd as PID 1** plus **systemd-boot/BLS** rather than GRUB, because moss/Nix integration already speaks the systemd vocabulary (`sysusers.d`, `tmpfiles.d`, `nix-daemon.service`). The hard part is that upstream systemd does not support musl. Two paths, decided by Phase 2:
 > - **(a) preferred: systemd-on-musl + systemd-boot** — carry a musl patchset (as Adélie/others do). Keeps every AerynOS/NixOS assumption intact; ongoing maintenance cost.
 > - **(b) fallback: non-systemd** (OpenRC / dinit / s6) — musl-native and small, but you reimplement the *small* integration surface: sysusers→a boot script, tmpfiles→an alternative, unit files→native service files. blsforme boot entries still work.
-> The Phase 0 Alpine forge can keep OpenRC + GRUB as throwaway scaffolding; this preference applies to the real Onix image.
+> The Phase 0 Alpine forge can keep OpenRC + GRUB as throwaway scaffolding; this preference applies to the real ONIX image.
 
 ---
 
@@ -133,7 +133,7 @@ Target **BLS Type #1 entries** exactly as moss/blsforme do: entries named `onix-
 
 ### 3.1 Do not run the Nix installer
 
-Neither the official curl installer nor the Determinate installer fits a stateless-`/usr` system: they mutate `/etc`, drop init units imperatively, and `useradd`. That's exactly the drift Onix exists to avoid. (They also assume glibc/systemd — doubly wrong here.)
+Neither the official curl installer nor the Determinate installer fits a stateless-`/usr` system: they mutate `/etc`, drop init units imperatively, and `useradd`. That's exactly the drift ONIX exists to avoid. (They also assume glibc/systemd — doubly wrong here.)
 
 Instead, the linchpin deliverable is one package:
 
@@ -153,7 +153,7 @@ Ships everything Nix needs, declaratively, through the machine plane:
 
 ### 3.3 Graphics: `/run/opengl-driver` as a first-class feature
 
-The classic failure mode of Nix GUI apps on foreign distros: they load nixpkgs' Mesa, which mismatches the host kernel/DRM stack → llvmpipe or crashes. **Onix fixes this at the machine layer** — the distro's genuinely distinguishing feature:
+The classic failure mode of Nix GUI apps on foreign distros: they load nixpkgs' Mesa, which mismatches the host kernel/DRM stack → llvmpipe or crashes. **ONIX fixes this at the machine layer** — the distro's genuinely distinguishing feature:
 
 - `onix-opengl-driver` glue in `onix-nix-integration` populates `/run/opengl-driver/lib` at boot with symlinks into the **moss-managed** Mesa/libdrm/Vulkan ICDs under `/usr`.
 - Nixpkgs apps honor the NixOS `/run/opengl-driver` convention, so they pick up host-matched userspace drivers with zero per-app wrapping.
@@ -182,7 +182,7 @@ Fine from Phase 4 onward, standalone mode only — manages `~/.config` and user 
 - `/nix` = bind mount from `/persist/nix` (mount unit ordered before local-fs, nix-daemon after it as in §3.2). One persistence surface to snapshot/back up.
 - `/home` = bind from `/persist/home`.
 
-(The **forge** disk is simpler — a plain GPT ESP + ext4 root; the table above is the *Onix* image target.)
+(The **forge** disk is simpler — a plain GPT ESP + ext4 root; the table above is the *ONIX* image target.)
 
 ### 4.2 Persistence policy — Phase-appropriate
 
@@ -206,9 +206,9 @@ Current smoke-test command:
 
 ```sh
 make doctor     # common health check
-make phase 04   # once per fresh forge image: build moss + boulder
-make phase 05   # build/check/extract/index/install/run onix-hello
-make phase 06   # real moss state install/remove/rollback smoke test
+make phase 004  # once per fresh forge image: build moss + boulder
+make phase 005  # build/check/extract/index/install/run onix-hello
+make phase 006  # real moss state install/remove/rollback smoke test
 ```
 
 Recipe gotcha learned in the forge: Boulder build directories inherit `g+s`.
@@ -227,9 +227,9 @@ install     : |
 Author `stone.yaml` recipes for the core musl userland (musl, toolchain, busybox/coreutils, essentials). Stand up the `onix` moss repo (`file://` then static HTTPS). Keep the base set short.
 **Gate:** the `onix` repo carries a self-consistent base stone set; moss installs it into a fresh root that chroots and runs a shell + coreutils.
 
-### Phase 2 — First bootable Onix image
+### Phase 2 — First bootable ONIX image
 Decide **init** (§2.4: systemd-on-musl vs OpenRC/dinit/s6) and implement the minimal integration glue for it. Add a kernel stone + initrd tooling + blsforme BLS entries. Assemble and boot a moss-managed, atomic musl image in QEMU/OVMF.
-**Gate:** `cat /etc/os-release` says Onix (musl); `moss state list` shows transactions; break the system with an update and recover via boot menu + state activation, from memory, twice.
+**Gate:** `cat /etc/os-release` says ONIX (musl); `moss state list` shows transactions; break the system with an update and recover via boot menu + state activation, from memory, twice.
 
 ### Phase 3 — Nix plane (the critical phase)
 Ship `onix-nix-integration`; seed `/persist/nix` from a Nix release tarball; verify daemon-mode multi-user builds, `nix shell`/`develop`/`profile install`. Confirm glibc nixpkgs apps run on the musl base.
@@ -287,13 +287,13 @@ Ships as `onix-cli` from the `onix` repo. Start as ~200 lines of shell; rewrite 
 | **init on musl: systemd doesn't support musl** | High / structural | Preferred Phase 2 path is systemd-on-musl + systemd-boot/BLS; fallback is OpenRC/dinit/s6 with reimplemented sysusers/tmpfiles/unit glue. §2.4 |
 | moss/boulder are alpha & glibc-tested | Medium | They're open Rust you can read/patch; pin `os-tools`; fix any glibc assumptions and upstream them |
 | glibc skew: musl base Mesa vs glibc Nix apps | Medium, intermittent | Nix apps are self-contained so most run; concentrate the fix at the `/run/opengl-driver` seam — possibly a glibc Mesa variant for the Nix world (§3.3) |
-| Old-name drift after rename | Medium during early development | Keep public names as Onix; grep for stale Bedrock references when changing docs/scripts |
+| Old-name drift after rename | Medium during early development | Keep public names as ONIX; grep for stale Bedrock references when changing docs/scripts |
 | NVIDIA | High if chosen | Don't. AMD/Intel for this project |
 | Solo-maintainer burden | Real, and higher than a derivative would be | Budget honestly; keep base scope minimal; if it trends high, cut base scope and lean harder on Nix |
 | **Data loss** | **Transactional /usr protects nothing you care about** | `/persist` (= `/home` + `/nix` + configs) gets real backups — borg/restic to external target — from Phase 3, not Phase 6. moss rollback is not a backup |
 
 ---
 
-## 8. What Onix is, in one paragraph
+## 8. What ONIX is, in one paragraph
 
 A small, auditable, atomic base you build yourself on **musl** — using AerynOS's excellent tooling (moss + boulder) but none of its packages — that you can always roll back; a huge optional software universe on top through persistent multi-user Nix (glibc apps riding on a musl base, carrying their own libc); and a machine-layer `/run/opengl-driver` bridge that makes Nix GUI apps first-class in a way almost no foreign distro manages. Alpine is the forge where the tooling is built and the first stones are cut, then discarded. The machine plane is the foundation; everything you actually live in grows on top of it — and the ground never shifts under you without your say-so. The machine manager controls the machine. Nix controls the toolbox.

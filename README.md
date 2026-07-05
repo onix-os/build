@@ -1,4 +1,4 @@
-# Onix
+# ONIX
 
 Building an atomic, **musl-based** Linux distro managed by AerynOS's tooling —
 `moss` (atomic package/state manager) + `boulder` (the `.stone` builder) — with
@@ -35,13 +35,15 @@ provision.sh  →  git clone os-tools → just get-started → moss + boulder
 
 ```sh
 make doctor     # common: validate scripts + host dependencies
-make phase 01   # ONE-TIME: sudoers drop-in so the build needs no password (prompts once)
-make phase 02   # fetch minirootfs + build the bootable disk
-make phase 03   # boot it (a GTK window locally, or headless VNC)
+make phase 002  # fetch minirootfs + build the bootable disk
+make phase 003  # boot it (VNC/headless by default)
 # log in on the console as mason / onix
-make phase 04   # build moss + boulder inside the VM
-make phase 05   # cut, inspect, index, install, and run a tiny first .stone
-make phase 06   # real Moss state install/remove/rollback smoke test
+make phase 004  # build moss + boulder inside the VM
+make phase 005  # cut, inspect, index, install, and run a tiny first .stone
+make phase 006  # real Moss state install/remove/rollback smoke test
+make phase 100  # verify Phase 1 forge readiness
+make phase 101  # build/check/install first real ONIX stone: onix-branding
+make phase 102  # build/check/install onix-filesystem with onix-branding
 ```
 
 Only common operations are named at the top level:
@@ -52,40 +54,60 @@ make cleanup   # stop forge QEMU, detach mounts, remove generated disk
 make phases    # print the numbered phase map
 ```
 
-Everything else is run by number with `make phase NN`.
+Everything else is run by number with `make phase XYZ`.
+The first digit is the phase family; the last two digits are the step inside
+that family:
 
-`make phase 01` is optional but recommended: `build-disk.sh` needs root
-(`losetup`/`mount`/`chroot`), and it re-execs itself via `sudo`. The drop-in
-(`vm/phase0/install-sudoers.sh`) grants NOPASSWD on *this repo's* `build-disk.sh` so the
-build runs unattended. Revert with `vm/phase0/install-sudoers.sh --uninstall`.
+- `make phase 002` = Phase 0, step 02
+- `make phase 102` = Phase 1, step 02
+- `make phase 0` = run all `0xx` steps in order
+- `make phase 1` = run all `1xx` steps in order
+
+`make doctor` also ensures the disk-builder sudoers rule. `build-disk.sh` needs
+root (`losetup`/`mount`/`chroot`), and it re-execs itself via `sudo`. The
+drop-in (`vm/phase0/install-sudoers.sh`) grants NOPASSWD on *this repo's*
+`build-disk.sh` so the build runs unattended. If the rule is already correct,
+doctor uses `sudo -n` to check it and does **not** prompt. If the rule is
+missing/stale, doctor prompts once to install it. Revert with
+`vm/phase0/install-sudoers.sh --uninstall`.
 **Tradeoff:** `build-disk.sh` is writable by you, so this is effectively
 passwordless root for your user — no Unix group can grant `mount`/`chroot`/loop setup,
 so sudo is the mechanism. Skip it and `build-disk.sh` just prompts normally.
 
 `make doctor` runs the cheap non-mutating validation lane plus host tool checks.
-`make cleanup` first stops the Onix forge QEMU process (`onix-quarry`), then
+`make cleanup` first stops the ONIX forge QEMU process (`onix-quarry`), then
 detaches stale loop/NBD mounts, then removes generated forge state
 (`vm/state/quarry.raw`, OVMF vars, exported kernel/initrd). It keeps the cached
 rootfs tarball and SSH key. `make phases` prints the numbered flow.
 
-`make phase 05` is the Phase 0 packaging smoke test. It runs inside the
+`make phase 005` is the Phase 0 packaging smoke test. It runs inside the
 already-booted forge VM and writes only under `~/stone-lab/onix-hello` in the
 guest. It creates a local source tarball, builds `onix-hello` with `boulder`,
 checks the resulting `.stone` with `moss inspect --check`, extracts it, creates a
 throwaway local Moss repo, installs into a throwaway target root, and runs
 `/usr/bin/onix-hello`.
 
-`make phase 06` is the final Phase 0 state smoke test. It
+`make phase 006` is the final Phase 0 state smoke test. It
 uses the same hello `.stone`, but installs into a disposable Moss root with
 `moss -D` instead of `--to`, so Moss creates real states: install becomes
 `State #1`, remove becomes `State #2`, and activating state `1` rolls the
 disposable root back to the installed package.
+
+`make phase 100` starts Phase 1 by checking the running forge is ready for real
+recipe work. `make phase 101` builds the first real ONIX package,
+`onix-branding`, from [`recipes/onix-branding/stone.yaml`](./recipes/onix-branding/stone.yaml).
+`make phase 102` builds `onix-filesystem` and installs it together with
+`onix-branding` into a disposable target root.
 
 ## Layout
 
 ```
 ONIX.md             architecture + roadmap
 Makefile            top-level router; forwards targets into per-phase Makefiles
+recipes/
+  README.md         recipe tree overview
+  onix-branding/    first real ONIX stone: os-release + default login text
+  onix-filesystem/  filesystem layout policy + default templates
 vm/
   phase0/
     README.md       educational guide for the Phase 0 forge
@@ -101,6 +123,13 @@ vm/
     launch.sh       boot the forge (grub/OVMF, or --direct)
     ssh.sh          ssh in via the forwarded port + generated key
     clean.sh        wipe forge state to rebuild
+  phase1/
+    README.md       educational guide for first real ONIX stones
+    Makefile        Phase 1 targets; top-level make delegates here
+    build-branding-stone.sh
+                    runs inside the booted VM: build + verify onix-branding
+    build-filesystem-stone.sh
+                    runs inside the booted VM: build + verify onix-filesystem
   downloads/        tarballs (gitignored)
   state/            disk, NVRAM, kernel/initrd, ssh key (gitignored)
 ```
@@ -121,7 +150,7 @@ vm/
 - **Pinned tooling:** `provision.sh` checks out the pinned `OS_TOOLS_REF` from
   `vm/phase0/config.sh` before building. Override only when intentionally rebasing the
   forge to a newer `os-tools` snapshot.
-- **Override anything via env:** `VM_RAM=8G VM_CPUS=8 make phase 03`.
+- **Override anything via env:** `VM_RAM=8G VM_CPUS=8 make phase 003`.
 
 ## Requirements (host)
 

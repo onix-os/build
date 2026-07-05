@@ -24,7 +24,7 @@ export PATH="$HOME/.local/bin:$PATH"
 
 need_tool() {
     if ! command -v "$1" >/dev/null 2>&1; then
-        echo "error: missing '$1' in the forge. From the host, run: make phase 04" >&2
+        echo "error: missing '$1' in the forge. From the host, run: make phase 004" >&2
         exit 1
     fi
 }
@@ -40,7 +40,7 @@ REPO="$LAB/state-repo"
 STONE="$(ls "$OUT"/*.stone 2>/dev/null | head -n 1 || true)"
 if [ -z "$STONE" ]; then
     echo "error: no hello .stone found under $OUT" >&2
-    echo "hint : from the host, run make phase 05 first" >&2
+    echo "hint : from the host, run make phase 005 first" >&2
     exit 1
 fi
 

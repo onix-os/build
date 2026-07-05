@@ -23,7 +23,7 @@ export PATH="$HOME/.local/bin:$PATH"
 
 need_tool() {
     if ! command -v "$1" >/dev/null 2>&1; then
-        echo "error: missing '$1' in the forge. From the host, run: make phase 04" >&2
+        echo "error: missing '$1' in the forge. From the host, run: make phase 004" >&2
         exit 1
     fi
 }
@@ -64,13 +64,13 @@ cat > "$LAB/stone.yaml" <<EOF_RECIPE
 name        : onix-hello
 version     : 0.1.0
 release     : 1
-summary     : Tiny hello package for proving the Onix forge
+summary     : Tiny hello package for proving the ONIX forge
 license     : MIT
 homepage    : https://onix.local
 upstreams   :
     - $ARCHIVE_URL: $HASH
 description : |
-    Minimal package built inside the Onix forge to verify that
+    Minimal package built inside the ONIX forge to verify that
     boulder can create a .stone from a local source archive.
 install     : |
     install -Dm00755 onix-hello %(installroot)%(bindir)/onix-hello

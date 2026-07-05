@@ -1,8 +1,8 @@
 # Phase 0 — the forge
 
-Phase 0 is not the Onix operating system yet. It is the **forge**: a small
+Phase 0 is not the ONIX operating system yet. It is the **forge**: a small
 musl Linux VM where we learn and prove the tooling path before building real
-Onix packages.
+ONIX packages.
 
 The goal is:
 
@@ -16,7 +16,7 @@ roll back that package.
 
 ## Why this phase exists
 
-Onix wants to be:
+ONIX wants to be:
 
 - **musl-based**
 - **atomic**
@@ -30,7 +30,7 @@ small. It is scaffolding, not the final distro.
 
 Important distinction:
 
-| Thing | Role in Phase 0 | Final Onix? |
+| Thing | Role in Phase 0 | Final ONIX? |
 |---|---|---|
 | Alpine | temporary musl build host | no |
 | OpenRC | temporary forge init | probably no |
@@ -76,11 +76,22 @@ package experiments after boot mostly happen safely inside the VM.
 Top-level phase commands are intentionally numbered:
 
 ```sh
-make phase 00
-make phase 01
-make phase 02
+make phase 000
+make phase 001
+make phase 002
 ...
 ```
+
+The format is three digits:
+
+```text
+XYZ
+│└┴─ step inside that phase family
+└─── phase family
+```
+
+So `002` means "Phase 0, step 02". Running `make phase 0` runs all Phase 0
+steps, `000..006`, in order.
 
 Only common cross-phase operations are named at top level:
 
@@ -94,13 +105,14 @@ Phase 0 currently has these steps:
 
 | Step | What it does | Why it matters |
 |---|---|---|
-| `make phase 00` | Validate scripts/config without mutating the VM | Fast safety check before doing anything bigger |
-| `make phase 01` | Install a sudoers rule for disk building | Avoid repeated password prompts for loop/mount/chroot work |
-| `make phase 02` | Build the bootable forge disk | Produces `vm/state/quarry.raw` |
-| `make phase 03` | Boot the forge VM | Starts QEMU so we can enter/SSH into `quarry` |
-| `make phase 04` | Build `moss` and `boulder` in the VM | Produces the package manager and package builder |
-| `make phase 05` | Build/check/install/run a tiny `.stone` | Proves Boulder can produce a valid package |
-| `make phase 06` | Real Moss install/remove/rollback smoke test | Proves Moss state transactions work |
+| `make phase 0` | Run every Phase 0 step in order | Convenience when you want the whole forge path |
+| `make phase 000` | Validate scripts/config without mutating the VM | Fast safety check before doing anything bigger |
+| `make phase 001` | Ensure the sudoers rule for disk building | Avoid repeated password prompts for loop/mount/chroot work |
+| `make phase 002` | Build the bootable forge disk | Produces `vm/state/quarry.raw` |
+| `make phase 003` | Boot the forge VM | Starts QEMU so we can enter/SSH into `quarry` |
+| `make phase 004` | Build `moss` and `boulder` in the VM | Produces the package manager and package builder |
+| `make phase 005` | Build/check/install/run a tiny `.stone` | Proves Boulder can produce a valid package |
+| `make phase 006` | Real Moss install/remove/rollback smoke test | Proves Moss state transactions work |
 
 ## Common commands
 
@@ -122,7 +134,7 @@ It should be safe and non-mutating.
 
 Runs from the repo root. This is common, not a phase.
 
-It first stops the Onix forge QEMU process (`onix-quarry`), then cleans stale
+It first stops the ONIX forge QEMU process (`onix-quarry`), then cleans stale
 loop/NBD mount trees left behind by interrupted disk builds, then removes the
 generated forge disk/NVRAM/kernel/initrd under `vm/state/`.
 
@@ -131,10 +143,10 @@ the generated SSH key.
 
 ## Step details
 
-### Phase 00 — validate
+### Phase 000 — validate
 
 ```sh
-make phase 00
+make phase 000
 ```
 
 This runs the cheap validation lane. It does not boot the VM and does not build
@@ -143,10 +155,10 @@ a disk. It is the "are my scripts still sane?" step.
 Under the hood it checks shell syntax for the Phase 0 scripts and confirms the
 QEMU command can be assembled.
 
-### Phase 01 — passwordless disk builder
+### Phase 001 — passwordless disk builder
 
 ```sh
-make phase 01
+make phase 001
 ```
 
 Disk building needs operations normal users cannot do:
@@ -156,19 +168,26 @@ Disk building needs operations normal users cannot do:
 - `mkfs`
 - `chroot`
 
-So `build-disk.sh` re-execs itself with `sudo`. This phase installs a sudoers
+So `build-disk.sh` re-execs itself with `sudo`. This phase ensures a sudoers
 drop-in allowing only this repo's Phase 0 disk builder to run without another
 password prompt.
+
+`make doctor` runs this ensure step too. The important detail: the ensure step
+first probes the existing rule with `sudo -n ./build-disk.sh --sudoers-check`.
+`sudo -n` means "never ask for a password". So if the rule is already correct,
+there is no sudo prompt. If the rule is missing or stale, then the installer
+prompts once and writes `/etc/sudoers.d/onix-forge`.
 
 Tradeoff: because the script is writable by your user, this is effectively
 passwordless root for that script path. That is why it is explicit and separate.
 
-If the script path moves, rerun this phase so sudoers points at the new path.
+If the script path moves, rerun `make doctor` or this phase so sudoers points at
+the new path.
 
-### Phase 02 — build the forge disk
+### Phase 002 — build the forge disk
 
 ```sh
-make phase 02
+make phase 002
 ```
 
 This creates the bootable forge disk:
@@ -199,16 +218,16 @@ During the build, the script:
 8. creates the `mason` build user
 9. exports kernel/initramfs for direct boot fallback
 
-OpenRC and GRUB are only forge scaffolding. The real Onix target can still
+OpenRC and GRUB are only forge scaffolding. The real ONIX target can still
 use systemd/systemd-boot later if we choose that route.
 
-### Phase 03 — boot the forge
+### Phase 003 — boot the forge
 
 ```sh
-make phase 03
+make phase 003
 ```
 
-This starts QEMU using the disk from Phase 02.
+This starts QEMU using the disk from Phase 002.
 
 Expected login:
 
@@ -225,10 +244,25 @@ The VM hostname is:
 quarry
 ```
 
-### Phase 04 — provision tools
+When you run `make phase 003` directly, QEMU stays in the foreground so you can
+watch and interact with the console.
+
+When you run the whole family with `make phase 0`, phase 003 uses a batch-safe
+boot path instead:
+
+```text
+launch QEMU in the background
+tail vm/state/quarry.serial.log so you still see boot logs
+wait until SSH on 127.0.0.1:6649 is ready
+continue automatically to phase 004
+```
+
+That means the full batch does not get stuck at the Alpine login prompt.
+
+### Phase 004 — provision tools
 
 ```sh
-make phase 04
+make phase 004
 ```
 
 This SSHes into the running forge and builds:
@@ -250,10 +284,10 @@ Conceptually:
 - `moss` manages installed package states atomically
 - `boulder` builds `.stone` packages from `stone.yaml`
 
-### Phase 05 — first `.stone`
+### Phase 005 — first `.stone`
 
 ```sh
-make phase 05
+make phase 005
 ```
 
 This builds a deliberately tiny package called `onix-hello`.
@@ -289,16 +323,16 @@ install     : |
 Boulder build directories inherit `g+s`. If `/usr` keeps that bit, Boulder can
 emit a `/usr/` layout entry that Moss rejects during extract/install.
 
-### Phase 06 — real Moss state smoke test
+### Phase 006 — real Moss state smoke test
 
 ```sh
-make phase 06
+make phase 006
 ```
 
-Phase 05 uses `moss install --to`, which blits files into a target directory but
+Phase 005 uses `moss install --to`, which blits files into a target directory but
 does not create a real Moss state transaction.
 
-Phase 06 uses:
+Phase 006 uses:
 
 ```sh
 moss -D <root> install onix-hello
@@ -339,11 +373,11 @@ reason we are using Moss.
 Phase 0 is complete when all of these have worked:
 
 - `make doctor`
-- `make phase 02`
-- `make phase 03`
-- `make phase 04`
-- `make phase 05`
-- `make phase 06`
+- `make phase 002`
+- `make phase 003`
+- `make phase 004`
+- `make phase 005`
+- `make phase 006`
 
 At that point we know:
 
@@ -354,4 +388,4 @@ At that point we know:
 5. we can install/remove packages with real Moss states,
 6. we can roll back to an older state.
 
-Only after this does Phase 1 make sense: real Onix recipe/repo bootstrap.
+Only after this does Phase 1 make sense: real ONIX recipe/repo bootstrap.

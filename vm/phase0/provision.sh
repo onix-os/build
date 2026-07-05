@@ -3,7 +3,7 @@
 # AerynOS tooling: moss (package/state manager) + boulder (.stone builder).
 #
 # Baked into the image at /home/<user>/provision.sh. Run it after first boot:
-#     ssh -p 6649 mason@127.0.0.1 ./provision.sh      (or from host: make phase 04)
+#     ssh -p 6649 mason@127.0.0.1 ./provision.sh      (or from host: make phase 004)
 # Idempotent-ish: re-running updates the checkout and rebuilds.
 set -e
 

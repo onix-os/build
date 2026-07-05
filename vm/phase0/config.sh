@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# vm/phase0/config.sh — single source of truth for the Onix "forge" VM (quarry).
+# vm/phase0/config.sh — single source of truth for the ONIX "forge" VM (quarry).
 #
 # SOURCED by the other scripts; never runs QEMU itself. Everything is
 # overridable from the environment, e.g.:  VM_RAM=8G VM_CPUS=8 ./launch.sh

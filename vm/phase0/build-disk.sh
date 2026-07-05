@@ -20,6 +20,13 @@ fi
 source "$(dirname "${BASH_SOURCE[0]}")/config.sh"
 
 SELF="$ONIX_PHASE0_DIR/build-disk.sh"
+
+if [[ "${1:-}" == "--sudoers-check" ]]; then
+  [[ $EUID -eq 0 ]] || die "sudoers check must run through sudo"
+  log "sudoers  : passwordless build-disk OK"
+  exit 0
+fi
+
 if [[ $EUID -ne 0 ]]; then
   need_cmd sudo
   env_file="$(mktemp "${TMPDIR:-/tmp}/onix-build-env.XXXXXX")"
@@ -73,7 +80,7 @@ have_stale_mounts() {
 
 cleanup_stale() {
   local root loopdev
-  log "cleaning stale Onix loop/NBD mount trees"
+  log "cleaning stale ONIX loop/NBD mount trees"
   while IFS= read -r root; do
     [[ -n "$root" ]] || continue
     warn "unmounting stale tree: $root"
@@ -98,7 +105,7 @@ if [[ "$CLEANUP_STALE" -eq 1 ]]; then
 fi
 
 if have_stale_mounts; then
-  die "stale Onix disk mounts exist under /tmp; run 'make cleanup' before building"
+  die "stale ONIX disk mounts exist under /tmp; run 'make cleanup' before building"
 fi
 
 if [[ "$INSPECT" -ne 1 ]]; then

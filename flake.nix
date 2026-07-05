@@ -1,5 +1,5 @@
 {
-  description = "Onix forge development shell";
+  description = "ONIX forge development shell";
 
   inputs = {
     # Pinned to the same nixpkgs generation as Gearbox because nixGL's NVIDIA

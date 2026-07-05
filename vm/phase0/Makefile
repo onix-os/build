@@ -1,4 +1,4 @@
-# Onix Phase 0 — forge VM and first .stone smoke tests.
+# ONIX Phase 0 — forge VM and first .stone smoke tests.
 .DEFAULT_GOAL := help
 
 VM := .
@@ -11,42 +11,63 @@ export BUILD_USER
 
 PHASE_ARG := $(word 2,$(MAKECMDGOALS))
 
-.PHONY: help phases phase 0 00 1 01 2 02 3 03 4 04 5 05 6 06 list \
+.PHONY: help phases phase phase-0 0 000 001 002 003 004 005 006 list \
 	check rootfs disk inspect-disk kill-qemu cleanup cleanup-stale forge run direct \
-	headless snapshot ssh provision stone-hello state-smoke config dry-run \
+	run-wait headless snapshot ssh provision stone-hello state-smoke state-smoke-only config dry-run \
 	passwordless clean clean-all
 
 help: ## show Phase 0 help
-	@echo "Onix Phase 0 targets:"
+	@echo "ONIX Phase 0 targets:"
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | sort | \
 	  awk -F':.*?## ' '{printf "  \033[36m%-13s\033[0m %s\n", $$1, $$2}'
 
 phases: ## list the learning-phase aliases
-	@printf "  \033[36mmake phase 00\033[0m  validate scripts/config\n"
-	@printf "  \033[36mmake phase 01\033[0m  one-time sudoers setup for disk builds\n"
-	@printf "  \033[36mmake phase 02\033[0m  fetch rootfs + build bootable forge disk\n"
-	@printf "  \033[36mmake phase 03\033[0m  boot the forge VM\n"
-	@printf "  \033[36mmake phase 04\033[0m  build moss + boulder inside the forge\n"
-	@printf "  \033[36mmake phase 05\033[0m  build/check/install/run first tiny .stone\n"
-	@printf "  \033[36mmake phase 06\033[0m  real moss install/remove/rollback state test\n"
+	@printf "  \033[36mmake phase 0\033[0m    run all Phase 0 steps: 000..006\n"
+	@printf "  \033[36mmake phase 000\033[0m  validate scripts/config\n"
+	@printf "  \033[36mmake phase 001\033[0m  ensure sudoers setup for disk builds\n"
+	@printf "  \033[36mmake phase 002\033[0m  fetch rootfs + build bootable forge disk\n"
+	@printf "  \033[36mmake phase 003\033[0m  boot the forge VM\n"
+	@printf "  \033[36mmake phase 004\033[0m  build moss + boulder inside the forge\n"
+	@printf "  \033[36mmake phase 005\033[0m  build/check/install/run first tiny .stone\n"
+	@printf "  \033[36mmake phase 006\033[0m  real moss install/remove/rollback state test\n"
 
-phase: ## run a learning phase alias, e.g. `make phase 01`
+phase: ## run a learning phase alias, e.g. `make phase 002`
 	@case "$(PHASE_ARG)" in \
 	  ""|list) $(MAKE) --no-print-directory phases ;; \
-	  0|00) $(MAKE) --no-print-directory check ;; \
-	  1|01) $(MAKE) --no-print-directory passwordless ;; \
-	  2|02) $(MAKE) --no-print-directory forge ;; \
-	  3|03) $(MAKE) --no-print-directory run ;; \
-	  4|04) $(MAKE) --no-print-directory provision ;; \
-	  5|05) $(MAKE) --no-print-directory stone-hello ;; \
-	  6|06) $(MAKE) --no-print-directory state-smoke ;; \
+	  0) $(MAKE) --no-print-directory phase-0 ;; \
+	  000) $(MAKE) --no-print-directory check ;; \
+	  001) $(MAKE) --no-print-directory passwordless ;; \
+	  002) $(MAKE) --no-print-directory forge ;; \
+	  003) $(MAKE) --no-print-directory run ;; \
+	  004) $(MAKE) --no-print-directory provision ;; \
+	  005) $(MAKE) --no-print-directory stone-hello ;; \
+	  006) $(MAKE) --no-print-directory state-smoke ;; \
 	  *) echo "unknown phase: $(PHASE_ARG)" >&2; $(MAKE) --no-print-directory phases; exit 2 ;; \
 	esac
 
-# Absorb the second goal in commands like `make phase 01`, otherwise Make would
-# try to build a separate target named `01` after the `phase` target completes.
-0 00 1 01 2 02 3 03 4 04 5 05 6 06 list:
+# Absorb the second goal in commands like `make phase 002`, otherwise Make
+# would try to build a separate target named `002` after `phase` completes.
+0 000 001 002 003 004 005 006 list:
 	@:
+
+phase-0: ## run every Phase 0 step in order
+	@set -e; \
+	for phase in 000 001 002; do \
+	  echo; \
+	  echo "==> make phase $$phase"; \
+	  $(MAKE) --no-print-directory phase $$phase; \
+	done; \
+	echo; \
+	echo "==> make phase 003"; \
+	$(MAKE) --no-print-directory run-wait; \
+	for phase in 004 005; do \
+	  echo; \
+	  echo "==> make phase $$phase"; \
+	  $(MAKE) --no-print-directory phase $$phase; \
+	done; \
+	echo; \
+	echo "==> make phase 006"; \
+	$(MAKE) --no-print-directory state-smoke-only
 
 check: ## cheap non-mutating validation (syntax, cached rootfs, dry-run construction)
 	@bash -n $(VM)/config.sh $(VM)/fetch-rootfs.sh $(VM)/build-disk.sh $(VM)/launch.sh $(VM)/ssh.sh $(VM)/install-sudoers.sh $(VM)/clean.sh $(VM)/kill-qemu.sh $(VM)/build-hello-stone.sh $(VM)/state-smoke.sh
@@ -55,7 +76,7 @@ check: ## cheap non-mutating validation (syntax, cached rootfs, dry-run construc
 	  if [[ -f "$$ROOTFS_PATH" ]]; then \
 	    echo "$$ROOTFS_SHA256  $$ROOTFS_PATH" | sha256sum -c --status && echo "rootfs    : checksum OK"; \
 	  else \
-	    echo "rootfs    : not downloaded (run make phase 02)"; \
+	    echo "rootfs    : not downloaded (run make phase 002)"; \
 	  fi'
 	@$(VM)/launch.sh --direct --dry-run >/dev/null 2>&1 || { echo "dry-run  : failed"; exit 1; }
 	@echo "check     : OK"
@@ -63,8 +84,8 @@ check: ## cheap non-mutating validation (syntax, cached rootfs, dry-run construc
 rootfs: ## download + verify the Alpine minirootfs tarball
 	$(VM)/fetch-rootfs.sh
 
-passwordless: ## one-time: allow build-disk.sh to run without a sudo password
-	$(VM)/install-sudoers.sh
+passwordless: ## ensure build-disk.sh can run without a sudo password
+	$(VM)/install-sudoers.sh --ensure
 
 disk: ## build the bootable musl forge disk (root via sudo re-exec)
 	$(VM)/build-disk.sh
@@ -84,10 +105,13 @@ cleanup:
 	@$(MAKE) --no-print-directory clean
 
 forge: rootfs disk ## fetch rootfs + build disk in one go
-	@echo "forge disk ready — run 'make phase 03' from the repo root to boot it"
+	@echo "forge disk ready — run 'make phase 003' from the repo root to boot it"
 
 run: ## boot the forge (grub-efi + OVMF, VNC by default)
 	$(VM)/launch.sh
+
+run-wait: ## boot the forge in background, show serial log, continue when SSH is ready
+	$(VM)/launch.sh --background --wait --display vnc
 
 direct: ## boot via QEMU direct-kernel (grub bypass / safety net)
 	$(VM)/launch.sh --direct
@@ -110,7 +134,10 @@ stone-hello: ## build + verify a tiny hello-world .stone inside the running forg
 state-smoke: stone-hello ## verify real moss state install/remove/rollback in a disposable root
 	$(VM)/state-smoke.sh
 
-dry-run: ## print the QEMU command phase 03 would execute
+state-smoke-only:
+	$(VM)/state-smoke.sh
+
+dry-run: ## print the QEMU command phase 003 would execute
 	$(VM)/launch.sh --dry-run
 
 config: ## print the resolved configuration

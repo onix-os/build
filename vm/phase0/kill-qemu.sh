@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# vm/phase0/kill-qemu.sh — stop only the Onix forge QEMU process.
+# vm/phase0/kill-qemu.sh — stop only the ONIX forge QEMU process.
 #
 # This intentionally does NOT kill every qemu-system-x86_64 process. launch.sh
 # starts the forge with `-name ...,process=onix-$VM_NAME`, so we match that exact
@@ -18,7 +18,7 @@ collect_pids() {
 mapfile -t pids < <(collect_pids)
 
 if [[ "${#pids[@]}" -eq 0 ]]; then
-  log "qemu      : no running Onix forge process ($QEMU_PROCESS_NAME)"
+  log "qemu      : no running ONIX forge process ($QEMU_PROCESS_NAME)"
   exit 0
 fi
 

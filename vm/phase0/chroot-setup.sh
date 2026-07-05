@@ -47,7 +47,7 @@ cat > /boot/grub/grub.cfg <<EOF
 set timeout=1
 set default=0
 insmod all_video
-menuentry "Onix forge (quarry)" {
+menuentry "ONIX forge (quarry)" {
     search --no-floppy --label onix-root --set=root
     linux /boot/vmlinuz-$KERNEL_FLAVOR root=LABEL=onix-root rootfstype=ext4 rw modules=ext4,virtio_blk,virtio_pci,virtio_net console=tty0 console=ttyS0,115200
     initrd /boot/initramfs-$KERNEL_FLAVOR
