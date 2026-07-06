@@ -62,6 +62,7 @@ make phase 208  # verify systemd userspace contract
 make phase 209  # check systemd-on-musl feasibility
 make phase 210  # verify init path decision contract
 make phase 211  # install first kernel + initramfs payload
+make phase 212  # run first QEMU boot probe
 ```
 
 Only common operations are named at the top level:
@@ -90,6 +91,7 @@ that family:
 - `make phase 209` = Phase 2, step 09
 - `make phase 210` = Phase 2, step 10
 - `make phase 211` = Phase 2, step 11
+- `make phase 212` = Phase 2, step 12
 - `make phase 0` = run all `0xx` steps in order
 - `make phase 1` = run all `1xx` steps in order
 - `make phase 2` = run the canonical host-native Phase 2 path
@@ -168,6 +170,21 @@ systemd build before we commit to systemd as ONIX PID 1.
 PID 1 and systemd-boot as the bootloader.
 `make phase 211` installs the first kernel/initramfs payload into
 `/boot/ONIX/` and updates the boot entry to use it.
+`make phase 212` boots the ONIX image under QEMU long enough to capture early
+boot evidence from the serial console.
+
+For phases that support an interactive view, use `ATTACHED=1`:
+
+```sh
+ATTACHED=1 make phase 212
+make phase 212 ATTACHED=1
+```
+
+That keeps the normal phase reproducible/headless, while still giving you a
+way to watch interactive phases when you want to learn from them. For Phase
+212, attached mode defaults to serial output in your terminal. GUI/VNC only
+opens if you explicitly request it with `ONIX_BOOT_PROBE_DISPLAY=gtk` or
+`ONIX_BOOT_PROBE_DISPLAY=vnc`.
 
 ## Layout
 
@@ -227,6 +244,8 @@ vm/
                     verifies the Phase 204 disk/image layout contract
     build-image-skeleton.sh
                     creates artifacts/onix-image/onix.raw and installs Phase 206/211 boot layers
+    boot-probe.sh
+                    runs the Phase 212 QEMU boot probe against the ONIX image
     verify-kernel-initramfs-plan.sh
                     verifies the Phase 207 kernel/initramfs contract
     verify-systemd-userspace-plan.sh
