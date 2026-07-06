@@ -15,7 +15,7 @@ apk add --no-cache \
     openrc busybox-openrc \
     grub grub-efi efibootmgr \
     openssh doas shadow shadow-uidmap \
-    e2fsprogs dosfstools \
+    e2fsprogs dosfstools xfsprogs \
     ca-certificates \
     bash build-base git just rust cargo clang llvm-dev binutils cpio \
     libarchive-tools musl-dev linux-headers pkgconf openssl-dev zlib-dev xz-dev
@@ -33,9 +33,9 @@ LABEL=onix-root  /      ext4  rw,relatime            0 1
 LABEL=ONIX-ESP   /efi   vfat  rw,relatime,noatime    0 2
 EOF
 
-echo ">> initramfs: ensure virtio + ext4 so it can mount the root disk"
+echo ">> initramfs: ensure virtio + ext4 + xfs so it can mount forge and ONIX disks"
 mkdir -p /etc/mkinitfs
-echo 'features="ata base ext4 keymap kms mmc scsi usb virtio nvme"' > /etc/mkinitfs/mkinitfs.conf
+echo 'features="ata base ext4 xfs keymap kms mmc scsi usb virtio nvme"' > /etc/mkinitfs/mkinitfs.conf
 KVER="$(ls /lib/modules | head -n1)"
 mkinitfs "$KVER"
 

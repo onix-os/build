@@ -15,6 +15,11 @@
 # Phase 206 reuses this script with --boot-skeleton to add the first
 # systemd-boot/BLS skeleton to the existing image. That still does not install a
 # kernel/initramfs/init system, so the image is not a complete bootable OS yet.
+#
+# Phase 211 reuses this script with --kernel-payload to install the first
+# kernel/initramfs boot payload into /boot/ONIX. The default source is the
+# exported forge payload under vm/state/, but the script verifies that the
+# initramfs can handle ONIX's XFS root before copying it.
 set -euo pipefail
 
 SUDO_ENV_FILE=""
@@ -33,6 +38,8 @@ IMAGE_DIR="${ONIX_IMAGE_DIR:-$ONIX_ROOT/artifacts/onix-image}"
 IMAGE_RAW="${ONIX_IMAGE_RAW:-$IMAGE_DIR/onix.raw}"
 WORK_DIR="${ONIX_IMAGE_WORK_DIR:-$ONIX_ROOT/artifacts/onix-image-work}"
 ROOT_TREE_DIR="${ONIX_ROOT_TREE_DIR:-$ONIX_ROOT/artifacts/onix-root-tree}"
+KERNEL_SOURCE="${ONIX_KERNEL_IMAGE:-$ONIX_ROOT/vm/state/vmlinuz-virt}"
+INITRAMFS_SOURCE="${ONIX_INITRAMFS_IMAGE:-$ONIX_ROOT/vm/state/initramfs-virt}"
 
 IMAGE_SIZE="${ONIX_IMAGE_SIZE:-12G}"
 ESP_SIZE="${ONIX_IMAGE_ESP_SIZE:-512M}"
@@ -88,6 +95,7 @@ case "${1:-}" in
   --cleanup-stale) MODE="cleanup-stale"; SUDO_MODE_ARGS=(--cleanup-stale); shift ;;
   --clean) MODE="clean"; SUDO_MODE_ARGS=(--clean); shift ;;
   --boot-skeleton) MODE="boot-skeleton"; SUDO_MODE_ARGS=(--boot-skeleton); shift ;;
+  --kernel-payload) MODE="kernel-payload"; SUDO_MODE_ARGS=(--kernel-payload); shift ;;
   "") ;;
   *) die "unknown option: $1" ;;
 esac
@@ -116,7 +124,7 @@ need_root() {
     for name in \
       ONIX_IMAGE_DIR ONIX_IMAGE_RAW ONIX_IMAGE_WORK_DIR ONIX_ROOT_TREE_DIR \
       ONIX_IMAGE_SIZE ONIX_IMAGE_ESP_SIZE ONIX_IMAGE_BOOT_SIZE ONIX_IMAGE_ROOT_SIZE \
-      ONIX_SYSTEMD_BOOT_EFI \
+      ONIX_SYSTEMD_BOOT_EFI ONIX_KERNEL_IMAGE ONIX_INITRAMFS_IMAGE \
       PATH
     do
       value="${!name-}"
@@ -201,9 +209,11 @@ fi
 need_cmd awk
 need_cmd blkid
 need_cmd cmp
+need_cmd cpio
 need_cmd find
 need_cmd findmnt
 need_cmd grep
+need_cmd gzip
 need_cmd install
 need_cmd losetup
 need_cmd mkdir
@@ -309,6 +319,36 @@ find_systemd_boot_efi() {
   done
 
   die "missing systemd-bootx64.efi; run direnv reload so flake.nix exports ONIX_SYSTEMD_BOOT_EFI"
+}
+
+verify_kernel_payload_sources() {
+  local initrd_list
+
+  log "verifying kernel/initramfs source payload"
+  need_file "$KERNEL_SOURCE"
+  need_file "$INITRAMFS_SOURCE"
+  [[ -s "$KERNEL_SOURCE" ]] || die "kernel source is empty: $KERNEL_SOURCE"
+  [[ -s "$INITRAMFS_SOURCE" ]] || die "initramfs source is empty: $INITRAMFS_SOURCE"
+
+  initrd_list="$(mktemp "${TMPDIR:-/tmp}/onix-initramfs-list.XXXXXX")"
+  if ! gzip -dc "$INITRAMFS_SOURCE" | cpio -it >"$initrd_list" 2>/dev/null; then
+    rm -f "$initrd_list"
+    die "could not list initramfs contents: $INITRAMFS_SOURCE"
+  fi
+
+  grep -qx 'init' "$initrd_list" \
+    || { rm -f "$initrd_list"; die "initramfs does not contain /init"; }
+  grep -Eq '(^|/)usr/lib/modules/[^/]+/kernel/fs/xfs/xfs[.]ko([.]gz)?$' "$initrd_list" \
+    || { rm -f "$initrd_list"; die "initramfs lacks xfs.ko; rebuild forge payload with XFS support"; }
+  grep -Eq '(^|/)usr/lib/modules/[^/]+/kernel/fs/fat/vfat[.]ko([.]gz)?$' "$initrd_list" \
+    || { rm -f "$initrd_list"; die "initramfs lacks vfat.ko; it must understand the /boot filesystem"; }
+  grep -Eq '(^|/)usr/lib/modules/[^/]+/kernel/drivers/block/virtio_blk[.]ko([.]gz)?$' "$initrd_list" \
+    || { rm -f "$initrd_list"; die "initramfs lacks virtio_blk.ko; it must see the QEMU disk"; }
+
+  rm -f "$initrd_list"
+  echo "payload : OK"
+  echo "kernel  : ${KERNEL_SOURCE#$ONIX_ROOT/}"
+  echo "initramfs: ${INITRAMFS_SOURCE#$ONIX_ROOT/}"
 }
 
 attach_existing_image() {
@@ -429,8 +469,110 @@ EOF
   echo "status: systemd-boot/BLS skeleton installed; kernel/initramfs/systemd still pending"
 }
 
+install_kernel_payload() {
+  log "Phase 211 input check: kernel/initramfs contract"
+  "$SCRIPT_DIR/verify-kernel-initramfs-plan.sh"
+  verify_kernel_payload_sources
+
+  if have_stale_mounts || have_stale_loops; then
+    die "stale Phase 2 image mounts/loops exist; run make cleanup"
+  fi
+
+  rm -rf "$WORK_DIR"
+  mkdir -p "$WORK_DIR"
+
+  attach_existing_image
+  verify_partition_contract
+  mount_root_esp_boot
+
+  log "verifying Phase 206 boot skeleton exists first"
+  test -f "$MNT/efi/loader/loader.conf"
+  test -f "$MNT/boot/loader/entries/onix-phase-206.conf"
+  grep -q '^linux /ONIX/vmlinuz$' "$MNT/boot/loader/entries/onix-phase-206.conf"
+  grep -q '^initrd /ONIX/initramfs.img$' "$MNT/boot/loader/entries/onix-phase-206.conf"
+
+  log "installing first kernel + initramfs payload"
+  install -Dm0644 "$KERNEL_SOURCE" "$MNT/boot/ONIX/vmlinuz"
+  install -Dm0644 "$INITRAMFS_SOURCE" "$MNT/boot/ONIX/initramfs.img"
+
+  log "writing Phase 211 BLS entry"
+  cat > "$MNT/efi/loader/loader.conf" <<'EOF'
+default onix-phase-211.conf
+timeout 3
+console-mode max
+editor no
+EOF
+  chmod 0644 "$MNT/efi/loader/loader.conf"
+
+  cat > "$MNT/boot/loader/entries/onix-phase-211.conf" <<'EOF'
+title ONIX
+sort-key onix
+version phase-211
+linux /ONIX/vmlinuz
+initrd /ONIX/initramfs.img
+options root=LABEL=onix-root rootfstype=xfs rw init=/usr/lib/systemd/systemd systemd.unit=multi-user.target console=tty0 console=ttyS0,115200
+EOF
+  chmod 0644 "$MNT/boot/loader/entries/onix-phase-211.conf"
+
+  cat > "$MNT/boot/ONIX/README.phase211" <<EOF
+ONIX Phase 211 kernel/initramfs payload
+
+This partition now contains the first boot payload:
+
+- /boot/ONIX/vmlinuz
+- /boot/ONIX/initramfs.img
+
+Source kernel:
+
+${KERNEL_SOURCE#$ONIX_ROOT/}
+
+Source initramfs:
+
+${INITRAMFS_SOURCE#$ONIX_ROOT/}
+
+This is the first imported boot payload so systemd-boot can load a real kernel
+and initramfs. It is not yet the final ONIX onix-kernel/onix-initramfs package
+story.
+
+The image still needs a real /usr/lib/systemd/systemd payload before it can
+complete the userspace handoff.
+EOF
+  chmod 0644 "$MNT/boot/ONIX/README.phase211"
+
+  log "verifying Phase 211 kernel/initramfs payload"
+  test -s "$MNT/boot/ONIX/vmlinuz"
+  test -s "$MNT/boot/ONIX/initramfs.img"
+  cmp -s "$KERNEL_SOURCE" "$MNT/boot/ONIX/vmlinuz"
+  cmp -s "$INITRAMFS_SOURCE" "$MNT/boot/ONIX/initramfs.img"
+  grep -q '^default onix-phase-211\.conf$' "$MNT/efi/loader/loader.conf"
+  test -f "$MNT/boot/loader/entries/onix-phase-211.conf"
+  grep -q '^version phase-211$' "$MNT/boot/loader/entries/onix-phase-211.conf"
+  grep -q '^linux /ONIX/vmlinuz$' "$MNT/boot/loader/entries/onix-phase-211.conf"
+  grep -q '^initrd /ONIX/initramfs.img$' "$MNT/boot/loader/entries/onix-phase-211.conf"
+  grep -q 'root=LABEL=onix-root' "$MNT/boot/loader/entries/onix-phase-211.conf"
+  grep -q 'rootfstype=xfs' "$MNT/boot/loader/entries/onix-phase-211.conf"
+  grep -q 'init=/usr/lib/systemd/systemd' "$MNT/boot/loader/entries/onix-phase-211.conf"
+  grep -q 'console=ttyS0,115200' "$MNT/boot/loader/entries/onix-phase-211.conf"
+  test -f "$MNT/boot/ONIX/README.phase211"
+  test ! -e "$MNT/usr/lib/systemd/systemd"
+
+  log "BOOT preview"
+  find "$MNT/boot" -maxdepth 4 -mindepth 1 | sort | sed "s#^$MNT/boot#/boot#" | sed -n '1,100p'
+
+  sync
+
+  log "success"
+  echo "image : $IMAGE_RAW"
+  echo "status: kernel/initramfs payload installed; systemd userspace still pending"
+}
+
 if [[ "$MODE" == "boot-skeleton" ]]; then
   install_boot_skeleton
+  exit 0
+fi
+
+if [[ "$MODE" == "kernel-payload" ]]; then
+  install_kernel_payload
   exit 0
 fi
 

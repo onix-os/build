@@ -60,6 +60,8 @@ make phase 206  # install systemd-boot/BLS skeleton into the image
 make phase 207  # verify kernel + initramfs contract
 make phase 208  # verify systemd userspace contract
 make phase 209  # check systemd-on-musl feasibility
+make phase 210  # verify init path decision contract
+make phase 211  # install first kernel + initramfs payload
 ```
 
 Only common operations are named at the top level:
@@ -86,9 +88,11 @@ that family:
 - `make phase 207` = Phase 2, step 07
 - `make phase 208` = Phase 2, step 08
 - `make phase 209` = Phase 2, step 09
+- `make phase 210` = Phase 2, step 10
+- `make phase 211` = Phase 2, step 11
 - `make phase 0` = run all `0xx` steps in order
 - `make phase 1` = run all `1xx` steps in order
-- `make phase 2` = run all `2xx` steps in order
+- `make phase 2` = run the canonical host-native Phase 2 path
 
 `make doctor` also ensures the rootful image-builder sudoers rules.
 `build-disk.sh` and the Phase 205 image skeleton builder need root
@@ -160,6 +164,10 @@ packages or image assembly start placing real kernel boot artifacts.
 tries to run `/usr/lib/systemd/systemd` as PID 1.
 `make phase 209` checks whether our pinned tooling can represent a musl-targeted
 systemd build before we commit to systemd as ONIX PID 1.
+`make phase 210` records the init-path decision: ONIX uses systemd-on-musl as
+PID 1 and systemd-boot as the bootloader.
+`make phase 211` installs the first kernel/initramfs payload into
+`/boot/ONIX/` and updates the boot entry to use it.
 
 ## Layout
 
@@ -218,13 +226,15 @@ vm/
     verify-image-contract.sh
                     verifies the Phase 204 disk/image layout contract
     build-image-skeleton.sh
-                    creates artifacts/onix-image/onix.raw and installs the Phase 206 boot skeleton
+                    creates artifacts/onix-image/onix.raw and installs Phase 206/211 boot layers
     verify-kernel-initramfs-plan.sh
                     verifies the Phase 207 kernel/initramfs contract
     verify-systemd-userspace-plan.sh
                     verifies the Phase 208 systemd userspace contract
     check-systemd-musl.sh
                     checks systemd-on-musl feasibility against pinned nixpkgs
+    verify-init-decision.sh
+                    verifies the Phase 210 init path decision contract
   downloads/        tarballs (gitignored)
   state/            disk, NVRAM, kernel/initrd, ssh key (gitignored)
 ```

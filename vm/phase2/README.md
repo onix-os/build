@@ -10,6 +10,32 @@ artifact and turning them into an ONIX root/image.
 
 We start with one small gate.
 
+## About `make phase 2`
+
+`make phase 2` runs the canonical host-native Phase 2 path:
+
+```text
+200 -> 202 -> 203 -> 204 -> 205 -> 206 -> 207 -> 208 -> 209 -> 210 -> 211
+```
+
+It intentionally does not include Phase 201.
+
+Phase 201 is still available as an individual learning step:
+
+```sh
+make phase 201
+```
+
+But Phase 201 uses the forge VM over SSH. After Phase 202, ONIX has host-side
+`moss`, so the normal image-assembly path no longer needs the forge VM for root
+tree assembly.
+
+That is why the aggregate path uses:
+
+```text
+Phase 203 = host-native root tree assembly
+```
+
 ## Basic mental model: what is a root tree?
 
 A Linux system is mostly a filesystem.
@@ -1177,7 +1203,7 @@ Phase 206 writes:
 /efi/loader/loader.conf
 ```
 
-`BOOTX64.EFI` is the removable/fallback path. OVMF/QEMU can find it without us
+`BOOTX64.EFI` is the standard removable-media path. OVMF/QEMU can find it without us
 writing host EFI variables.
 
 #### What ONIX-BOOT is for
@@ -1745,8 +1771,7 @@ glibc is not a hard requirement
 musl is still a risk
 ```
 
-So we do **not** panic-pivot to OpenRC yet. But we also do **not** declare
-victory yet.
+So we continue with systemd-on-musl. But we also do **not** declare victory yet.
 
 Phase 209 does not build systemd.
 It does not install systemd.
@@ -1861,7 +1886,7 @@ If dry-run fails, we should not continue with systemd until we understand why.
 This is enough to say:
 
 ```text
-do not pivot to OpenRC yet
+continue systemd-on-musl
 ```
 
 #### What Phase 209 does not prove
@@ -1880,36 +1905,284 @@ boot reaches login
 
 Those are still hard problems.
 
-#### OpenRC fallback
-
-We keep an OpenRC fallback.
-
-If systemd-on-musl becomes too ugly, the fallback is:
+The current decision is:
 
 ```text
-OpenRC as init
-systemd-boot as bootloader
+continue systemd-on-musl
 ```
 
-Those two choices are independent. Choosing OpenRC would not force us back to
-GRUB.
+### Phase 210 — init path decision contract
 
-But the current decision is:
+Phase 210 turns the Phase 209 probe into an explicit project decision.
+
+Phase 210 does not build the init system.
+It does not install systemd.
+It does not mount the image.
+It does not boot QEMU.
+
+It only records how ONIX will proceed.
+
+#### The decision
+
+The Phase 210 decision is:
 
 ```text
-do not pivot to OpenRC yet
-continue systemd-on-musl probing
+init path: systemd-on-musl
+bootloader: systemd-boot
 ```
 
-## What comes after 209?
+Project rule:
 
-Do not jump straight to booting yet.
+```text
+keep systemd if we can
+```
+
+In plain words: ONIX uses systemd as PID 1.
+
+That means we continue with the systemd path for now because Phase 209 showed:
+
+```text
+pkgsMusl.systemd exists
+pkgsMusl.systemd targets musl
+pkgsMusl.systemd is not marked broken
+pkgsMusl.systemd uses -Dlibc=musl
+Nix can plan the build graph
+```
+
+But we do not pretend that systemd is proven boot-ready. The systemd path still
+has to prove itself in real ONIX builds and boots.
+
+#### Why bootloader and init are separate
+
+The bootloader chooses and launches the kernel.
+
+The init system is the first userspace process after the kernel mounts the real
+root filesystem.
+
+Those are different jobs:
+
+```text
+systemd-boot  -> bootloader
+systemd       -> init system / PID 1
+```
+
+That is why the decision names both parts explicitly:
+
+```text
+systemd-boot loads the kernel
+systemd runs as PID 1
+```
+
+#### What this means for the boot entry
+
+The BLS entry keeps this kernel command line intent:
+
+```text
+init=/usr/lib/systemd/systemd systemd.unit=multi-user.target
+```
+
+That path is the userspace handoff point:
+
+```text
+kernel -> root filesystem -> /usr/lib/systemd/systemd
+```
+
+So Phase 211 and later must place a real systemd userspace at that path.
+
+#### What Phase 210 verifies
+
+`make phase 210` verifies:
+
+- this Phase 210 section exists
+- the init path is `systemd-on-musl`
+- the bootloader is `systemd-boot`
+- the project rule says `keep systemd if we can`
+- the plan says ONIX uses systemd as PID 1
+- the boot entry points at `/usr/lib/systemd/systemd`
+- the plan mentions `systemd starts as PID 1`
+- the plan mentions `udev/device setup works`
+- the plan mentions `basic services work`
+- the Phase 206 boot skeleton still follows the systemd path
+
+#### What Phase 210 does not prove
+
+Phase 210 does not prove:
+
+```text
+systemd builds
+systemd boots
+services work
+QEMU reaches login
+```
+
+It only makes the next engineering decision explicit.
+
+### Phase 211 — first kernel + initramfs payload
+
+Phase 211 installs the first real files at the paths that Phase 206 and Phase
+207 already promised:
+
+```text
+/boot/ONIX/vmlinuz
+/boot/ONIX/initramfs.img
+```
+
+This is the first time the ONIX image contains a kernel and initramfs payload.
+
+#### What a payload is
+
+A payload is the thing a previous layer hands to the next layer.
+
+For this part of boot:
+
+```text
+systemd-boot payload -> Linux kernel + initramfs
+Linux kernel payload -> mounted root filesystem
+root filesystem payload -> /usr/lib/systemd/systemd
+systemd payload -> services
+```
+
+So Phase 211 is not "the whole OS boots now".
+
+Phase 211 only gives systemd-boot something real to load.
+
+#### Where the first payload comes from
+
+The default Phase 211 source is:
+
+```text
+vm/state/vmlinuz-virt
+vm/state/initramfs-virt
+```
+
+Those files are exported by the forge disk build in Phase 0.
+
+That makes them a temporary bootstrap source, not the final ONIX kernel package
+story.
+
+The final shape is still:
+
+```text
+onix-kernel
+onix-initramfs
+```
+
+But using the exported forge payload is useful because it is already known to
+be a QEMU-capable kernel/initramfs pair.
+
+#### Why Phase 211 checks the initramfs
+
+ONIX root is XFS:
+
+```text
+LABEL=onix-root  /  xfs
+```
+
+That means the initramfs must understand XFS before the kernel can mount `/`.
+
+If the initramfs cannot mount `/`, the boot fails before systemd even has a
+chance to start.
+
+So `make phase 211` checks the initramfs contents before copying it.
+
+It requires:
+
+```text
+/init
+xfs.ko
+vfat.ko
+virtio_blk.ko
+```
+
+Those mean:
+
+| item | why it matters |
+| --- | --- |
+| `/init` | the first program inside the initramfs |
+| `xfs.ko` | lets early boot mount the ONIX XFS root |
+| `vfat.ko` | lets early boot understand FAT boot files if needed |
+| `virtio_blk.ko` | lets early boot see the QEMU virtio disk |
+
+If the current exported forge initramfs is old, Phase 211 may stop with:
+
+```text
+initramfs lacks xfs.ko
+```
+
+That is good. It means the verifier prevented us from installing a boot payload
+that cannot mount the ONIX root filesystem.
+
+The forge setup now requests XFS support when it creates the exported
+initramfs, so rebuilding the forge disk produces a better payload.
+
+#### What Phase 211 writes
+
+`make phase 211` mounts the existing ONIX image and writes:
+
+```text
+/boot/ONIX/vmlinuz
+/boot/ONIX/initramfs.img
+/boot/ONIX/README.phase211
+/boot/loader/entries/onix-phase-211.conf
+/efi/loader/loader.conf
+```
+
+The BLS entry becomes:
+
+```text
+title ONIX
+sort-key onix
+version phase-211
+linux /ONIX/vmlinuz
+initrd /ONIX/initramfs.img
+options root=LABEL=onix-root rootfstype=xfs rw init=/usr/lib/systemd/systemd systemd.unit=multi-user.target console=tty0 console=ttyS0,115200
+```
+
+The important new part is not the path. The path already existed in the
+contract.
+
+The important new part is that the files now exist and match the selected
+source payload byte-for-byte.
+
+#### What Phase 211 verifies
+
+`make phase 211` verifies:
+
+- the Phase 207 kernel/initramfs contract still exists
+- the source kernel file exists and is non-empty
+- the source initramfs exists and is non-empty
+- the initramfs can be listed
+- the initramfs contains `/init`
+- the initramfs contains `xfs.ko`
+- the initramfs contains `vfat.ko`
+- the initramfs contains `virtio_blk.ko`
+- the Phase 206 boot skeleton exists first
+- `/boot/ONIX/vmlinuz` is installed
+- `/boot/ONIX/initramfs.img` is installed
+- the installed files match the source files
+- the default boot entry is `onix-phase-211.conf`
+- the boot entry still points to `/usr/lib/systemd/systemd`
+- the image still does not contain systemd userspace yet
+
+#### What Phase 211 does not prove
+
+Phase 211 does not prove:
+
+```text
+the kernel boots
+the initramfs mounts the root filesystem
+systemd exists
+systemd starts
+QEMU reaches login
+```
+
+That is why Phase 212 is still needed.
+
+## What comes after 211?
 
 The next safe progression should be:
 
 ```text
-210 = decide init path based on systemd-musl probe
-211 = build/import first kernel + initramfs payload
 212 = first QEMU boot attempt
 ```
 

@@ -47,10 +47,9 @@ for text in \
   "systemd-259.3" \
   "musl 1.2.5" \
   "musl >= 1.2.6" \
-  "OpenRC fallback" \
-  "do not pivot to OpenRC yet" \
+  "continue systemd-on-musl" \
   "Phase 209 does not build systemd" \
-  "210 = decide init path"
+  "### Phase 210"
 do
   need_text "$README" "$text"
 done

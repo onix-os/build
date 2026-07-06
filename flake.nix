@@ -87,11 +87,13 @@
               clang
               cmake
               coreutils
+              cpio
               curl
               dosfstools
               e2fsprogs
               findutils
               gawk
+              gzip
               gnugrep
               gnused
               gnumake
