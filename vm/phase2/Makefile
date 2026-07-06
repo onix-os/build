@@ -4,7 +4,7 @@
 PHASE_ARG := $(word 2,$(MAKECMDGOALS))
 ATTACHED ?= 0
 
-.PHONY: help phases phase phase-2 2 200 201 202 203 204 205 206 207 208 209 210 211 212 list check cleanup ready root-tree host-moss host-root-tree image-contract image-skeleton boot-skeleton kernel-plan systemd-plan systemd-musl init-decision kernel-payload boot-probe
+.PHONY: help phases phase phase-2 2 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 list check cleanup ready root-tree host-moss host-root-tree image-contract image-skeleton boot-skeleton kernel-plan systemd-plan systemd-musl init-decision kernel-payload boot-probe systemd-payload module-payload
 
 help: ## show Phase 2 help
 	@echo "ONIX Phase 2 targets:"
@@ -12,7 +12,7 @@ help: ## show Phase 2 help
 	  awk -F':.*?## ' '{printf "  \033[36m%-13s\033[0m %s\n", $$1, $$2}'
 
 phases: ## list the learning-phase aliases
-	@printf "  \033[36mmake phase 2\033[0m    run canonical host-native Phase 2 path: 200,202..212\n"
+	@printf "  \033[36mmake phase 2\033[0m    run canonical host-native Phase 2 path: 200,202..211,213,214,212\n"
 	@printf "  \033[36mmake phase 200\033[0m  verify Phase 2 image-assembly readiness\n"
 	@printf "  \033[36mmake phase 201\033[0m  assemble first ONIX root tree from exported repo\n"
 	@printf "  \033[36mmake phase 202\033[0m  build host-side moss from pinned os-tools\n"
@@ -26,6 +26,8 @@ phases: ## list the learning-phase aliases
 	@printf "  \033[36mmake phase 210\033[0m  verify init path decision contract\n"
 	@printf "  \033[36mmake phase 211\033[0m  install first kernel + initramfs payload\n"
 	@printf "  \033[36mmake phase 212\033[0m  run first QEMU boot probe (ATTACHED=1 to watch)\n"
+	@printf "  \033[36mmake phase 213\033[0m  stage first musl systemd userspace payload\n"
+	@printf "  \033[36mmake phase 214\033[0m  stage first kernel module/kmod payload\n"
 
 phase: ## run a Phase 2 learning alias
 	@case "$(PHASE_ARG)" in \
@@ -43,15 +45,17 @@ phase: ## run a Phase 2 learning alias
 	  210) $(MAKE) --no-print-directory init-decision ;; \
 	  211) $(MAKE) --no-print-directory kernel-payload ;; \
 	  212) $(MAKE) --no-print-directory boot-probe ;; \
+	  213) $(MAKE) --no-print-directory systemd-payload ;; \
+	  214) $(MAKE) --no-print-directory module-payload ;; \
 	  *) echo "unknown Phase 2 step: $(PHASE_ARG)" >&2; $(MAKE) --no-print-directory phases; exit 2 ;; \
 	esac
 
-2 200 201 202 203 204 205 206 207 208 209 210 211 212 list:
+2 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 list:
 	@:
 
 phase-2: ## run every Phase 2 step in order
 	@set -e; \
-	for phase in 200 202 203 204 205 206 207 208 209 210 211 212; do \
+	for phase in 200 202 203 204 205 206 207 208 209 210 211 213 214 212; do \
 	  echo; \
 	  echo "==> make phase $$phase"; \
 	  $(MAKE) --no-print-directory phase $$phase ATTACHED="$(ATTACHED)"; \
@@ -103,3 +107,9 @@ kernel-payload: ## install first kernel + initramfs payload
 
 boot-probe: ## run first QEMU boot probe
 	ATTACHED="$(ATTACHED)" ./boot-probe.sh
+
+systemd-payload: ## stage first musl systemd userspace payload
+	./build-image-skeleton.sh --systemd-payload
+
+module-payload: ## stage first kernel module/kmod payload
+	./build-image-skeleton.sh --module-payload

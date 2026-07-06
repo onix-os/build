@@ -84,7 +84,7 @@ Two planes with a hard ownership contract:
 | Per-user profiles, dev shells, user services | Nix | moss |
 | setuid/setcap binaries, kernel modules | moss only | Nix — hard rule |
 
-The single most important consequence: **a moss rollback and a Nix profile rollback are independent operations that must never corrupt each other.** Phase 4 validation exists specifically to prove this.
+The single most important consequence: **a moss rollback and a Nix profile rollback are independent operations that must never corrupt each other.** Phase 5 validation exists specifically to prove this.
 
 ---
 
@@ -98,7 +98,12 @@ You cannot build `.stone` packages without moss + boulder, and you can't run the
 
 1. **Build a minimal Alpine/musl VM from scratch** — from the 3.7 MB minirootfs tarball, not their ISO — into a bootable disk (`vm/` in this repo already does this). Hostname `quarry`.
 2. **Build moss + boulder** from `github.com/AerynOS/os-tools` (`just get-started`). They're ordinary Rust binaries; they build and run on musl. boulder explicitly supports non-AerynOS hosts (`--data-dir`, `--config-dir`, `--moss-root`).
-3. Alpine is **scaffolding, thrown away.** Nothing Alpine ships (apk, its kernel, its packages) ends up in ONIX. The forge only provides a musl toolchain + userns to run boulder.
+3. Alpine is **scaffolding, thrown away** in the final design. During the
+   current Phase 2 boot proof, ONIX temporarily borrows Alpine's virt
+   kernel/initramfs/module payload so image assembly and systemd-on-musl can be
+   proved before kernel ownership becomes its own project. Phase 3 exists to
+   remove that shortcut later. The forge still provides the musl toolchain and
+   userns environment used to run boulder.
 
 ### 2.2 Bootstrap the musl base as `.stone` packages
 
@@ -120,7 +125,7 @@ Assemble a bootable image from the musl base stones (an `onix-os/image` repo):
 
 ### 2.4 Boot artifacts
 
-Target **BLS Type #1 entries** exactly as moss/blsforme do: entries named `onix-<txid>.conf`, kernel+initrd promoted to `$BOOT` (XBOOTLDR), transaction ID on the kernel cmdline, old entries pruned by moss. blsforme is a bootloader-spec tool and does not itself require systemd as PID 1 — but the surrounding glue (sysusers/tmpfiles) is systemd-flavored, which forces the **init decision** below. UKI + Secure Boot is Phase 7+ future work.
+Target **BLS Type #1 entries** exactly as moss/blsforme do: entries named `onix-<txid>.conf`, kernel+initrd promoted to `$BOOT` (XBOOTLDR), transaction ID on the kernel cmdline, old entries pruned by moss. blsforme is a bootloader-spec tool and does not itself require systemd as PID 1 — but the surrounding glue (sysusers/tmpfiles) is systemd-flavored, which forces the **init decision** below. UKI + Secure Boot is later future work.
 
 > **Init decision.** ONIX uses **systemd as PID 1** plus **systemd-boot/BLS**
 > rather than GRUB for the real image. Phase 209 showed that the pinned Nix
@@ -161,11 +166,11 @@ The classic failure mode of Nix GUI apps on foreign distros: they load nixpkgs' 
 - Because the symlink farm is rebuilt each boot from active `/usr` state, **a moss rollback of the graphics stack re-coheres the Nix GUI world on next boot.** No nixGL, no per-app hacks.
 - Same glue handles `/run/opengl-driver/share/vulkan/icd.d` and EGL vendor files.
 
-**musl-specific caveat (bigger than the original glibc-skew note).** Our base Mesa is **musl-built**; nixpkgs GL apps are **glibc**. Nix apps carry their own glibc and most libraries from the store, so they *run* on a musl base — but the `/run/opengl-driver` seam is exactly where a musl-built Mesa meets a glibc GL app, and that boundary can break (symbol/ABI mismatch). Mitigation to carry forward: the opengl-driver bridge may need to expose a **glibc-built Mesa variant** for the Nix world (built as its own stone, or pulled from nixpkgs), rather than symlinking the musl base Mesa directly. Resolve in Phase 6; keep it in mind from Phase 3.
+**musl-specific caveat (bigger than the original glibc-skew note).** Our base Mesa is **musl-built**; nixpkgs GL apps are **glibc**. Nix apps carry their own glibc and most libraries from the store, so they *run* on a musl base — but the `/run/opengl-driver` seam is exactly where a musl-built Mesa meets a glibc GL app, and that boundary can break (symbol/ABI mismatch). Mitigation to carry forward: the opengl-driver bridge may need to expose a **glibc-built Mesa variant** for the Nix world (built as its own stone, or pulled from nixpkgs), rather than symlinking the musl base Mesa directly. Resolve in Phase 7; keep it in mind from Phase 5.
 
 ### 3.4 Optional: home-manager standalone
 
-Fine from Phase 4 onward, standalone mode only — manages `~/.config` and user services, never system state. Composes cleanly with the contract. Personal preference, not architecture.
+Fine from Phase 5 onward, standalone mode only — manages `~/.config` and user services, never system state. Composes cleanly with the contract. Personal preference, not architecture.
 
 ---
 
@@ -187,9 +192,9 @@ Fine from Phase 4 onward, standalone mode only — manages `~/.config` and user 
 
 ### 4.2 Persistence policy — Phase-appropriate
 
-**Phases 2–6: fully persistent `/etc` and `/var`.** The `/usr/share/defaults` + `/etc`-overrides model bounds drift; ephemeral overlays add early-boot ordering complexity for marginal gain now. Add drift *visibility* instead: `onix status` diffs `/etc` against shipped defaults and reports every override.
+**Phases 2–8: fully persistent `/etc` and `/var`.** The `/usr/share/defaults` + `/etc`-overrides model bounds drift; ephemeral overlays add early-boot ordering complexity for marginal gain now. Add drift *visibility* instead: `onix status` diffs `/etc` against shipped defaults and reports every override.
 
-**Phase 7 (optional, post-daily-driver):** ephemeral `/etc`+`/var` overlays with an explicit allowlist. Must-persist set, documented now:
+**Later optional, post-daily-driver:** ephemeral `/etc`+`/var` overlays with an explicit allowlist. Must-persist set, documented now:
 
 `/etc/machine-id` · `/etc/ssh/ssh_host_*` · `/etc/nix/` · init/service state (`/var/lib/…`) · NetworkManager/bluetooth state · `/var/log` (your choice) · `/home` · `/nix` · `/.moss`
 
@@ -199,7 +204,7 @@ Fine from Phase 4 onward, standalone mode only — manages `~/.config` and user 
 
 Each phase has an exit gate. Don't advance until the gate passes — the gates are the real deliverable.
 
-### Phase 0 — The forge (musl tooling host)  ← current
+### Phase 0 — The forge (musl tooling host)
 Build a minimal Alpine/musl VM from the minirootfs (this repo's `vm/`). Build **moss + boulder** from `os-tools`. Cut a trivial first `.stone` with boulder; install/remove it with moss into a test root; inspect `moss state list`.
 **Gate:** moss + boulder run on musl; you can boulder-build a hello-world `.stone`, moss-install it, roll the moss state back, and remove it — cleanly.
 
@@ -229,10 +234,34 @@ Author `stone.yaml` recipes for the core musl userland (musl, toolchain, busybox
 **Gate:** the `onix` repo carries a self-consistent base stone set; moss installs it into a fresh root that chroots and runs a shell + coreutils.
 
 ### Phase 2 — First bootable ONIX image
-Implement the systemd-on-musl userspace and the minimal integration glue for it. Add a kernel stone + initrd tooling + blsforme BLS entries. Assemble and boot a moss-managed, atomic musl image in QEMU/OVMF.
-**Gate:** `cat /etc/os-release` says ONIX (musl); `moss state list` shows transactions; break the system with an update and recover via boot menu + state activation, from memory, twice.
+Assemble and boot the first ONIX disk image in QEMU/OVMF. This phase proves the
+image layout, systemd-boot/BLS path, systemd-on-musl userspace, root filesystem,
+persistent partitions, and first module-loading payload. It temporarily borrows
+the Alpine forge's virt kernel/initramfs/modules so the boot proof can move
+without starting kernel work too early.
+**Gate:** the image boots through systemd to multi-user mode; `/boot`, `/efi`,
+`/persist`, `/home`, and `/nix` mount; the boot log has no missing `modprobe`
+or module-compression errors.
 
-### Phase 3 — Nix plane (the critical phase)
+### Phase 3 — ONIX-owned kernel/initramfs/modules (reserved)
+Replace the borrowed Alpine kernel payload with ONIX-owned kernel artifacts.
+This phase owns the kernel config, kernel build, module package, initramfs
+generation, and boot-entry/update policy. It is intentionally deferred while
+Phase 4 makes the already-booting image usable.
+**Gate:** kernel, initramfs, and modules are built and packaged by ONIX; their
+versions match; boot entries select coherent generations; rollback behavior is
+understood.
+
+### Phase 4 — Booted ONIX base userspace
+Turn the Phase 2 boot proof into a usable base system while still using the
+borrowed kernel payload. Materialize live `/etc` from `/usr/share/defaults`;
+define users/groups/login shell policy; prove serial login; add minimal
+networking and remote inspection.
+**Gate:** a booted ONIX image can be logged into and inspected intentionally;
+base identity, fstab, users, shells, hostname, and early services are owned by
+ONIX policy rather than ad-hoc image glue.
+
+### Phase 5 — Nix plane (the critical phase)
 Ship `onix-nix-integration`; seed `/persist/nix` from a Nix release tarball; verify daemon-mode multi-user builds, `nix shell`/`develop`/`profile install`. Confirm glibc nixpkgs apps run on the musl base.
 **Gate — the composition matrix, all green:**
 
@@ -244,15 +273,15 @@ Ship `onix-nix-integration`; seed `/persist/nix` from a Nix release tarball; ver
 | `moss state prune` + `nix store gc` back-to-back | no cross-corruption, both stores intact |
 | Kill nix-daemon mid-build → restart | store consistent |
 
-### Phase 4 — Recipe set & overlay matures
+### Phase 6 — Recipe set & overlay matures
 boulder workflow for the growing musl recipe set (`onix-cli`, base additions — keep short; the long tail is Nix). Static HTTPS hosting; `onix mirror` snapshot habit (mirror `os-tools` + your stones).
 **Gate:** clean-room rebuild from the pinned snapshot triple (§2.3) boots identically.
 
-### Phase 5 — Desktop
+### Phase 7 — Desktop
 Pick one desktop (start minimal — a Wayland compositor). All of: compositor, Mesa, PipeWire + WirePlumber, xdg-desktop-portal backend, fonts — from the **machine plane** (musl-built). Enable the `/run/opengl-driver` glue.
 **Gate:** a Nix-installed GL app renders hardware-accelerated with no wrapper (this is where the musl-Mesa vs glibc-app seam of §3.3 gets solved); portals work from a Nix app; `~/.nix-profile` desktop entries appear; then **roll back a Mesa update** and confirm the Nix app still renders on the previous stack after reboot.
 
-### Phase 6 — Hardware
+### Phase 8 — Hardware
 AMD/Intel graphics strongly preferred (NVIDIA complicates both musl and the `/run/opengl-driver` story). Dedicated drive — no same-disk dual boot at this maturity. Migrate `/persist` by restore-from-backup, not disk surgery.
 **Gate:** two weeks of daily driving with at least one rollback drill and one restore-from-backup drill of `/persist`.
 
@@ -272,7 +301,7 @@ onix status      # active fstx, boot entry, /etc drift vs defaults, nix-daemon h
                  # /run/opengl-driver coherence check
 onix gc          # moss state prune + nix store gc, sequenced, with guardrails
 onix mirror      # snapshot os-tools + depended-on stones to /persist/mirror
-onix doctor      # runs the Phase 3 composition matrix as an automated self-test
+onix doctor      # runs the Phase 5 composition matrix as an automated self-test
 ```
 
 Ships as `onix-cli` from the `onix` repo. Start as ~200 lines of shell; rewrite in Rust when it stops being embarrassing to. (`onix solid` as an alias for a fully-green `onix doctor` run is optional but encouraged.)
@@ -291,7 +320,7 @@ Ships as `onix-cli` from the `onix` repo. Start as ~200 lines of shell; rewrite 
 | Branding drift | Medium during early development | Keep public names as ONIX or onix only; grep tracked docs/scripts before commits |
 | NVIDIA | High if chosen | Don't. AMD/Intel for this project |
 | Solo-maintainer burden | Real, and higher than a derivative would be | Budget honestly; keep base scope minimal; if it trends high, cut base scope and lean harder on Nix |
-| **Data loss** | **Transactional /usr protects nothing you care about** | `/persist` (= `/home` + `/nix` + configs) gets real backups — borg/restic to external target — from Phase 3, not Phase 6. moss rollback is not a backup |
+| **Data loss** | **Transactional /usr protects nothing you care about** | `/persist` (= `/home` + `/nix` + configs) gets real backups — borg/restic to external target — from Phase 5, not Phase 8. moss rollback is not a backup |
 
 ---
 

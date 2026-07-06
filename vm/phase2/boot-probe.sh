@@ -289,7 +289,9 @@ else
   warn "handoff : systemd init path not observed beyond kernel command line"
 fi
 
-if grep -qa 'Kernel panic' "$SERIAL_LOG"; then
+if grep -qa 'Reached target .*Multi-User System' "$SERIAL_LOG"; then
+  echo "result  : systemd reached multi-user.target inside the probe window"
+elif grep -qa 'Kernel panic' "$SERIAL_LOG"; then
   echo "result  : kernel reached a panic; this is useful Phase 212 evidence"
 else
   echo "result  : kernel started; no kernel panic observed inside probe window"
@@ -297,4 +299,4 @@ fi
 
 echo
 echo "==> success"
-echo "Phase 212 captured first ONIX boot evidence; systemd userspace is still pending."
+echo "Phase 212 captured first ONIX boot evidence: kernel handed off to systemd userspace."

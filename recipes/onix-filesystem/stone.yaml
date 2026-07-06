@@ -47,8 +47,8 @@ install     : |
     # ONIX default fstab template.
     # Image assembly should copy/adapt this into /etc/fstab.
 
-    LABEL=ONIX-ESP      /efi      vfat  rw,relatime,noatime  0 2
-    LABEL=ONIX-BOOT     /boot     vfat  rw,relatime,noatime  0 2
+    LABEL=ONIX-ESP      /efi      vfat  rw,relatime,noatime,nofail,x-systemd.device-timeout=10s  0 2
+    LABEL=ONIX-BOOT     /boot     vfat  rw,relatime,noatime,nofail,x-systemd.device-timeout=10s  0 2
     LABEL=onix-root     /         xfs   rw,relatime          0 1
     LABEL=ONIX-PERSIST  /persist  xfs   rw,relatime          0 2
 
