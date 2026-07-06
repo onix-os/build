@@ -101,6 +101,7 @@
               gptfdisk
               just
               kmod
+              mdbook
               openssl
               openssh
               OVMF.fd

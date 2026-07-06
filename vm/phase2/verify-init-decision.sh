@@ -7,7 +7,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 ONIX_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-README="$SCRIPT_DIR/README.md"
+DOC="$ONIX_ROOT/book/src/phases/210.md"
 BOOT_SCRIPT="$SCRIPT_DIR/build-image-skeleton.sh"
 
 die() {
@@ -27,11 +27,11 @@ need_text() {
 
 echo "==> Phase 210 init path decision contract"
 
-need_file "$README"
+need_file "$DOC"
 need_file "$BOOT_SCRIPT"
 
 for text in \
-  "### Phase 210" \
+  "# Phase 210" \
   "init path: systemd-on-musl" \
   "bootloader: systemd-boot" \
   "keep systemd if we can" \
@@ -42,13 +42,12 @@ for text in \
   "systemd starts as PID 1" \
   "udev/device setup works" \
   "basic services work" \
-  "Phase 210 does not build the init system" \
-  "### Phase 211"
+  "Phase 210 does not build the init system"
 do
-  need_text "$README" "$text"
+  need_text "$DOC" "$text"
 done
 
-echo "contract : OK (documented in ${README#$ONIX_ROOT/})"
+echo "contract : OK (documented in ${DOC#$ONIX_ROOT/})"
 
 echo
 echo "==> bootloader/init compatibility"

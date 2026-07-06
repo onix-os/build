@@ -8,7 +8,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 ONIX_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-README="$SCRIPT_DIR/README.md"
+DOC="$ONIX_ROOT/book/src/phases/209.md"
 
 die() {
   printf 'error: %s\n' "$*" >&2
@@ -33,12 +33,12 @@ need_cmd grep
 need_cmd nix
 need_cmd sed
 need_file "$ONIX_ROOT/flake.lock"
-need_file "$README"
+need_file "$DOC"
 
 echo "==> Phase 209 systemd-on-musl feasibility"
 
 for text in \
-  "### Phase 209" \
+  "# Phase 209" \
   "systemd-on-musl" \
   "glibc is not a hard requirement" \
   "musl is still a risk" \
@@ -48,12 +48,11 @@ for text in \
   "musl 1.2.5" \
   "musl >= 1.2.6" \
   "continue systemd-on-musl" \
-  "Phase 209 does not build systemd" \
-  "### Phase 210"
+  "Phase 209 does not build systemd"
 do
-  need_text "$README" "$text"
+  need_text "$DOC" "$text"
 done
-echo "contract : OK (documented in ${README#$ONIX_ROOT/})"
+echo "contract : OK (documented in ${DOC#$ONIX_ROOT/})"
 
 read -r -d '' NIX_EXPR <<EOF_NIX || true
 let

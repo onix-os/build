@@ -7,7 +7,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 ONIX_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-README="$SCRIPT_DIR/README.md"
+DOC="$ONIX_ROOT/book/src/phases/207.md"
 IMAGE_SCRIPT="$SCRIPT_DIR/build-image-skeleton.sh"
 
 die() {
@@ -27,11 +27,11 @@ need_text() {
 
 echo "==> Phase 207 kernel + initramfs contract"
 
-need_file "$README"
+need_file "$DOC"
 need_file "$IMAGE_SCRIPT"
 
 for text in \
-  "### Phase 207" \
+  "# Phase 207" \
   "/boot/ONIX/vmlinuz" \
   "/boot/ONIX/initramfs.img" \
   "/usr/lib/systemd/systemd" \
@@ -44,13 +44,12 @@ for text in \
   "onix-kernel" \
   "onix-initramfs" \
   "do not use the host kernel as the final ONIX kernel" \
-  "Phase 207 does not copy kernel files" \
-  "### Phase 208"
+  "Phase 207 does not copy kernel files"
 do
-  need_text "$README" "$text"
+  need_text "$DOC" "$text"
 done
 
-echo "contract : OK (documented in ${README#$ONIX_ROOT/})"
+echo "contract : OK (documented in ${DOC#$ONIX_ROOT/})"
 
 echo
 echo "==> Phase 206 boot-entry compatibility"

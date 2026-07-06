@@ -7,7 +7,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 ONIX_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-README="$SCRIPT_DIR/README.md"
+DOC="$ONIX_ROOT/book/src/phases/204.md"
 ROOT_TREE_DIR="${ONIX_ROOT_TREE_DIR:-$ONIX_ROOT/artifacts/onix-root-tree}"
 FSTAB="$ROOT_TREE_DIR/etc/fstab"
 
@@ -32,10 +32,10 @@ need_text() {
 
 echo "==> Phase 204 image/disk assembly contract"
 
-need_file "$README"
+need_file "$DOC"
 
 for text in \
-  "### Phase 204" \
+  "# Phase 204" \
   "artifacts/onix-image/onix.raw" \
   "artifacts/onix-image-work/" \
   "artifacts/onix-root-tree/" \
@@ -48,13 +48,13 @@ for text in \
   "/persist" \
   "vfat" \
   "xfs" \
-  "### Phase 205" \
-  "### Phase 206"
+  "Phase 205" \
+  "Phase 206"
 do
-  need_text "$README" "$text"
+  need_text "$DOC" "$text"
 done
 
-echo "contract : OK (documented in ${README#$ONIX_ROOT/})"
+echo "contract : OK (documented in ${DOC#$ONIX_ROOT/})"
 
 echo
 echo "==> Phase 204 current root tree compatibility"

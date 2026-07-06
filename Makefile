@@ -9,7 +9,7 @@ PHASE_ARG := $(word 2,$(MAKECMDGOALS))
 ATTACHED ?= 0
 
 .PHONY: help phases phase 0 1 2 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 201 202 203 204 205 206 207 208 209 210 211 212 list \
-	doctor cleanup
+	doctor cleanup book book-serve
 
 help: ## show top-level help and phase map
 	@echo "ONIX top-level Makefile."
@@ -17,6 +17,8 @@ help: ## show top-level help and phase map
 	@echo "Common:"
 	@echo "  make doctor          common health check"
 	@echo "  make cleanup         stop forge QEMU, detach mounts, remove generated disks"
+	@echo "  make book            build the mdBook documentation"
+	@echo "  make book-serve      serve the mdBook locally"
 	@echo
 	@echo "Phase flow:"
 	@echo "  make phases          list numbered phase steps"
@@ -55,7 +57,7 @@ doctor: ## common health check; not a phase step
 	@$(MAKE) --no-print-directory -C $(PHASE1) check
 	@$(MAKE) --no-print-directory -C $(PHASE2) check
 	@missing=0; \
-	for c in qemu-system-x86_64 losetup findmnt sgdisk partprobe mkfs.fat mkfs.ext4 mkfs.xfs mount umount chroot modprobe truncate tar blkid bootctl cpio curl gzip sha256sum sudo ssh ssh-keygen visudo; do \
+	for c in qemu-system-x86_64 losetup findmnt sgdisk partprobe mkfs.fat mkfs.ext4 mkfs.xfs mount umount chroot modprobe truncate tar blkid bootctl cpio curl gzip sha256sum sudo ssh ssh-keygen visudo mdbook; do \
 	  if ! command -v $$c >/dev/null 2>&1; then echo "missing   : $$c"; missing=1; fi; \
 	done; \
 	[ $$missing -eq 0 ] || exit 1; \
@@ -65,3 +67,9 @@ doctor: ## common health check; not a phase step
 cleanup: ## stop QEMU, detach mounts, remove generated disk state
 	@$(MAKE) --no-print-directory -C $(PHASE0) cleanup
 	@$(MAKE) --no-print-directory -C $(PHASE2) cleanup
+
+book: ## build the mdBook documentation
+	@mdbook build book
+
+book-serve: ## serve the mdBook documentation locally
+	@mdbook serve book -n 127.0.0.1

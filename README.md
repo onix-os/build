@@ -1,285 +1,71 @@
 # ONIX
 
-Building an atomic, **musl-based** Linux distro managed by AerynOS's tooling —
-`moss` (atomic package/state manager) + `boulder` (the `.stone` builder) — with
-a persistent Nix toolbox on top. See [`ONIX.md`](./ONIX.md) for the full
-architecture and roadmap.
+ONIX is a step-by-step build of an atomic, **musl-based** Linux distro using:
 
-> **Direction (2026-07):** we do **not** use AerynOS's ISO or its glibc
-> packages. We keep only the *tooling* (moss/boulder) and build our own smallest
-> possible base on **musl**, from scratch. Alpine is the throwaway *forge* — a
-> tiny musl host where we compile moss+boulder and cut the first `.stone` — and
-> a dress rehearsal for building the real distro disk later.
+- `moss` for package/state management
+- `boulder` for `.stone` package builds
+- systemd/systemd-boot for the real ONIX boot path
+- Nix as the host development toolbox
 
-## The forge (Phase 0)
+The detailed learning documentation now lives in the mdBook:
 
-A minimal Alpine/musl VM assembled from the 3.7 MB minirootfs tarball into a
-bootable disk we build ourselves, then used to build `moss` + `boulder`.
-For a step-by-step learning guide, read
-[`vm/phase0/README.md`](./vm/phase0/README.md).
-
-```
-alpine-minirootfs-3.24.1 (3.7 MB)
-   │  fetch-rootfs.sh   download + sha256 verify
-   ▼
-raw disk image  (GPT: ONIX-ESP + ext4 onix-root)
-   │  build-disk.sh     loop device → extract → chroot-setup.sh → grub-efi   [needs sudo]
-   ▼
-bootable musl forge (quarry)   +  toolchain baked in
-   │  launch.sh         QEMU/KVM + OVMF   (or --direct kernel boot)
-   ▼
-provision.sh  →  git clone os-tools → just get-started → moss + boulder
+```text
+book/
 ```
 
-## Quickstart
+Start here:
+
+- [Book introduction](./book/src/introduction.md)
+- [Quickstart](./book/src/quickstart.md)
+- [Phase 0 — forge VM and first `.stone`](./book/src/phases/phase-0.md)
+- [Phase 1 — first real ONIX stones](./book/src/phases/phase-1.md)
+- [Phase 2 — first bootable ONIX image](./book/src/phases/phase-2.md)
+- [Architecture](./book/src/architecture.md)
+
+## Common commands
 
 ```sh
-make doctor     # common: validate scripts + host dependencies
-make phase 002  # fetch minirootfs + build the bootable disk
-make phase 003  # boot it (VNC/headless by default)
-# log in on the console as mason / onix
-make phase 004  # build moss + boulder inside the VM
-make phase 005  # cut, inspect, index, install, and run a tiny first .stone
-make phase 006  # real Moss state install/remove/rollback smoke test
-make phase 100  # verify Phase 1 forge readiness
-make phase 101  # build/check/install first real ONIX stone: onix-branding
-make phase 102  # build/check/install onix-filesystem with onix-branding
-make phase 103  # assemble first named local ONIX repo and install from it
-make phase 104  # prepare publishable ONIX repo layout and verify it
-make phase 105  # export publishable ONIX repo from forge to host artifacts
-make phase 106  # verify exported host ONIX repo artifact
-make phase 107  # verify no-upload ONIX repo publishing plan
-make phase 108  # preview repo publication without upload/network
-make phase 200  # verify Phase 2 image-assembly readiness
-make phase 201  # assemble first ONIX root tree from exported repo
-make phase 202  # build host-side moss from pinned os-tools
-make phase 203  # assemble ONIX root tree using host-side moss only
-make phase 204  # verify ONIX image/disk assembly contract
-make phase 205  # create first non-booting ONIX disk/root skeleton
-make phase 206  # install systemd-boot/BLS skeleton into the image
-make phase 207  # verify kernel + initramfs contract
-make phase 208  # verify systemd userspace contract
-make phase 209  # check systemd-on-musl feasibility
-make phase 210  # verify init path decision contract
-make phase 211  # install first kernel + initramfs payload
-make phase 212  # run first QEMU boot probe
+make doctor      # common health check
+make cleanup     # stop ONIX QEMU processes and detach generated mounts
+make phases      # print the numbered phase map
+make book        # build the mdBook into book/html/
+make book-serve  # serve the mdBook locally
 ```
 
-Only common operations are named at the top level:
+Everything build-related is still run by numbered phase:
 
 ```sh
-make doctor    # common health check
-make cleanup   # stop forge QEMU, detach mounts, remove generated disk
-make phases    # print the numbered phase map
+make phase 002
+make phase 101
+make phase 212
 ```
 
-Everything else is run by number with `make phase XYZ`.
-The first digit is the phase family; the last two digits are the step inside
-that family:
-
-- `make phase 002` = Phase 0, step 02
-- `make phase 102` = Phase 1, step 02
-- `make phase 200` = Phase 2, step 00
-- `make phase 201` = Phase 2, step 01
-- `make phase 202` = Phase 2, step 02
-- `make phase 203` = Phase 2, step 03
-- `make phase 204` = Phase 2, step 04
-- `make phase 205` = Phase 2, step 05
-- `make phase 206` = Phase 2, step 06
-- `make phase 207` = Phase 2, step 07
-- `make phase 208` = Phase 2, step 08
-- `make phase 209` = Phase 2, step 09
-- `make phase 210` = Phase 2, step 10
-- `make phase 211` = Phase 2, step 11
-- `make phase 212` = Phase 2, step 12
-- `make phase 0` = run all `0xx` steps in order
-- `make phase 1` = run all `1xx` steps in order
-- `make phase 2` = run the canonical host-native Phase 2 path
-
-`make doctor` also ensures the rootful image-builder sudoers rules.
-`build-disk.sh` and the Phase 205 image skeleton builder need root
-(`losetup`/`mount`/`chroot`/filesystem formatting), and they re-exec themselves
-via `sudo`. The drop-in (`vm/phase0/install-sudoers.sh`) grants NOPASSWD on
-*this repo's* rootful builder scripts so the build runs unattended. If the
-rules are already correct, doctor uses `sudo -n` to check them and does **not**
-prompt. If the rules are missing/stale, doctor prompts once to install them.
-Revert with `vm/phase0/install-sudoers.sh --uninstall`.
-**Tradeoff:** these scripts are writable by you, so this is effectively
-passwordless root for your user — no Unix group can grant `mount`/`chroot`/loop
-setup, so sudo is the mechanism. Skip it and the scripts just prompt normally.
-
-`make doctor` runs the cheap non-mutating validation lane plus host tool checks.
-`make cleanup` first stops the ONIX forge QEMU process (`onix-quarry`), then
-detaches stale loop/NBD mounts, then removes generated forge state
-(`vm/state/quarry.raw`, OVMF vars, exported kernel/initrd). It keeps the cached
-rootfs tarball and SSH key. `make phases` prints the numbered flow.
-
-`make phase 005` is the Phase 0 packaging smoke test. It runs inside the
-already-booted forge VM and writes only under `~/stone-lab/onix-hello` in the
-guest. It creates a local source tarball, builds `onix-hello` with `boulder`,
-checks the resulting `.stone` with `moss inspect --check`, extracts it, creates a
-throwaway local Moss repo, installs into a throwaway target root, and runs
-`/usr/bin/onix-hello`.
-
-`make phase 006` is the final Phase 0 state smoke test. It
-uses the same hello `.stone`, but installs into a disposable Moss root with
-`moss -D` instead of `--to`, so Moss creates real states: install becomes
-`State #1`, remove becomes `State #2`, and activating state `1` rolls the
-disposable root back to the installed package.
-
-`make phase 100` starts Phase 1 by checking the running forge is ready for real
-recipe work. `make phase 101` builds the first real ONIX package,
-`onix-branding`, from [`recipes/onix-branding/stone.yaml`](./recipes/onix-branding/stone.yaml).
-`make phase 102` builds `onix-filesystem` and installs it together with
-`onix-branding` into a disposable target root. `make phase 103` creates the
-first named local ONIX repo from those stones and proves Moss can install from
-that repo by package name. `make phase 104` prepares the same stones in a
-publishable repo layout with metadata and checksums, ready for a future
-`repo.onix-os.com`-style host. `make phase 105` copies that publishable layout
-back from the forge VM to the host under `artifacts/onix-publish/`.
-`make phase 106` verifies that exported host artifact is clean, checksummed,
-gitignored, and self-consistent. `make phase 107` checks the tracked no-upload
-publication plan section inside [`vm/phase1/README.md`](./vm/phase1/README.md).
-`make phase 108` prints the exact local-file to future-public-URL mapping, but
-still performs no upload and contacts no network.
-`make phase 200` starts Phase 2 by checking that the exported repo artifact and
-host image-assembly tools are ready for the first ONIX image work.
-`make phase 201` assembles the first generated ONIX root tree under
-`artifacts/onix-root-tree/` from the exported repo artifact.
-`make phase 202` builds a host-side `moss` binary under
-`artifacts/host-tools/bin/moss` from the same pinned `os-tools` source as the
-forge.
-`make phase 203` rebuilds `artifacts/onix-root-tree/` using that host-side
-`moss`, without SSHing into the forge.
-`make phase 204` verifies the written image/disk assembly contract before any
-future phase creates partitions, filesystems, or mounts.
-`make phase 205` creates `artifacts/onix-image/onix.raw`, partitions it,
-formats the planned filesystems, copies `artifacts/onix-root-tree/` into the
-root partition as root-owned files, verifies the result, and leaves the image
-non-booting on purpose.
-`make phase 206` mounts that image again and installs a systemd-boot/BLS
-skeleton: EFI loader files, `loader.conf`, and the future ONIX boot entry. It
-still does not install a kernel, initramfs, or systemd userspace.
-`make phase 207` verifies the written kernel/initramfs contract before ONIX
-packages or image assembly start placing real kernel boot artifacts.
-`make phase 208` verifies the written systemd userspace contract before ONIX
-tries to run `/usr/lib/systemd/systemd` as PID 1.
-`make phase 209` checks whether our pinned tooling can represent a musl-targeted
-systemd build before we commit to systemd as ONIX PID 1.
-`make phase 210` records the init-path decision: ONIX uses systemd-on-musl as
-PID 1 and systemd-boot as the bootloader.
-`make phase 211` installs the first kernel/initramfs payload into
-`/boot/ONIX/` and updates the boot entry to use it.
-`make phase 212` boots the ONIX image under QEMU long enough to capture early
-boot evidence from the serial console.
-
-For phases that support an interactive view, use `ATTACHED=1`:
+Family shortcuts run a whole phase family:
 
 ```sh
-ATTACHED=1 make phase 212
-make phase 212 ATTACHED=1
+make phase 0
+make phase 1
+make phase 2
 ```
 
-That keeps the normal phase reproducible/headless, while still giving you a
-way to watch interactive phases when you want to learn from them. For Phase
-212, attached mode defaults to serial output in your terminal. GUI/VNC only
-opens if you explicitly request it with `ONIX_BOOT_PROBE_DISPLAY=gtk` or
-`ONIX_BOOT_PROBE_DISPLAY=vnc`.
+## Generated files
 
-## Layout
+These are generated and gitignored:
 
-```
-ONIX.md             architecture + roadmap
-Makefile            top-level router; forwards targets into per-phase Makefiles
-recipes/
-  README.md         recipe tree overview
-  onix-branding/    first real ONIX stone: os-release + default login text
-  onix-filesystem/  filesystem layout policy + default templates
-vm/
-  phase0/
-    README.md       educational guide for the Phase 0 forge
-    Makefile        Phase 0 targets; top-level make delegates here
-    config.sh       single source of truth (Alpine pin, names, helpers)
-    fetch-rootfs.sh download + verify the minirootfs tarball
-    build-disk.sh   minirootfs -> bootable musl raw disk  (orchestrates sudo/loop/chroot)
-    chroot-setup.sh runs inside the chroot: apk base+kernel+grub+toolchain, users, ssh
-    provision.sh    runs inside the booted VM: build moss + boulder from os-tools
-    build-hello-stone.sh
-                    runs inside the booted VM: build + verify the first tiny .stone
-    state-smoke.sh  runs inside the booted VM: real moss install/remove/rollback state test
-    launch.sh       boot the forge (grub/OVMF, or --direct)
-    ssh.sh          ssh in via the forwarded port + generated key
-    clean.sh        wipe forge state to rebuild
-  phase1/
-    README.md       educational guide for first real ONIX stones
-    Makefile        Phase 1 targets; top-level make delegates here
-    build-branding-stone.sh
-                    runs inside the booted VM: build + verify onix-branding
-    build-filesystem-stone.sh
-                    runs inside the booted VM: build + verify onix-filesystem
-    build-local-repo.sh
-                    runs inside the booted VM: assemble named local repo + install from it
-    build-publishable-repo.sh
-                    runs inside the booted VM: prepare publishable repo layout + verify it
-    export-publishable-repo.sh
-                    copies the publishable repo from the VM to host artifacts/
-    verify-exported-repo.sh
-                    verifies the host artifact without SSH or publishing
-    prepare-publish-plan.sh
-                    verifies the Phase 107 section of vm/phase1/README.md
-    publish-dry-run.sh
-                    previews publish mapping without upload/network
-  phase2/
-    README.md       educational guide for first bootable ONIX image work
-    Makefile        Phase 2 targets; top-level make delegates here
-    check-readiness.sh
-                    verifies exported repo artifact + host image tools
-    build-root-tree.sh
-                    assembles artifacts/onix-root-tree from exported stones
-    build-host-moss.sh
-                    builds artifacts/host-tools/bin/moss from pinned os-tools
-    build-root-tree-host.sh
-                    assembles artifacts/onix-root-tree using host-side moss only
-    verify-image-contract.sh
-                    verifies the Phase 204 disk/image layout contract
-    build-image-skeleton.sh
-                    creates artifacts/onix-image/onix.raw and installs Phase 206/211 boot layers
-    boot-probe.sh
-                    runs the Phase 212 QEMU boot probe against the ONIX image
-    verify-kernel-initramfs-plan.sh
-                    verifies the Phase 207 kernel/initramfs contract
-    verify-systemd-userspace-plan.sh
-                    verifies the Phase 208 systemd userspace contract
-    check-systemd-musl.sh
-                    checks systemd-on-musl feasibility against pinned nixpkgs
-    verify-init-decision.sh
-                    verifies the Phase 210 init path decision contract
-  downloads/        tarballs (gitignored)
-  state/            disk, NVRAM, kernel/initrd, ssh key (gitignored)
+```text
+artifacts/
+vm/downloads/
+vm/state/
+book/html/
 ```
 
-## Notes
+## Branding rule
 
-- **musl, on purpose.** The endgame distro is musl-based; the forge is musl
-  (Alpine) so everything we build and learn transfers. No AerynOS recipe is musl
-  yet — a musl base is a genuine bootstrap, which is the point.
-- **Networking:** user-mode NAT, host `:6649` → guest `:22` (`6649` = "ONIX",
-  ONIX.md §0). SSH password auth is disabled; passwordless SSH uses a key
-  generated into `vm/state/`. Use `./vm/phase0/ssh.sh root` for root.
-- **Boot:** self-boots via grub-efi under OVMF. `launch.sh --direct` boots the
-  exported kernel/initrd directly (bypasses grub) if the bootloader ever fights
-  us. The real BLS/`blsforme` boot model is a later phase, for the actual distro.
-- **Rootless builds:** the `mason` user has `subuid`/`subgid` ranges + userns so
-  boulder/moss can sandbox builds without root.
-- **Pinned tooling:** `provision.sh` checks out the pinned `OS_TOOLS_REF` from
-  `vm/phase0/config.sh` before building. Override only when intentionally rebasing the
-  forge to a newer `os-tools` snapshot.
-- **Override anything via env:** `VM_RAM=8G VM_CPUS=8 make phase 003`.
+Use only:
 
-## Requirements (host)
+```text
+ONIX
+onix
+```
 
-`qemu-system-x86_64`, loop-device support (`losetup`), `edk2-ovmf`, `sgdisk`
-(gptfdisk), `partprobe` (parted), `e2fsprogs`, `dosfstools`, `curl`,
-`sha256sum`, `sudo`/`visudo`, OpenSSH client tools, and membership in the `kvm`
-group. Phase 206 also uses `bootctl`/`systemd-bootx64.efi`, provided by the
-flake dev shell.
+Do not use mixed-case spelling.

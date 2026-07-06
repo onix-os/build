@@ -7,7 +7,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 ONIX_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-README="$SCRIPT_DIR/README.md"
+DOC="$ONIX_ROOT/book/src/phases/208.md"
 IMAGE_SCRIPT="$SCRIPT_DIR/build-image-skeleton.sh"
 
 die() {
@@ -27,11 +27,11 @@ need_text() {
 
 echo "==> Phase 208 systemd userspace contract"
 
-need_file "$README"
+need_file "$DOC"
 need_file "$IMAGE_SCRIPT"
 
 for text in \
-  "### Phase 208" \
+  "# Phase 208" \
   "PID 1" \
   "/usr/lib/systemd/systemd" \
   "systemd.unit=multi-user.target" \
@@ -48,13 +48,12 @@ for text in \
   "/sys" \
   "tmpfiles" \
   "sysusers" \
-  "Phase 208 does not build systemd" \
-  "### Phase 209"
+  "Phase 208 does not build systemd"
 do
-  need_text "$README" "$text"
+  need_text "$DOC" "$text"
 done
 
-echo "contract : OK (documented in ${README#$ONIX_ROOT/})"
+echo "contract : OK (documented in ${DOC#$ONIX_ROOT/})"
 
 echo
 echo "==> Phase 206 boot-entry compatibility"
