@@ -15,6 +15,7 @@ DROPIN="/etc/sudoers.d/onix-forge"     # no dot in name — sudo ignores dotted 
 TARGETS=(
   "$ONIX_PHASE0_DIR/build-disk.sh"
   "$ONIX_ROOT/vm/phase2/build-image-skeleton.sh"
+  "$ONIX_ROOT/vm/phase4/materialize-etc.sh"
 )
 USER_NAME="$(id -un)"
 MODE="${1:---ensure}"
@@ -44,7 +45,7 @@ cat > "$tmp" <<EOF
 # WARNING: these scripts are writable by $USER_NAME, so this effectively grants
 # passwordless root to $USER_NAME. Accepted tradeoff for agent-driven builds.
 # Revert:  $ONIX_PHASE0_DIR/install-sudoers.sh --uninstall
-$USER_NAME ALL=(root) NOPASSWD: ${TARGETS[0]}, ${TARGETS[1]}
+$USER_NAME ALL=(root) NOPASSWD: ${TARGETS[0]}, ${TARGETS[1]}, ${TARGETS[2]}
 EOF
 
 log "validating sudoers syntax"
@@ -70,7 +71,7 @@ log "installing $DROPIN (you'll be prompted for your password ONCE if the rule i
 sudo install -m 0440 -o root -g root "$tmp" "$DROPIN"
 sudo visudo -cf "$DROPIN" >/dev/null || die "installed drop-in failed validation"
 
-log "done — 'make phase 002' and 'make phase 205' now run without a password"
+log "done — rootful ONIX image phases now run without a password"
 for target in "${TARGETS[@]}"; do
   log "rule: $USER_NAME NOPASSWD $target"
 done

@@ -5,6 +5,14 @@ ONIX is the hard machine layer everything else sits on. The moss-managed machine
 
 **Core rule:** *moss controls the machine. Nix controls the toolbox.*
 
+> **Bootstrap exception, not architecture.** During early phases, ONIX may copy
+> pinned Nix-built musl payloads into the image to prove behavior before the
+> real `.stone` package exists. Examples: `pkgsMusl.systemd`, `pkgsMusl.busybox`,
+> and `pkgsMusl.dropbear`. These are **temporary bootstrap payloads only**.
+> Nix-sourced system payloads are bootstrap-only; final system packages and
+> daemons must become moss-installed `.stone` packages owned by the machine
+> plane.
+
 > **Direction change (2026-07).** ONIX does **not** consume AerynOS's ISO or its glibc package repos. Their live image is desktop-first (GNOME) and their whole `volatile` repo is glibc; neither fits. ONIX keeps only the *tooling* — **moss** (atomic package/state manager) and **boulder** (the `.stone` builder) — and bootstraps its **own smallest-possible base on musl, from scratch**. **Alpine** is the throwaway *forge*: a tiny musl host where moss+boulder are built and the first stones are cut. The endgame is our own musl distro, managed by moss, with Nix supplying the (glibc) software long tail on top.
 
 > Naming rule: public branding is always `ONIX`; machine IDs and package names use `onix`.
@@ -255,7 +263,7 @@ understood.
 ### Phase 4 — Booted ONIX base userspace
 Turn the Phase 2 boot proof into a usable base system while still using the
 borrowed kernel payload. Materialize live `/etc` from `/usr/share/defaults`;
-define users/groups/login shell policy; prove serial login; add minimal
+define users/groups/shell policy; prove a bootstrap serial console; add minimal
 networking and remote inspection.
 **Gate:** a booted ONIX image can be logged into and inspected intentionally;
 base identity, fstab, users, shells, hostname, and early services are owned by

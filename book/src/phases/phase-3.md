@@ -102,8 +102,8 @@ The next useful learning step is not compiling a kernel. The next useful step is
 making the booted image into a usable base system:
 
 - live `/etc` materialization
-- users/login/shell basics
-- serial login
+- users/groups/shell policy
+- bootstrap serial console
 - networking
 - remote inspection
 
