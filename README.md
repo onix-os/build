@@ -20,13 +20,16 @@ Start here:
 - [Phase 0 — forge VM and first `.stone`](./book/src/phases/phase-0.md)
 - [Phase 1 — first real ONIX stones](./book/src/phases/phase-1.md)
 - [Phase 2 — first bootable ONIX image](./book/src/phases/phase-2.md)
+- [Phase 4 — booted ONIX base userspace](./book/src/phases/phase-4.md)
 - [Architecture](./book/src/architecture.md)
 
 ## Common commands
 
 ```sh
 make doctor      # common health check
-make cleanup     # stop ONIX QEMU processes and detach generated mounts
+make stop        # stop QEMU/probes and detach stale mounts; keep disks/images
+make cleanup     # destructive reset: stop everything and remove generated disks/images
+make up          # boot native ONIX, prove SSH, and leave QEMU running
 make phases      # print the numbered phase map
 make book        # build the mdBook into book/html/
 make book-serve  # serve the mdBook locally
@@ -38,6 +41,7 @@ Everything build-related is still run by numbered phase:
 make phase 002
 make phase 101
 make phase 212
+make phase 424
 ```
 
 Family shortcuts run a whole phase family:

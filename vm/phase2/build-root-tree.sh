@@ -120,13 +120,17 @@ ln -sfn ../usr/lib/os-release "$TARGET/etc/os-release"
 cp "$TARGET/usr/share/defaults/etc/issue" "$TARGET/etc/issue"
 cp "$TARGET/usr/share/defaults/etc/motd" "$TARGET/etc/motd"
 cp "$TARGET/usr/share/defaults/etc/fstab" "$TARGET/etc/fstab"
+cp "$TARGET/usr/share/defaults/etc/profile" "$TARGET/etc/profile"
 cp "$TARGET/usr/share/defaults/etc/profile.d/onix-path.sh" "$TARGET/etc/profile.d/onix-path.sh"
+cp "$TARGET/usr/share/defaults/etc/profile.d/onix-login.sh" "$TARGET/etc/profile.d/onix-login.sh"
 printf 'onix\n' > "$TARGET/etc/hostname"
 chmod 0644 \
     "$TARGET/etc/issue" \
     "$TARGET/etc/motd" \
     "$TARGET/etc/fstab" \
+    "$TARGET/etc/profile" \
     "$TARGET/etc/profile.d/onix-path.sh" \
+    "$TARGET/etc/profile.d/onix-login.sh" \
     "$TARGET/etc/hostname"
 
 echo
@@ -137,12 +141,15 @@ test -f "$TARGET/usr/share/onix/branding/logo.txt"
 test -f "$TARGET/usr/share/onix/branding/logo.ansi"
 test -f "$TARGET/usr/share/onix/filesystem-layout.md"
 test -f "$TARGET/usr/share/defaults/etc/fstab"
+test -f "$TARGET/usr/share/defaults/etc/profile"
 test -L "$TARGET/etc/os-release"
 test "$(readlink "$TARGET/etc/os-release")" = "../usr/lib/os-release"
 test -f "$TARGET/etc/issue"
 test -f "$TARGET/etc/motd"
 test -f "$TARGET/etc/fstab"
+test -f "$TARGET/etc/profile"
 test -f "$TARGET/etc/profile.d/onix-path.sh"
+test -f "$TARGET/etc/profile.d/onix-login.sh"
 test -f "$TARGET/etc/hostname"
 test -d "$TARGET/tmp"
 grep -q '^NAME="ONIX"$' "$TARGET/usr/lib/os-release"
@@ -151,6 +158,12 @@ grep -q '^ANSI_COLOR="38;2;79;110;145"$' "$TARGET/usr/lib/os-release"
 grep -q 'LABEL=onix-root' "$TARGET/etc/fstab"
 grep -q 'LABEL=ONIX-PERSIST' "$TARGET/etc/fstab"
 grep -q 'moss controls the machine' "$TARGET/etc/motd"
+grep -q '▓' "$TARGET/etc/motd"
+grep -q '▒' "$TARGET/etc/motd"
+grep -q '/etc/profile.d' "$TARGET/etc/profile"
+grep -q "alias ll='ls -laF'" "$TARGET/etc/profile.d/onix-path.sh"
+grep -q 'logo.ansi' "$TARGET/etc/profile.d/onix-login.sh"
+test "$(wc -c < "$TARGET/etc/motd")" -lt 2048
 grep -q 'moss owns /usr' "$TARGET/usr/share/onix/filesystem-layout.md"
 
 bad_brand='O''nix'
@@ -187,7 +200,9 @@ test "$(readlink "$tmp/etc/os-release")" = "../usr/lib/os-release"
 test -f "$tmp/etc/issue"
 test -f "$tmp/etc/motd"
 test -f "$tmp/etc/fstab"
+test -f "$tmp/etc/profile"
 test -f "$tmp/etc/profile.d/onix-path.sh"
+test -f "$tmp/etc/profile.d/onix-login.sh"
 test -f "$tmp/etc/hostname"
 test "$(stat -c '%a' "$tmp/tmp")" = "1777"
 grep -q '^NAME="ONIX"$' "$tmp/usr/lib/os-release"
@@ -195,6 +210,13 @@ grep -q '^ID="onix"$' "$tmp/usr/lib/os-release"
 grep -q '^ANSI_COLOR="38;2;79;110;145"$' "$tmp/usr/lib/os-release"
 grep -q 'LABEL=onix-root' "$tmp/etc/fstab"
 grep -q 'LABEL=ONIX-PERSIST' "$tmp/etc/fstab"
+grep -q 'moss controls the machine' "$tmp/etc/motd"
+grep -q '▓' "$tmp/etc/motd"
+grep -q '▒' "$tmp/etc/motd"
+grep -q '/etc/profile.d' "$tmp/etc/profile"
+grep -q "alias ll='ls -laF'" "$tmp/etc/profile.d/onix-path.sh"
+grep -q 'logo.ansi' "$tmp/etc/profile.d/onix-login.sh"
+test "$(wc -c < "$tmp/etc/motd")" -lt 2048
 
 if find "$tmp" \( -name '.moss' -o -name 'moss-root' -o -name 'moss-cache' -o -name 'install-target' \) | grep -q .; then
   find "$tmp" \( -name '.moss' -o -name 'moss-root' -o -name 'moss-cache' -o -name 'install-target' \) >&2

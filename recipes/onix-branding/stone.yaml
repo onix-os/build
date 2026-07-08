@@ -140,11 +140,17 @@ install     : |
         %(installroot)/usr/share/onix/branding/logo.txt \
         > %(installroot)/usr/share/onix/branding/logo.ansi
 
-    cat %(installroot)/usr/share/onix/branding/logo.ansi > %(installroot)/usr/share/defaults/etc/motd
+    # Dropbear's interactive login banner has a small byte budget. Keep the
+    # original Unicode logo shape, but do not use ANSI color escape sequences in
+    # /etc/motd. The ANSI version remains available as logo.ansi.
+    cp \
+        %(installroot)/usr/share/onix/branding/logo.txt \
+        %(installroot)/usr/share/onix/branding/logo.motd
+
+    cat %(installroot)/usr/share/onix/branding/logo.motd > %(installroot)/usr/share/defaults/etc/motd
     cat >> %(installroot)/usr/share/defaults/etc/motd <<'EOF_MOTD'
 
     Welcome to ONIX.
-
     moss controls the machine. Nix controls the toolbox.
     EOF_MOTD
 
@@ -152,6 +158,7 @@ install     : |
         %(installroot)/usr/lib/os-info.json \
         %(installroot)/usr/share/onix/branding/logo.txt \
         %(installroot)/usr/share/onix/branding/logo.ansi \
+        %(installroot)/usr/share/onix/branding/logo.motd \
         %(installroot)/usr/share/defaults/etc/issue \
         %(installroot)/usr/share/defaults/etc/motd
 

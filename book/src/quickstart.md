@@ -4,12 +4,17 @@ Use the repository `Makefile` for normal work.
 
 ```sh
 make doctor      # common health check
+make stop        # stop QEMU/probes and detach stale mounts; keep disks/images
+make cleanup     # destructive reset: stop everything and remove generated disks/images
+make up          # boot native ONIX, prove SSH, and leave QEMU running
 make phases      # print the numbered learning flow
 make phase 0     # run all Phase 0 steps
 make phase 1     # run all Phase 1 steps
 make phase 2     # run the canonical Phase 2 path
 make phase 3     # explain deferred ONIX-owned kernel work
-make phase 4     # run every Phase 4 booted-base step
+make phase 4     # run canonical Phase 4 build/proof steps: 400..422
+make phase 424   # boot native ONIX and leave it running for inspection
+make phase 425   # accept the running Phase 4 VM
 ```
 
 Individual steps use three digits:
@@ -32,6 +37,20 @@ Individual steps use three digits:
 408 = Phase 4, step 08
 409 = Phase 4, step 09
 410 = Phase 4, step 10
+411 = Phase 4, step 11
+412 = Phase 4, step 12
+413 = Phase 4, step 13
+414 = Phase 4, step 14
+415 = Phase 4, step 15
+416 = Phase 4, step 16
+417 = Phase 4, step 17
+418 = Phase 4, step 18
+419 = Phase 4, step 19
+420 = Phase 4, step 20
+421 = Phase 4, step 21
+422 = Phase 4, step 22
+424 = Phase 4, step 24
+425 = Phase 4, step 25
 ```
 
 Examples:
@@ -55,6 +74,74 @@ make phase 407   # audit temporary Nix-sourced system payloads
 make phase 408   # define local stone/repo contract
 make phase 409   # build source-based onix-busybox stone
 make phase 410   # install/use onix-busybox in the image
+make phase 411   # boot-prove shell/network/SSH with onix-busybox
+make phase 412   # build source-based onix-dropbear stone
+make phase 413   # install/use onix-dropbear and prove SSH
+make phase 414   # audit systemd ownership before packaging
+make phase 415   # build bootstrap onix-systemd stone
+make phase 416   # install/use onix-systemd in the image
+make phase 417   # boot-prove onix-systemd as PID 1 runtime
+make phase 418   # package/prove bootstrap policy ownership
+make phase 419   # audit booted-base ownership/debt map
+make phase 420   # prune stale old Nix BusyBox/Dropbear payloads
+make phase 421   # prepare native source-built onix-systemd plan
+make phase 422   # build/install/boot-prove native onix-systemd
+make phase 424   # boot native ONIX, prove SSH, and leave QEMU running
+make phase 425   # final Phase 4 acceptance check against the running VM
+make up          # shortcut for the Phase 424 day-to-day bring-up
+```
+
+## Stopping vs cleaning
+
+Use:
+
+```sh
+make stop
+```
+
+when a VM/probe is stuck or you want to detach stale mounts while keeping
+generated work such as:
+
+```text
+vm/state/quarry.raw
+artifacts/onix-image/onix.raw
+artifacts/onix-stones/
+artifacts/onix-local-repo/
+```
+
+Use:
+
+```sh
+make cleanup
+```
+
+only when you intentionally want a destructive reset of generated disks/images.
+It stops QEMU first, then removes generated disk/image state.
+
+To boot the current native-systemd image and leave it running for interactive
+inspection:
+
+```sh
+make phase 424
+ssh -i vm/state/id_ed25519 -p 7630 onix@127.0.0.1
+```
+
+Then accept the running VM:
+
+```sh
+make phase 425
+```
+
+The shortcut is:
+
+```sh
+make up
+```
+
+Stop that VM with:
+
+```sh
+make stop
 ```
 
 Phase 3 is intentionally reserved for ONIX-owned kernel/initramfs/modules work.

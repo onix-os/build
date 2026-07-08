@@ -9,7 +9,9 @@ It installs:
 
 - `/usr/share/onix/filesystem-layout.md`
 - `/usr/share/defaults/etc/fstab`
+- `/usr/share/defaults/etc/profile`
 - `/usr/share/defaults/etc/profile.d/onix-path.sh`
+- `/usr/share/defaults/etc/profile.d/onix-login.sh`
 
 Why no direct `/etc/fstab`?
 

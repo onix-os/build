@@ -8,6 +8,11 @@ USER="${ONIX_SSH_USER:-onix}"
 KEY="${ONIX_SSH_CLIENT_KEY:-$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)/vm/state/id_ed25519}"
 MARKER="${ONIX_SSH_MARKER:-ONIX_SSH_OK user=${USER} uid=1000}"
 ATTEMPTS="${ONIX_SSH_ATTEMPTS:-30}"
+REMOTE_COMMAND="${ONIX_SSH_REMOTE_COMMAND:-}"
+
+if [[ -z "$REMOTE_COMMAND" ]]; then
+  REMOTE_COMMAND='printf "ONIX_SSH_OK user=$(/bin/id -un) uid=$(/bin/id -u) home=$HOME shell=$SHELL host=$(/bin/hostname) kernel=$(/bin/uname -s)\n"'
+fi
 
 last_output=""
 
@@ -25,7 +30,7 @@ for _ in $(seq 1 "$ATTEMPTS"); do
       -o ConnectTimeout=2 \
       -o LogLevel=ERROR \
       "$USER@$HOST" \
-      'printf "ONIX_SSH_OK user=$(/bin/id -un) uid=$(/bin/id -u) home=$HOME shell=$SHELL host=$(/bin/hostname) kernel=$(/bin/uname -s)\n"' \
+      "$REMOTE_COMMAND" \
       2>&1 || true
   )"
 

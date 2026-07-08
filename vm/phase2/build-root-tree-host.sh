@@ -90,13 +90,17 @@ ln -sfn ../usr/lib/os-release "$TARGET_TMP/etc/os-release"
 cp "$TARGET_TMP/usr/share/defaults/etc/issue" "$TARGET_TMP/etc/issue"
 cp "$TARGET_TMP/usr/share/defaults/etc/motd" "$TARGET_TMP/etc/motd"
 cp "$TARGET_TMP/usr/share/defaults/etc/fstab" "$TARGET_TMP/etc/fstab"
+cp "$TARGET_TMP/usr/share/defaults/etc/profile" "$TARGET_TMP/etc/profile"
 cp "$TARGET_TMP/usr/share/defaults/etc/profile.d/onix-path.sh" "$TARGET_TMP/etc/profile.d/onix-path.sh"
+cp "$TARGET_TMP/usr/share/defaults/etc/profile.d/onix-login.sh" "$TARGET_TMP/etc/profile.d/onix-login.sh"
 printf 'onix\n' > "$TARGET_TMP/etc/hostname"
 chmod 0644 \
   "$TARGET_TMP/etc/issue" \
   "$TARGET_TMP/etc/motd" \
   "$TARGET_TMP/etc/fstab" \
+  "$TARGET_TMP/etc/profile" \
   "$TARGET_TMP/etc/profile.d/onix-path.sh" \
+  "$TARGET_TMP/etc/profile.d/onix-login.sh" \
   "$TARGET_TMP/etc/hostname"
 
 echo
@@ -108,12 +112,15 @@ test -f "$TARGET_TMP/usr/share/onix/branding/logo.txt"
 test -f "$TARGET_TMP/usr/share/onix/branding/logo.ansi"
 test -f "$TARGET_TMP/usr/share/onix/filesystem-layout.md"
 test -f "$TARGET_TMP/usr/share/defaults/etc/fstab"
+test -f "$TARGET_TMP/usr/share/defaults/etc/profile"
 test -L "$TARGET_TMP/etc/os-release"
 test "$(readlink "$TARGET_TMP/etc/os-release")" = "../usr/lib/os-release"
 test -f "$TARGET_TMP/etc/issue"
 test -f "$TARGET_TMP/etc/motd"
 test -f "$TARGET_TMP/etc/fstab"
+test -f "$TARGET_TMP/etc/profile"
 test -f "$TARGET_TMP/etc/profile.d/onix-path.sh"
+test -f "$TARGET_TMP/etc/profile.d/onix-login.sh"
 test -f "$TARGET_TMP/etc/hostname"
 test "$(stat -c '%a' "$TARGET_TMP/tmp")" = "1777"
 grep -q '^NAME="ONIX"$' "$TARGET_TMP/usr/lib/os-release"
@@ -122,6 +129,12 @@ grep -q '^ANSI_COLOR="38;2;79;110;145"$' "$TARGET_TMP/usr/lib/os-release"
 grep -q 'LABEL=onix-root' "$TARGET_TMP/etc/fstab"
 grep -q 'LABEL=ONIX-PERSIST' "$TARGET_TMP/etc/fstab"
 grep -q 'moss controls the machine' "$TARGET_TMP/etc/motd"
+grep -q '▓' "$TARGET_TMP/etc/motd"
+grep -q '▒' "$TARGET_TMP/etc/motd"
+grep -q '/etc/profile.d' "$TARGET_TMP/etc/profile"
+grep -q "alias ll='ls -laF'" "$TARGET_TMP/etc/profile.d/onix-path.sh"
+grep -q 'logo.ansi' "$TARGET_TMP/etc/profile.d/onix-login.sh"
+test "$(wc -c < "$TARGET_TMP/etc/motd")" -lt 2048
 grep -q 'moss owns /usr' "$TARGET_TMP/usr/share/onix/filesystem-layout.md"
 grep -q 'onix-branding' "$TARGET_TMP/usr/lib/system-model.kdl"
 grep -q 'onix-filesystem' "$TARGET_TMP/usr/lib/system-model.kdl"

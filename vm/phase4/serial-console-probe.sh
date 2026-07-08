@@ -57,6 +57,7 @@ usage: serial-console-probe.sh [options]
   --serial-log P   serial log path (default: ${SERIAL_LOG#$ONIX_ROOT/})
   --boot-log P     boot-console log path (default: ${BOOT_LOG#$ONIX_ROOT/})
   --kill           stop an existing Phase 403 QEMU probe and exit
+  --keep-running   leave QEMU running after a successful proof
   --dry-run        print the QEMU command and exit
   -h, --help
 EOF
@@ -64,12 +65,14 @@ EOF
 
 DRY_RUN=0
 KILL_ONLY=0
+KEEP_RUNNING=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --seconds) WAIT_SECONDS="${2:?missing seconds}"; shift ;;
     --serial-log) SERIAL_LOG="${2:?missing path}"; shift ;;
     --boot-log) BOOT_LOG="${2:?missing path}"; shift ;;
     --kill) KILL_ONLY=1 ;;
+    --keep-running) KEEP_RUNNING=1 ;;
     --dry-run) DRY_RUN=1 ;;
     -h|--help) usage; exit 0 ;;
     *) usage; die "unknown argument: $1" ;;
@@ -310,8 +313,14 @@ if [[ -n "$HOST_PROOF_COMMAND" ]]; then
   fi
 fi
 
+if [[ "$KEEP_RUNNING" -eq 1 ]]; then
+  trap - EXIT
+  log "qemu      : left running as $QEMU_PROCESS_NAME pid $QEMU_PID"
+  log "stop      : make stop"
+else
 cleanup_qemu
 trap - EXIT
+fi
 
 log "serial evidence"
 if grep -qa "$READY_MARKER" "$SERIAL_LOG"; then

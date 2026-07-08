@@ -77,12 +77,17 @@ test -f "$TARGET/usr/lib/os-release"
 test -f "$TARGET/usr/lib/os-info.json"
 test -f "$TARGET/usr/share/onix/filesystem-layout.md"
 test -f "$TARGET/usr/share/defaults/etc/fstab"
+test -f "$TARGET/usr/share/defaults/etc/profile"
 test -f "$TARGET/usr/share/defaults/etc/profile.d/onix-path.sh"
+test -f "$TARGET/usr/share/defaults/etc/profile.d/onix-login.sh"
 
 grep -q '^NAME="ONIX"$' "$TARGET/usr/lib/os-release"
 grep -q '^ID="onix"$' "$TARGET/usr/lib/os-release"
 grep -q '^PRETTY_NAME="ONIX (atomic musl base + Nix toolbox)"$' "$TARGET/usr/lib/os-release"
 grep -q 'LABEL=ONIX-PERSIST' "$TARGET/usr/share/defaults/etc/fstab"
+grep -q '/etc/profile.d' "$TARGET/usr/share/defaults/etc/profile"
+grep -q "alias ll='ls -laF'" "$TARGET/usr/share/defaults/etc/profile.d/onix-path.sh"
+grep -q 'logo.ansi' "$TARGET/usr/share/defaults/etc/profile.d/onix-login.sh"
 
 echo
 echo "==> installed target proof"

@@ -10,15 +10,17 @@ PHASE4 := vm/phase4
 PHASE_ARG := $(word 2,$(MAKECMDGOALS))
 ATTACHED ?= 0
 
-.PHONY: help phases phase 0 1 2 3 4 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 300 400 401 402 403 404 405 406 407 408 409 410 list \
-	doctor cleanup book book-serve
+.PHONY: help phases phase 0 1 2 3 4 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 300 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 424 425 list \
+	doctor stop cleanup up book book-serve
 
 help: ## show top-level help and phase map
 	@echo "ONIX top-level Makefile."
 	@echo
 	@echo "Common:"
 	@echo "  make doctor          common health check"
-	@echo "  make cleanup         stop forge QEMU, detach mounts, remove generated disks"
+	@echo "  make stop            stop QEMU/probes and detach stale mounts; keep disks/images"
+	@echo "  make cleanup         destructive: stop everything and remove generated disks/images"
+	@echo "  make up              boot native ONIX, prove SSH, and leave QEMU running"
 	@echo "  make book            build the mdBook documentation"
 	@echo "  make book-serve      serve the mdBook locally"
 	@echo
@@ -27,7 +29,9 @@ help: ## show top-level help and phase map
 	@echo "  make phase 002       run one numbered phase step"
 	@echo "  make phase 0         run every 0xx phase step in order"
 	@echo "  make phase 3         explain deferred kernel ownership"
-	@echo "  make phase 4         run every 4xx phase step in order"
+	@echo "  make phase 4         run canonical Phase 4 build/proof steps: 400..422"
+	@echo "  make phase 424       boot native ONIX and leave it running for inspection"
+	@echo "  make phase 425       final Phase 4 acceptance check against that running VM"
 	@echo "  ATTACHED=1 make phase 212   run visual/interactive when a phase supports it"
 	@echo
 	@$(MAKE) --no-print-directory phases
@@ -55,13 +59,13 @@ phase: ## run a learning phase alias, e.g. `make phase 002`
 	  1|100|101|102|103|104|105|106|107|108) $(MAKE) --no-print-directory -C $(PHASE1) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
 	  2|200|201|202|203|204|205|206|207|208|209|210|211|212|213|214) $(MAKE) --no-print-directory -C $(PHASE2) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
 	  3|300) $(MAKE) --no-print-directory -C $(PHASE3) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
-	  4|400|401|402|403|404|405|406|407|408|409|410) $(MAKE) --no-print-directory -C $(PHASE4) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
+	  4|400|401|402|403|404|405|406|407|408|409|410|411|412|413|414|415|416|417|418|419|420|421|422|424|425) $(MAKE) --no-print-directory -C $(PHASE4) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
 	  *) echo "unknown phase: $(PHASE_ARG)" >&2; $(MAKE) --no-print-directory phases; exit 2 ;; \
 	esac
 
 # Absorb the second goal in commands like `make phase 002`, otherwise Make
 # would try to build a separate target named `002` after `phase` completes.
-0 1 2 3 4 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 300 400 401 402 403 404 405 406 407 408 409 410 list:
+0 1 2 3 4 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 300 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 424 425 list:
 	@:
 
 doctor: ## common health check; not a phase step
@@ -78,10 +82,18 @@ doctor: ## common health check; not a phase step
 	echo "doctor    : host tools OK"
 	@$(MAKE) --no-print-directory -C $(PHASE0) passwordless
 
-cleanup: ## stop QEMU, detach mounts, remove generated disk state
+stop: ## stop QEMU/probes and detach stale mounts; keep generated disks/images
+	@$(MAKE) --no-print-directory -C $(PHASE0) stop
+	@$(MAKE) --no-print-directory -C $(PHASE2) stop
+	@$(MAKE) --no-print-directory -C $(PHASE4) stop
+
+cleanup: ## destructive: stop QEMU/probes, detach mounts, remove generated disks/images
 	@$(MAKE) --no-print-directory -C $(PHASE0) cleanup
 	@$(MAKE) --no-print-directory -C $(PHASE2) cleanup
 	@$(MAKE) --no-print-directory -C $(PHASE4) cleanup
+
+up: ## boot native ONIX, prove SSH, and leave QEMU running
+	@$(MAKE) --no-print-directory -C $(PHASE4) native-systemd-up
 
 book: ## build the mdBook documentation
 	@mdbook build book

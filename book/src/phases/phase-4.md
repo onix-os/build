@@ -95,7 +95,12 @@ Proposed path:
 416 — install `onix-systemd` into the image
 417 — boot with `onix-systemd` as PID 1
 418 — move bootstrap units/defaults into stone ownership
-419 — audit no Nix-sourced systemd/busybox/dropbear payload remains
+419 — audit booted-base ownership/debt map
+420 — prune stale old Nix BusyBox/Dropbear payloads
+421 — prepare native source-built `onix-systemd`
+422 — build/install/boot-prove native `onix-systemd`
+424 — bring up native ONIX and leave it running for inspection
+425 — final Phase 4 acceptance check against the running VM
 ```
 
 The exact list can change as we learn, but the theme should stay stable:
@@ -116,6 +121,57 @@ Phase 4 should avoid:
 
 Those are later phases. The base system must become understandable first.
 
+## Build/proof steps versus lab steps
+
+Running:
+
+```sh
+make phase 4
+```
+
+runs the canonical automated Phase 4 build/proof chain:
+
+```text
+400..422
+```
+
+Phase 424 is intentionally not part of that automatic chain.
+
+Why?
+
+Because Phase 424 leaves QEMU running. That is useful when a human wants to SSH
+into the machine, but it is not what we want from an automatic "run every
+build/proof step" command.
+
+Use:
+
+```sh
+make phase 424
+```
+
+or:
+
+```sh
+make up
+```
+
+when you want the booted native ONIX VM to stay alive for inspection.
+
+After that VM is up, run:
+
+```sh
+make phase 425
+```
+
+to run the final Phase 4 acceptance gate. Phase 425 checks the live VM through
+SSH and through an interactive login transcript. It proves the machine is still
+using native `onix-systemd` as PID 1, Dropbear has its MOTD disabled with `-m`,
+the colored ONIX login banner is printed by `/etc/profile`, and the shell
+policy exposes the `ll` alias.
+
+Phase 425 is also not part of `make phase 4`, because it depends on the live
+inspection VM from Phase 424.
+
 ## Steps
 
 - [400 — booted-base readiness](./400.md)
@@ -129,3 +185,17 @@ Those are later phases. The base system must become understandable first.
 - [408 — local stone/repo contract](./408.md)
 - [409 — build `onix-busybox.stone`](./409.md)
 - [410 — install/use `onix-busybox`](./410.md)
+- [411 — boot-prove `onix-busybox`](./411.md)
+- [412 — build `onix-dropbear.stone`](./412.md)
+- [413 — install/use `onix-dropbear`](./413.md)
+- [414 — systemd ownership audit](./414.md)
+- [415 — build `onix-systemd.stone`](./415.md)
+- [416 — install/use `onix-systemd`](./416.md)
+- [417 — boot-prove `onix-systemd`](./417.md)
+- [418 — package/prove bootstrap policy](./418.md)
+- [419 — booted-base ownership audit](./419.md)
+- [420 — prune stale old Nix BusyBox/Dropbear payloads](./420.md)
+- [421 — prepare native `onix-systemd`](./421.md)
+- [422 — native `onix-systemd` build/install/boot proof](./422.md)
+- [424 — bring up native ONIX for inspection](./424.md)
+- [425 — final Phase 4 acceptance check](./425.md)

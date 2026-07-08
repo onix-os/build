@@ -4,7 +4,7 @@
 PHASE_ARG := $(word 2,$(MAKECMDGOALS))
 ATTACHED ?= 0
 
-.PHONY: help phases phase phase-2 2 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 list check cleanup ready root-tree host-moss host-root-tree image-contract image-skeleton boot-skeleton kernel-plan systemd-plan systemd-musl init-decision kernel-payload boot-probe systemd-payload module-payload
+.PHONY: help phases phase phase-2 2 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 list check stop cleanup ready root-tree host-moss host-root-tree image-contract image-skeleton boot-skeleton kernel-plan systemd-plan systemd-musl init-decision kernel-payload boot-probe systemd-payload module-payload
 
 help: ## show Phase 2 help
 	@echo "ONIX Phase 2 targets:"
@@ -65,7 +65,11 @@ check: ## host-side syntax validation only
 	@bash -n check-readiness.sh build-root-tree.sh build-host-moss.sh build-root-tree-host.sh verify-image-contract.sh build-image-skeleton.sh verify-kernel-initramfs-plan.sh verify-systemd-userspace-plan.sh check-systemd-musl.sh verify-init-decision.sh boot-probe.sh
 	@echo "phase2   : check OK"
 
-cleanup: ## cleanup stale Phase 2 image mounts and remove generated image
+stop: ## stop Phase 2 QEMU probe and detach stale image mounts; keep generated image
+	./boot-probe.sh --kill
+	./build-image-skeleton.sh --cleanup-stale
+
+cleanup: ## destructive: stop Phase 2 probe, detach mounts, remove generated image
 	./boot-probe.sh --kill
 	./build-image-skeleton.sh --clean
 

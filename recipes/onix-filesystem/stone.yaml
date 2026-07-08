@@ -56,6 +56,19 @@ install     : |
     /persist/nix        /nix      none  bind                  0 0
     EOF_FSTAB
 
+    cat > %(installroot)/usr/share/defaults/etc/profile <<'EOF_PROFILE'
+    # ONIX default login shell profile.
+    #
+    # BusyBox ash reads /etc/profile for login shells. Keep this file small and
+    # source package-provided policy from /etc/profile.d.
+
+    for script in /etc/profile.d/*.sh; do
+        [ -r "$script" ] && . "$script"
+    done
+
+    unset script
+    EOF_PROFILE
+
     cat > %(installroot)/usr/share/defaults/etc/profile.d/onix-path.sh <<'EOF_PATH'
     # ONIX default PATH policy.
     # This is a default template; image/boot glue may install it into /etc/profile.d.
@@ -71,12 +84,46 @@ install     : |
     esac
 
     export PATH
+
+    if [ -n "${PS1:-}" ]; then
+        alias ll='ls -laF'
+        alias la='ls -A'
+        alias l='ls -CF'
+    fi
     EOF_PATH
+
+    cat > %(installroot)/usr/share/defaults/etc/profile.d/onix-login.sh <<'EOF_LOGIN'
+    # ONIX interactive login banner.
+    #
+    # Dropbear is started with -m so it does not print /etc/motd. That avoids
+    # Dropbear's MOTD byte limit. Interactive shells print the colored logo
+    # here instead.
+
+    [ -n "${PS1:-}" ] || return 0
+    [ -t 1 ] || return 0
+    [ "${TERM:-}" != "dumb" ] || return 0
+    [ "${ONIX_LOGIN_BANNER:-1}" != "0" ] || return 0
+
+    if [ -z "${ONIX_LOGIN_BANNER_SHOWN:-}" ]; then
+        export ONIX_LOGIN_BANNER_SHOWN=1
+
+        if [ -r /usr/share/onix/branding/logo.ansi ]; then
+            cat /usr/share/onix/branding/logo.ansi
+        elif [ -r /etc/motd ]; then
+            cat /etc/motd
+        fi
+
+        printf '\nWelcome to ONIX.\n'
+        printf 'moss controls the machine. Nix controls the toolbox.\n'
+    fi
+    EOF_LOGIN
 
     chmod 0644 \
         %(installroot)/usr/share/onix/filesystem-layout.md \
         %(installroot)/usr/share/defaults/etc/fstab \
-        %(installroot)/usr/share/defaults/etc/profile.d/onix-path.sh
+        %(installroot)/usr/share/defaults/etc/profile \
+        %(installroot)/usr/share/defaults/etc/profile.d/onix-path.sh \
+        %(installroot)/usr/share/defaults/etc/profile.d/onix-login.sh
 
     # Boulder build dirs inherit setgid. Clear it on directories we created so
     # Moss receives ordinary directory layout metadata.

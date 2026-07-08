@@ -12,7 +12,7 @@ export BUILD_USER
 PHASE_ARG := $(word 2,$(MAKECMDGOALS))
 
 .PHONY: help phases phase phase-0 0 000 001 002 003 004 005 006 list \
-	check rootfs disk inspect-disk kill-qemu cleanup cleanup-stale forge run direct \
+	check rootfs disk inspect-disk kill-qemu stop cleanup cleanup-stale forge run direct \
 	run-wait headless snapshot ssh provision stone-hello state-smoke state-smoke-only config dry-run \
 	passwordless clean clean-all
 
@@ -99,9 +99,12 @@ cleanup-stale: ## cleanup stale loop mounts from interrupted/failed disk builds
 kill-qemu:
 	$(VM)/kill-qemu.sh
 
-cleanup:
+stop: ## stop forge QEMU and detach stale loop mounts; keep forge disk
 	@$(MAKE) --no-print-directory kill-qemu
 	@$(MAKE) --no-print-directory cleanup-stale
+
+cleanup: ## destructive: stop forge QEMU, detach stale mounts, remove forge disk
+	@$(MAKE) --no-print-directory stop
 	@$(MAKE) --no-print-directory clean
 
 forge: rootfs disk ## fetch rootfs + build disk in one go
