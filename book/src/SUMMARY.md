@@ -69,3 +69,6 @@
   - [422 — native `onix-systemd` build/install/boot proof](./phases/422.md)
   - [424 — bring up native ONIX for inspection](./phases/424.md)
   - [425 — final Phase 4 acceptance check](./phases/425.md)
+- [Phase 5 — Rust-first musl package/repository plane](./phases/phase-5.md)
+  - [500 — Rust-first musl-only package law](./phases/500.md)
+  - [501 — canonical package layout and metadata contract](./phases/501.md)

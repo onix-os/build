@@ -6,11 +6,12 @@ PHASE1 := vm/phase1
 PHASE2 := vm/phase2
 PHASE3 := vm/phase3
 PHASE4 := vm/phase4
+PHASE5 := vm/phase5
 
 PHASE_ARG := $(word 2,$(MAKECMDGOALS))
 ATTACHED ?= 0
 
-.PHONY: help phases phase 0 1 2 3 4 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 300 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 424 425 list \
+.PHONY: help phases phase 0 1 2 3 4 5 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 300 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 424 425 500 501 list \
 	doctor stop cleanup up book book-serve
 
 help: ## show top-level help and phase map
@@ -32,6 +33,7 @@ help: ## show top-level help and phase map
 	@echo "  make phase 4         run canonical Phase 4 build/proof steps: 400..422"
 	@echo "  make phase 424       boot native ONIX and leave it running for inspection"
 	@echo "  make phase 425       final Phase 4 acceptance check against that running VM"
+	@echo "  make phase 5         run current Phase 5 package/repository gates"
 	@echo "  ATTACHED=1 make phase 212   run visual/interactive when a phase supports it"
 	@echo
 	@$(MAKE) --no-print-directory phases
@@ -51,6 +53,9 @@ phases: ## list learning-phase aliases
 	@printf "\n"
 	@printf "  \033[1m--- Phase 4: booted ONIX base userspace ---\033[0m\n"
 	@$(MAKE) --no-print-directory -C $(PHASE4) phases
+	@printf "\n"
+	@printf "  \033[1m--- Phase 5: Rust-first musl package/repository plane ---\033[0m\n"
+	@$(MAKE) --no-print-directory -C $(PHASE5) phases
 
 phase: ## run a learning phase alias, e.g. `make phase 002`
 	@case "$(PHASE_ARG)" in \
@@ -60,12 +65,13 @@ phase: ## run a learning phase alias, e.g. `make phase 002`
 	  2|200|201|202|203|204|205|206|207|208|209|210|211|212|213|214) $(MAKE) --no-print-directory -C $(PHASE2) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
 	  3|300) $(MAKE) --no-print-directory -C $(PHASE3) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
 	  4|400|401|402|403|404|405|406|407|408|409|410|411|412|413|414|415|416|417|418|419|420|421|422|424|425) $(MAKE) --no-print-directory -C $(PHASE4) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
+	  5|500|501) $(MAKE) --no-print-directory -C $(PHASE5) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
 	  *) echo "unknown phase: $(PHASE_ARG)" >&2; $(MAKE) --no-print-directory phases; exit 2 ;; \
 	esac
 
 # Absorb the second goal in commands like `make phase 002`, otherwise Make
 # would try to build a separate target named `002` after `phase` completes.
-0 1 2 3 4 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 300 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 424 425 list:
+0 1 2 3 4 5 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 300 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 424 425 500 501 list:
 	@:
 
 doctor: ## common health check; not a phase step
@@ -74,6 +80,7 @@ doctor: ## common health check; not a phase step
 	@$(MAKE) --no-print-directory -C $(PHASE2) check
 	@$(MAKE) --no-print-directory -C $(PHASE3) check
 	@$(MAKE) --no-print-directory -C $(PHASE4) check
+	@$(MAKE) --no-print-directory -C $(PHASE5) check
 	@missing=0; \
 	for c in qemu-system-x86_64 losetup findmnt sgdisk partprobe mkfs.fat mkfs.ext4 mkfs.xfs mount umount chroot modprobe depmod truncate tar blkid bootctl cpio curl gzip sha256sum sudo ssh ssh-keygen visudo mdbook systemd-sysusers nix readelf file nc; do \
 	  if ! command -v $$c >/dev/null 2>&1; then echo "missing   : $$c"; missing=1; fi; \

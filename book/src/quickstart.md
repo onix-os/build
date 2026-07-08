@@ -15,6 +15,7 @@ make phase 3     # explain deferred ONIX-owned kernel work
 make phase 4     # run canonical Phase 4 build/proof steps: 400..422
 make phase 424   # boot native ONIX and leave it running for inspection
 make phase 425   # accept the running Phase 4 VM
+make phase 5     # run current Phase 5 package/repository gates
 ```
 
 Individual steps use three digits:
@@ -51,6 +52,8 @@ Individual steps use three digits:
 422 = Phase 4, step 22
 424 = Phase 4, step 24
 425 = Phase 4, step 25
+500 = Phase 5, step 00
+501 = Phase 5, step 01
 ```
 
 Examples:
@@ -88,6 +91,8 @@ make phase 421   # prepare native source-built onix-systemd plan
 make phase 422   # build/install/boot-prove native onix-systemd
 make phase 424   # boot native ONIX, prove SSH, and leave QEMU running
 make phase 425   # final Phase 4 acceptance check against the running VM
+make phase 500   # define Rust-first musl-only package/repository law
+make phase 501   # define canonical packages/ layout and metadata contract
 make up          # shortcut for the Phase 424 day-to-day bring-up
 ```
 
