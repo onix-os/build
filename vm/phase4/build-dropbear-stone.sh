@@ -16,7 +16,7 @@ user="${1:-$BUILD_USER}"
 STONE_DIR="${ONIX_STONE_DIR:-$ONIX_ROOT/artifacts/onix-stones}"
 LOCAL_REPO_DIR="${ONIX_LOCAL_REPO_DIR:-$ONIX_ROOT/artifacts/onix-local-repo}"
 STONE_WORK_DIR="${ONIX_STONE_WORK_DIR:-$ONIX_ROOT/artifacts/onix-stone-work}"
-RECIPE_TEMPLATE="${ONIX_DROPBEAR_RECIPE_TEMPLATE:-$SCRIPT_DIR/stone-recipes/onix-dropbear/stone.yaml.in}"
+RECIPE_TEMPLATE="${ONIX_DROPBEAR_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/services/onix-dropbear/stone.yaml.in}"
 HOST_MOSS="${ONIX_HOST_MOSS:-$ONIX_ROOT/artifacts/host-tools/bin/moss}"
 
 LAB="/home/$user/stone-lab/onix-dropbear"

@@ -143,10 +143,14 @@ find_ovmf || die "no OVMF firmware; run direnv reload so ONIX_OVMF_CODE and ONIX
 if [[ -w /dev/kvm ]]; then
   ACCEL=kvm
   CPU_MODEL=host
+elif [[ -e /dev/kvm ]]; then
+  ACCEL=tcg
+  CPU_MODEL=max
+  warn "/dev/kvm exists but is not writable — slow TCG emulation (run: make kvm)"
 else
   ACCEL=tcg
   CPU_MODEL=max
-  warn "/dev/kvm not writable — slow TCG emulation"
+  warn "/dev/kvm is missing — slow TCG emulation (run: make kvm)"
 fi
 
 case "$ATTACHED" in

@@ -112,8 +112,18 @@ wait_for_batch_boot_ready() {
   log "boot       : serial login prompt reached; continuing"
 }
 
-if [[ -w /dev/kvm ]]; then ACCEL=kvm; CPU_MODEL=host
-else ACCEL=tcg; CPU_MODEL=max; warn "/dev/kvm not writable — slow TCG emulation"; fi
+if [[ -w /dev/kvm ]]; then
+  ACCEL=kvm
+  CPU_MODEL=host
+elif [[ -e /dev/kvm ]]; then
+  ACCEL=tcg
+  CPU_MODEL=max
+  warn "/dev/kvm exists but is not writable — slow TCG emulation (run: make kvm)"
+else
+  ACCEL=tcg
+  CPU_MODEL=max
+  warn "/dev/kvm is missing — slow TCG emulation (run: make kvm)"
+fi
 
 args=(
   -name "$VM_NAME,process=onix-$VM_NAME"

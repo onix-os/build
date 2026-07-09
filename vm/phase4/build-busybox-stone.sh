@@ -16,7 +16,7 @@ user="${1:-$BUILD_USER}"
 STONE_DIR="${ONIX_STONE_DIR:-$ONIX_ROOT/artifacts/onix-stones}"
 LOCAL_REPO_DIR="${ONIX_LOCAL_REPO_DIR:-$ONIX_ROOT/artifacts/onix-local-repo}"
 STONE_WORK_DIR="${ONIX_STONE_WORK_DIR:-$ONIX_ROOT/artifacts/onix-stone-work}"
-RECIPE_TEMPLATE="${ONIX_BUSYBOX_RECIPE_TEMPLATE:-$SCRIPT_DIR/stone-recipes/onix-busybox/stone.yaml.in}"
+RECIPE_TEMPLATE="${ONIX_BUSYBOX_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/core/onix-busybox/stone.yaml.in}"
 HOST_MOSS="${ONIX_HOST_MOSS:-$ONIX_ROOT/artifacts/host-tools/bin/moss}"
 
 LAB="/home/$user/stone-lab/onix-busybox"
@@ -141,6 +141,12 @@ REPO="$LAB/repo"
 ROOT="$LAB/moss-root"
 CACHE="$LAB/moss-cache"
 TARGET="$LAB/install-target"
+# These commands exist inside the BusyBox binary, but ONIX does not install
+# BusyBox applet links for them. Native systemd owns these command names.
+SYSTEMD_OWNED_BUSYBOX_APPLETS="
+poweroff
+reboot
+"
 BOOTSTRAP_BUSYBOX_APPLETS="
 ash
 awk
@@ -180,10 +186,8 @@ netstat
 nslookup
 ping
 ping6
-poweroff
 ps
 pwd
-reboot
 rm
 rmdir
 rmmod
@@ -377,7 +381,20 @@ for applet in $BOOTSTRAP_BUSYBOX_APPLETS; do
     ln -sf busybox "$PAYLOAD_SRC/usr/bin/$applet"
 done
 
+for applet in $SYSTEMD_OWNED_BUSYBOX_APPLETS; do
+    "$BUSYBOX_BIN" --list | grep -qx "$applet" || {
+        echo "error: built BusyBox is missing applet expected to be withheld: $applet" >&2
+        exit 1
+    }
+    if [ -e "$PAYLOAD_SRC/usr/bin/$applet" ]; then
+        echo "error: onix-busybox must not own /usr/bin/$applet" >&2
+        exit 1
+    fi
+done
+
 "$BUSYBOX_BIN" --list > "$PAYLOAD_SRC/usr/share/onix/packages/onix-busybox.applets"
+printf '%s\n' $BOOTSTRAP_BUSYBOX_APPLETS > "$PAYLOAD_SRC/usr/share/onix/packages/onix-busybox.links"
+printf '%s\n' $SYSTEMD_OWNED_BUSYBOX_APPLETS > "$PAYLOAD_SRC/usr/share/onix/packages/onix-busybox.systemd-owned"
 cat > "$PAYLOAD_SRC/usr/share/onix/packages/onix-busybox.md" <<EOF_DOC
 # onix-busybox
 
@@ -405,10 +422,18 @@ The package owns the applets needed by the Phase 403-406 bootstrap proofs:
 \`\`\`text
 $BOOTSTRAP_BUSYBOX_APPLETS
 \`\`\`
+
+The package deliberately does not own these systemd-owned command names:
+
+\`\`\`text
+$SYSTEMD_OWNED_BUSYBOX_APPLETS
+\`\`\`
 EOF_DOC
 
 chmod 0644 \
     "$PAYLOAD_SRC/usr/share/onix/packages/onix-busybox.applets" \
+    "$PAYLOAD_SRC/usr/share/onix/packages/onix-busybox.links" \
+    "$PAYLOAD_SRC/usr/share/onix/packages/onix-busybox.systemd-owned" \
     "$PAYLOAD_SRC/usr/share/onix/packages/onix-busybox.md"
 chmod g-s \
     "$PAYLOAD_SRC/usr" \
@@ -482,10 +507,21 @@ for applet in $BOOTSTRAP_BUSYBOX_APPLETS; do
     }
 done
 
+for applet in $SYSTEMD_OWNED_BUSYBOX_APPLETS; do
+    if [ -e "$PAYLOAD/usr/bin/$applet" ]; then
+        echo "error: onix-busybox must not own /usr/bin/$applet" >&2
+        exit 1
+    fi
+done
+
 test -f "$PAYLOAD/usr/share/onix/packages/onix-busybox.applets"
+test -f "$PAYLOAD/usr/share/onix/packages/onix-busybox.links"
+test -f "$PAYLOAD/usr/share/onix/packages/onix-busybox.systemd-owned"
 grep -qx 'sh' "$PAYLOAD/usr/share/onix/packages/onix-busybox.applets"
 grep -qx 'nc' "$PAYLOAD/usr/share/onix/packages/onix-busybox.applets"
 grep -qx 'ifconfig' "$PAYLOAD/usr/share/onix/packages/onix-busybox.applets"
+grep -qx 'reboot' "$PAYLOAD/usr/share/onix/packages/onix-busybox.systemd-owned"
+grep -qx 'poweroff' "$PAYLOAD/usr/share/onix/packages/onix-busybox.systemd-owned"
 
 echo
 echo "==> index local repo and install into disposable target"

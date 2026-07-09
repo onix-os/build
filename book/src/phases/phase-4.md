@@ -20,11 +20,40 @@ Can the booted image become a usable base system?
 
 The kernel gets the machine started, but userspace is what makes it usable.
 
-After the kernel mounts the real root filesystem, it starts PID 1:
+**Kernel space vs userspace.** The kernel runs in a privileged CPU mode and owns
+the hardware. Everything else — shells, daemons, login, your programs — runs in
+*userspace*, an unprivileged mode where code can only touch hardware by asking the
+kernel through system calls. "Base userspace" is the minimum set of userspace
+software that turns a bare booted kernel into a machine a human can actually log
+into, inspect, network, and repair.
+
+### The kernel-to-PID-1 handoff
+
+The kernel does not run programs on its own forever. Once it has mounted the real
+root filesystem (with the initramfs's help, see Phase 3), it does exactly one
+thing to start userspace: it executes a single program and gives it **process ID
+1**. On ONIX that program is:
 
 ```text
 /usr/lib/systemd/systemd
 ```
+
+PID 1 is special. It is the ancestor of every other process, it never exits while
+the system is up, and it is responsible for bringing the rest of userspace to
+life — mounting the other filesystems, starting services in dependency order, and
+reaping orphaned processes. If PID 1 crashes, the kernel panics. This is why the
+init system is such a load-bearing choice, and why ONIX commits to **systemd as
+PID 1** (see the init decision in the architecture chapter).
+
+So the whole boot is a relay of responsibility:
+
+```text
+firmware -> bootloader -> kernel -> initramfs -> PID 1 (systemd) -> the rest of userspace
+```
+
+Phase 2 proved that relay reaches its final leg: systemd starts and reaches
+multi-user mode. Phase 4 is about everything *after* that hand-off — making the
+booted system into a base you can live in.
 
 From that point onward, userspace is responsible for:
 
@@ -120,6 +149,24 @@ Phase 4 should avoid:
 - making a huge package set
 
 Those are later phases. The base system must become understandable first.
+
+## The theme running through Phase 4: prove, then own
+
+Two ideas repeat across every Phase 4 step, and it helps to name them now.
+
+First, **prove behavior before packaging it.** Writing a `.stone` recipe for
+every component before you know it even works would be slow and demoralizing. So
+Phase 4 leans on convenient, pinned Nix-built musl payloads (BusyBox, Dropbear,
+systemd) as *scaffolding* to prove a behavior — a shell over serial, an IPv4
+route, key-based SSH — and only then replaces that scaffolding with a real
+moss-owned stone. Steps 401-406 are the "prove" half; 407 audits the debt; 408
+onward is the "own" half.
+
+Second, **stay honest about which plane owns what.** The ONIX constitution says
+moss owns the machine plane and Nix owns the user toolbox. A shell, an SSH daemon,
+and PID 1 are machine-plane software, so a Nix-built copy of them is only ever a
+temporary loan. Phase 407 exists specifically to write that loan down and name its
+future `.stone` owner, so the shortcut never hardens into the architecture.
 
 ## Build/proof steps versus lab steps
 

@@ -16,7 +16,7 @@ source "$PHASE0_DIR/config.sh"
 PLAN_DIR="${ONIX_NATIVE_SYSTEMD_PLAN_DIR:-$ONIX_ROOT/artifacts/onix-native-systemd-plan}"
 SYSTEMD_PAYLOAD_OUT_FILE="${ONIX_SYSTEMD_PAYLOAD_OUT_FILE:-$ONIX_ROOT/artifacts/onix-image/systemd-payload.out}"
 SYSTEMD_CLOSURE_LIST="${ONIX_SYSTEMD_CLOSURE_LIST:-$ONIX_ROOT/artifacts/onix-image/systemd-payload.closure}"
-NATIVE_RECIPE_DRAFT="${ONIX_NATIVE_SYSTEMD_RECIPE_DRAFT:-$SCRIPT_DIR/stone-recipes/onix-systemd-native/stone.yaml.in}"
+NATIVE_RECIPE_DRAFT="${ONIX_NATIVE_SYSTEMD_RECIPE_DRAFT:-$ONIX_ROOT/packages/services/onix-systemd/stone.yaml.in}"
 
 need_cmd awk
 need_cmd basename

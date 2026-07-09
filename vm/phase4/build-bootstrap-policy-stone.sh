@@ -17,7 +17,7 @@ user="${1:-$BUILD_USER}"
 STONE_DIR="${ONIX_STONE_DIR:-$ONIX_ROOT/artifacts/onix-stones}"
 LOCAL_REPO_DIR="${ONIX_LOCAL_REPO_DIR:-$ONIX_ROOT/artifacts/onix-local-repo}"
 STONE_WORK_DIR="${ONIX_STONE_WORK_DIR:-$ONIX_ROOT/artifacts/onix-stone-work}"
-RECIPE_TEMPLATE="${ONIX_BOOTSTRAP_POLICY_RECIPE_TEMPLATE:-$SCRIPT_DIR/stone-recipes/onix-bootstrap-policy/stone.yaml.in}"
+RECIPE_TEMPLATE="${ONIX_BOOTSTRAP_POLICY_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/services/onix-bootstrap-policy/stone.yaml.in}"
 HOST_MOSS="${ONIX_HOST_MOSS:-$ONIX_ROOT/artifacts/host-tools/bin/moss}"
 BOOTSTRAP_POLICY_VERSION="${ONIX_BOOTSTRAP_POLICY_VERSION:-0.1.0}"
 SERIAL_CONSOLE_TTY="${ONIX_SERIAL_CONSOLE_TTY:-ttyS1}"
@@ -405,9 +405,7 @@ Policy:
 - Machine-plane policy should be carried by moss/.stone packages.
 - Phase 418 moves the source of the bootstrap scripts and units into this
   package.
-- Image assembly still activates unit copies into the current temporary systemd
-  unit tree because systemd itself still exposes that tree through the
-  bootstrap /nix/store payload.
+- Image assembly still activates unit copies into the current systemd unit tree.
 
 Package-owned script paths:
 
@@ -432,7 +430,7 @@ Important limitation:
 
 The active unit files are still copied into the current systemd unit tree:
 
-  /nix/store/...-systemd-.../example/systemd/system
+  /usr/lib/systemd/system
 
 That activation copy is still image-assembly glue. The improvement is that the
 source files now come from a package instead of shell heredocs.
@@ -538,11 +536,10 @@ It owns:
 
 It does not yet remove all image-assembly glue.
 
-The active systemd unit tree is still the temporary tree exposed by the current
-\`onix-systemd\` payload:
+The active systemd unit tree is currently:
 
 \`\`\`text
-/nix/store/...-systemd-.../example/systemd/system
+/usr/lib/systemd/system
 \`\`\`
 
 Phase 418 copies package-owned unit source files into that active tree. Later

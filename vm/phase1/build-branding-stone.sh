@@ -12,7 +12,7 @@ ONIX_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$PHASE0_DIR/config.sh"
 
 user="${1:-$BUILD_USER}"
-RECIPE_DIR="$ONIX_ROOT/recipes/onix-branding"
+RECIPE_DIR="${ONIX_BRANDING_RECIPE_DIR:-$ONIX_ROOT/packages/base/onix-branding}"
 LAB="/home/$user/stone-lab/onix-branding"
 
 [[ -f "$RECIPE_DIR/stone.yaml" ]] || die "missing recipe: ${RECIPE_DIR#$ONIX_ROOT/}/stone.yaml"

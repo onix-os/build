@@ -23,7 +23,7 @@ LOCAL_REPO_DIR="${ONIX_LOCAL_REPO_DIR:-$ONIX_ROOT/artifacts/onix-local-repo}"
 STONE_WORK_DIR="${ONIX_STONE_WORK_DIR:-$ONIX_ROOT/artifacts/onix-stone-work}"
 PLAN_DIR="${ONIX_NATIVE_SYSTEMD_PLAN_DIR:-$ONIX_ROOT/artifacts/onix-native-systemd-plan}"
 SOURCE_POLICY="${ONIX_NATIVE_SYSTEMD_SOURCE_POLICY:-$PLAN_DIR/source-policy.txt}"
-RECIPE_TEMPLATE="${ONIX_SYSTEMD_NATIVE_RECIPE_TEMPLATE:-$SCRIPT_DIR/stone-recipes/onix-systemd-native/stone.yaml.in}"
+RECIPE_TEMPLATE="${ONIX_SYSTEMD_NATIVE_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/services/onix-systemd/stone.yaml.in}"
 HOST_MOSS="${ONIX_HOST_MOSS:-$ONIX_ROOT/artifacts/host-tools/bin/moss}"
 
 LAB="/home/$user/stone-lab/onix-systemd-native"

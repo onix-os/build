@@ -129,4 +129,43 @@ packages/templates/stone.yaml
 
 Phase 501 creates the contract only.
 
-Later phases will move existing phase-local recipes here.
+Phase 503 copies existing phase-local recipes here while keeping the old paths
+alive for existing builders.
+
+Phase 504 migrates the existing essential builders so their defaults consume
+the canonical copies.
+
+Phase 505 assembles the resulting essential stones into one canonical local
+repository under:
+
+```text
+artifacts/onix-repo/
+```
+
+Phase 506 fixes the first cross-package ownership collision discovered by that
+repo proof: `onix-busybox` no longer owns `/usr/bin/reboot` or
+`/usr/bin/poweroff`; those command names belong to `onix-systemd`.
+
+Phase 507 makes the current image assembly consume the canonical repo through:
+
+```text
+ONIX_IMAGE_REPO_DIR=artifacts/onix-repo/unstable/x86_64
+```
+
+That keeps the image path aligned with the repository shape ONIX will later
+publish.
+
+Phase 508 reshapes the same canonical repo into a local public-style repository
+under:
+
+```text
+artifacts/onix-public-repo/
+```
+
+That tree contains a Moss root index, stream index, history index, and pooled
+stones. It is still local-only, but it matches the shape ONIX can later serve
+from:
+
+```text
+https://repo.onix-os.com
+```

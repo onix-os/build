@@ -8,6 +8,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 ONIX_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 STATE_DIR="${ONIX_STATE_DIR:-$ONIX_ROOT/vm/state}"
+IMAGE_REPO_DIR="${ONIX_IMAGE_REPO_DIR:-${ONIX_LOCAL_REPO_DIR:-$ONIX_ROOT/artifacts/onix-local-repo}}"
+BOOT_LOG="${ONIX_NATIVE_SYSTEMD_BOOT_LOG:-$STATE_DIR/phase422.ssh-boot.log}"
+SERIAL_LOG="${ONIX_NATIVE_SYSTEMD_SERIAL_LOG:-$STATE_DIR/phase422.ssh-serial.log}"
+SERIAL_SOCKET="${ONIX_NATIVE_SYSTEMD_SERIAL_SOCKET:-$STATE_DIR/phase422.ssh.sock}"
 
 WAIT_SECONDS="${ONIX_NATIVE_SYSTEMD_SECONDS:-150}"
 DRY_RUN=0
@@ -87,10 +91,10 @@ fi
 
 [[ -f "$ONIX_ROOT/artifacts/onix-image/onix.raw" ]] \
   || die "missing ONIX image: artifacts/onix-image/onix.raw (run make phase 2 first)"
-[[ -f "$ONIX_ROOT/artifacts/onix-local-repo/stone.index" ]] \
-  || die "missing local Phase 4 repo index: artifacts/onix-local-repo/stone.index"
-compgen -G "$ONIX_ROOT/artifacts/onix-local-repo/onix-systemd-*.stone" >/dev/null \
-  || die "missing onix-systemd stone in artifacts/onix-local-repo (run make phase 422)"
+[[ -f "$IMAGE_REPO_DIR/stone.index" ]] \
+  || die "missing ONIX image package repo index: ${IMAGE_REPO_DIR#$ONIX_ROOT/}/stone.index"
+compgen -G "$IMAGE_REPO_DIR/onix-systemd-*.stone" >/dev/null \
+  || die "missing onix-systemd stone in ${IMAGE_REPO_DIR#$ONIX_ROOT/} (run make phase 505)"
 
 log "$LIVE_PROOF_LABEL"
 log "goal      : boot with source-built onix-systemd as PID 1"
@@ -99,9 +103,9 @@ log "window    : ${WAIT_SECONDS}s"
 kill_probe >/dev/null 2>&1 || true
 
 ONIX_SSH_PROBE_NAME=p422ssh \
-ONIX_SSH_BOOT_LOG="$STATE_DIR/phase422.ssh-boot.log" \
-ONIX_SSH_SERIAL_LOG="$STATE_DIR/phase422.ssh-serial.log" \
-ONIX_SSH_SERIAL_SOCKET="$STATE_DIR/phase422.ssh.sock" \
+ONIX_SSH_BOOT_LOG="$BOOT_LOG" \
+ONIX_SSH_SERIAL_LOG="$SERIAL_LOG" \
+ONIX_SSH_SERIAL_SOCKET="$SERIAL_SOCKET" \
 ONIX_SSH_HOST_PORT="${ONIX_NATIVE_SYSTEMD_SSH_HOST_PORT:-7630}" \
 ONIX_SSH_PROBE_LABEL="$SSH_PROOF_LABEL" \
 ONIX_SSH_SERIAL_COMMAND="/usr/lib/onix/bootstrap-network-proof && /usr/lib/onix/bootstrap-ssh-proof && $(native_systemd_serial_command)" \
@@ -117,6 +121,7 @@ cat <<EOF
 ${SUCCESS_DETAILS}
 
 Evidence logs:
-  ${STATE_DIR#$ONIX_ROOT/}/phase422.*.log
+  ${BOOT_LOG#$ONIX_ROOT/}
+  ${SERIAL_LOG#$ONIX_ROOT/}
 
 EOF

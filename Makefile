@@ -11,14 +11,15 @@ PHASE5 := vm/phase5
 PHASE_ARG := $(word 2,$(MAKECMDGOALS))
 ATTACHED ?= 0
 
-.PHONY: help phases phase 0 1 2 3 4 5 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 300 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 424 425 500 501 list \
-	doctor stop cleanup up book book-serve
+.PHONY: help phases phase 0 1 2 3 4 5 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 300 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 424 425 500 501 502 503 504 505 506 507 508 list \
+	doctor kvm stop cleanup up book book-serve
 
 help: ## show top-level help and phase map
 	@echo "ONIX top-level Makefile."
 	@echo
 	@echo "Common:"
 	@echo "  make doctor          common health check"
+	@echo "  make kvm             explain QEMU/KVM acceleration status"
 	@echo "  make stop            stop QEMU/probes and detach stale mounts; keep disks/images"
 	@echo "  make cleanup         destructive: stop everything and remove generated disks/images"
 	@echo "  make up              boot native ONIX, prove SSH, and leave QEMU running"
@@ -65,13 +66,13 @@ phase: ## run a learning phase alias, e.g. `make phase 002`
 	  2|200|201|202|203|204|205|206|207|208|209|210|211|212|213|214) $(MAKE) --no-print-directory -C $(PHASE2) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
 	  3|300) $(MAKE) --no-print-directory -C $(PHASE3) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
 	  4|400|401|402|403|404|405|406|407|408|409|410|411|412|413|414|415|416|417|418|419|420|421|422|424|425) $(MAKE) --no-print-directory -C $(PHASE4) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
-	  5|500|501) $(MAKE) --no-print-directory -C $(PHASE5) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
+	  5|500|501|502|503|504|505|506|507|508) $(MAKE) --no-print-directory -C $(PHASE5) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
 	  *) echo "unknown phase: $(PHASE_ARG)" >&2; $(MAKE) --no-print-directory phases; exit 2 ;; \
 	esac
 
 # Absorb the second goal in commands like `make phase 002`, otherwise Make
 # would try to build a separate target named `002` after `phase` completes.
-0 1 2 3 4 5 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 300 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 424 425 500 501 list:
+0 1 2 3 4 5 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 300 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 424 425 500 501 502 503 504 505 506 507 508 list:
 	@:
 
 doctor: ## common health check; not a phase step
@@ -88,6 +89,9 @@ doctor: ## common health check; not a phase step
 	[ $$missing -eq 0 ] || exit 1; \
 	echo "doctor    : host tools OK"
 	@$(MAKE) --no-print-directory -C $(PHASE0) passwordless
+
+kvm: ## explain QEMU/KVM acceleration status
+	@./vm/kvm-doctor.sh
 
 stop: ## stop QEMU/probes and detach stale mounts; keep generated disks/images
 	@$(MAKE) --no-print-directory -C $(PHASE0) stop

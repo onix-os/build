@@ -100,6 +100,7 @@ SSH_GID="${ONIX_SSH_GID:-100}"
 SSH_CLIENT_KEY="${ONIX_SSH_CLIENT_KEY:-$STATE_DIR/id_ed25519}"
 SSH_CLIENT_PUB="${ONIX_SSH_CLIENT_PUB:-$SSH_CLIENT_KEY.pub}"
 LOCAL_REPO_DIR="${ONIX_LOCAL_REPO_DIR:-$ONIX_ROOT/artifacts/onix-local-repo}"
+IMAGE_REPO_DIR="${ONIX_IMAGE_REPO_DIR:-$LOCAL_REPO_DIR}"
 HOST_MOSS="${ONIX_HOST_MOSS:-$ONIX_ROOT/artifacts/host-tools/bin/moss}"
 BUSYBOX_MOSS_ROOT="$WORK_DIR/busybox-moss-root"
 BUSYBOX_MOSS_CACHE="$WORK_DIR/busybox-moss-cache"
@@ -141,10 +142,12 @@ safe_generated_paths() {
     "$ONIX_ROOT"/artifacts/onix-phase4-work/*) ;;
     *) die "refusing unsafe work path outside artifacts/onix-phase4-work: $WORK_DIR" ;;
   esac
-  case "$LOCAL_REPO_DIR" in
+  case "$IMAGE_REPO_DIR" in
     "$ONIX_ROOT"/artifacts/onix-local-repo) ;;
     "$ONIX_ROOT"/artifacts/onix-local-repo/*) ;;
-    *) die "refusing unsafe local repo path outside artifacts/onix-local-repo: $LOCAL_REPO_DIR" ;;
+    "$ONIX_ROOT"/artifacts/onix-repo) ;;
+    "$ONIX_ROOT"/artifacts/onix-repo/*) ;;
+    *) die "refusing unsafe image repo path outside artifacts/onix-local-repo or artifacts/onix-repo: $IMAGE_REPO_DIR" ;;
   esac
 }
 
@@ -208,7 +211,7 @@ need_root() {
       ONIX_SERIAL_CONSOLE_APPLETS ONIX_SERIAL_CONSOLE_TTY \
       ONIX_DROPBEAR_PAYLOAD_OUT ONIX_DROPBEAR_CLOSURE_LIST \
       ONIX_SSH_USER ONIX_SSH_UID ONIX_SSH_GID ONIX_SSH_CLIENT_KEY \
-      ONIX_SSH_CLIENT_PUB ONIX_STATE_DIR ONIX_LOCAL_REPO_DIR ONIX_HOST_MOSS \
+      ONIX_SSH_CLIENT_PUB ONIX_STATE_DIR ONIX_LOCAL_REPO_DIR ONIX_IMAGE_REPO_DIR ONIX_HOST_MOSS \
       PATH
     do
       value="${!name-}"
@@ -960,10 +963,8 @@ netstat
 nslookup
 ping
 ping6
-poweroff
 ps
 pwd
-reboot
 rm
 rmdir
 rmmod
@@ -1060,20 +1061,20 @@ verify_busybox_stone_target() {
 install_busybox_stone_payload() {
   [[ -x "$HOST_MOSS" ]] \
     || die "missing host moss: ${HOST_MOSS#$ONIX_ROOT/} (run make phase 202)"
-  [[ -f "$LOCAL_REPO_DIR/stone.index" ]] \
-    || die "missing local Phase 4 repo index: ${LOCAL_REPO_DIR#$ONIX_ROOT/}/stone.index (run make phase 409)"
+  [[ -f "$IMAGE_REPO_DIR/stone.index" ]] \
+    || die "missing ONIX image package repo index: ${IMAGE_REPO_DIR#$ONIX_ROOT/}/stone.index (run make phase 505)"
 
   need_cmd readelf
   need_cmd tar
   need_cmd file
 
-  log "materializing onix-busybox from local moss repo into a scratch target"
+  log "materializing onix-busybox from the image package repo into a scratch target"
   rm -rf "$BUSYBOX_MOSS_ROOT" "$BUSYBOX_MOSS_CACHE" "$BUSYBOX_INSTALL_TARGET"
   install -dm0755 "$BUSYBOX_MOSS_ROOT" "$BUSYBOX_MOSS_CACHE" "$BUSYBOX_INSTALL_TARGET"
 
   "$HOST_MOSS" -D "$BUSYBOX_MOSS_ROOT" --cache "$BUSYBOX_MOSS_CACHE" \
-    repo add onix-local "file://$LOCAL_REPO_DIR/stone.index" \
-    -c "ONIX Phase 4 local repo" >/dev/null
+    repo add onix-image "file://$IMAGE_REPO_DIR/stone.index" \
+    -c "ONIX image package repo" >/dev/null
   "$HOST_MOSS" -D "$BUSYBOX_MOSS_ROOT" --cache "$BUSYBOX_MOSS_CACHE" \
     repo update >/dev/null
   "$HOST_MOSS" -D "$BUSYBOX_MOSS_ROOT" --cache "$BUSYBOX_MOSS_CACHE" \
@@ -1250,20 +1251,20 @@ verify_dropbear_stone_target() {
 install_dropbear_stone_payload() {
   [[ -x "$HOST_MOSS" ]] \
     || die "missing host moss: ${HOST_MOSS#$ONIX_ROOT/} (run make phase 202)"
-  [[ -f "$LOCAL_REPO_DIR/stone.index" ]] \
-    || die "missing local Phase 4 repo index: ${LOCAL_REPO_DIR#$ONIX_ROOT/}/stone.index (run make phase 412)"
+  [[ -f "$IMAGE_REPO_DIR/stone.index" ]] \
+    || die "missing ONIX image package repo index: ${IMAGE_REPO_DIR#$ONIX_ROOT/}/stone.index (run make phase 505)"
 
   need_cmd readelf
   need_cmd tar
   need_cmd file
 
-  log "materializing onix-dropbear from local moss repo into a scratch target"
+  log "materializing onix-dropbear from the image package repo into a scratch target"
   rm -rf "$DROPBEAR_MOSS_ROOT" "$DROPBEAR_MOSS_CACHE" "$DROPBEAR_INSTALL_TARGET"
   install -dm0755 "$DROPBEAR_MOSS_ROOT" "$DROPBEAR_MOSS_CACHE" "$DROPBEAR_INSTALL_TARGET"
 
   "$HOST_MOSS" -D "$DROPBEAR_MOSS_ROOT" --cache "$DROPBEAR_MOSS_CACHE" \
-    repo add onix-local "file://$LOCAL_REPO_DIR/stone.index" \
-    -c "ONIX Phase 4 local repo" >/dev/null
+    repo add onix-image "file://$IMAGE_REPO_DIR/stone.index" \
+    -c "ONIX image package repo" >/dev/null
   "$HOST_MOSS" -D "$DROPBEAR_MOSS_ROOT" --cache "$DROPBEAR_MOSS_CACHE" \
     repo update >/dev/null
   "$HOST_MOSS" -D "$DROPBEAR_MOSS_ROOT" --cache "$DROPBEAR_MOSS_CACHE" \
@@ -2596,8 +2597,8 @@ verify_systemd_stone_target() {
 install_systemd_stone_payload() {
   [[ -x "$HOST_MOSS" ]] \
     || die "missing host moss: ${HOST_MOSS#$ONIX_ROOT/} (run make phase 202)"
-  [[ -f "$LOCAL_REPO_DIR/stone.index" ]] \
-    || die "missing local Phase 4 repo index: ${LOCAL_REPO_DIR#$ONIX_ROOT/}/stone.index (run make phase 415)"
+  [[ -f "$IMAGE_REPO_DIR/stone.index" ]] \
+    || die "missing ONIX image package repo index: ${IMAGE_REPO_DIR#$ONIX_ROOT/}/stone.index (run make phase 505)"
 
   need_cmd readelf
   need_cmd tar
@@ -2605,7 +2606,7 @@ install_systemd_stone_payload() {
 
   load_systemd_payload_metadata
 
-  log "materializing onix-systemd from local moss repo into a scratch target"
+  log "materializing onix-systemd from the image package repo into a scratch target"
   if [[ -d "$SYSTEMD_MOSS_ROOT" || -d "$SYSTEMD_MOSS_CACHE" || -d "$SYSTEMD_INSTALL_TARGET" ]]; then
     chmod -R u+rwX "$SYSTEMD_MOSS_ROOT" "$SYSTEMD_MOSS_CACHE" "$SYSTEMD_INSTALL_TARGET" 2>/dev/null || true
   fi
@@ -2613,8 +2614,8 @@ install_systemd_stone_payload() {
   install -dm0755 "$SYSTEMD_MOSS_ROOT" "$SYSTEMD_MOSS_CACHE" "$SYSTEMD_INSTALL_TARGET"
 
   "$HOST_MOSS" -D "$SYSTEMD_MOSS_ROOT" --cache "$SYSTEMD_MOSS_CACHE" \
-    repo add onix-local "file://$LOCAL_REPO_DIR/stone.index" \
-    -c "ONIX Phase 4 local repo" >/dev/null
+    repo add onix-image "file://$IMAGE_REPO_DIR/stone.index" \
+    -c "ONIX image package repo" >/dev/null
   "$HOST_MOSS" -D "$SYSTEMD_MOSS_ROOT" --cache "$SYSTEMD_MOSS_CACHE" \
     repo update >/dev/null
   "$HOST_MOSS" -D "$SYSTEMD_MOSS_ROOT" --cache "$SYSTEMD_MOSS_CACHE" \
@@ -2844,13 +2845,13 @@ install_native_systemd_stone_payload() {
 
   [[ -x "$HOST_MOSS" ]] \
     || die "missing host moss: ${HOST_MOSS#$ONIX_ROOT/} (run make phase 202)"
-  [[ -f "$LOCAL_REPO_DIR/stone.index" ]] \
-    || die "missing local Phase 4 repo index: ${LOCAL_REPO_DIR#$ONIX_ROOT/}/stone.index (run make phase 422)"
+  [[ -f "$IMAGE_REPO_DIR/stone.index" ]] \
+    || die "missing ONIX image package repo index: ${IMAGE_REPO_DIR#$ONIX_ROOT/}/stone.index (run make phase 505)"
 
   need_cmd readelf
   need_cmd tar
 
-  log "materializing native onix-systemd from local moss repo into a scratch target"
+  log "materializing native onix-systemd from the image package repo into a scratch target"
   if [[ -d "$SYSTEMD_MOSS_ROOT" || -d "$SYSTEMD_MOSS_CACHE" || -d "$SYSTEMD_INSTALL_TARGET" ]]; then
     chmod -R u+rwX "$SYSTEMD_MOSS_ROOT" "$SYSTEMD_MOSS_CACHE" "$SYSTEMD_INSTALL_TARGET" 2>/dev/null || true
   fi
@@ -2858,8 +2859,8 @@ install_native_systemd_stone_payload() {
   install -dm0755 "$SYSTEMD_MOSS_ROOT" "$SYSTEMD_MOSS_CACHE" "$SYSTEMD_INSTALL_TARGET"
 
   "$HOST_MOSS" -D "$SYSTEMD_MOSS_ROOT" --cache "$SYSTEMD_MOSS_CACHE" \
-    repo add onix-local "file://$LOCAL_REPO_DIR/stone.index" \
-    -c "ONIX Phase 4 local repo" >/dev/null
+    repo add onix-image "file://$IMAGE_REPO_DIR/stone.index" \
+    -c "ONIX image package repo" >/dev/null
   "$HOST_MOSS" -D "$SYSTEMD_MOSS_ROOT" --cache "$SYSTEMD_MOSS_CACHE" \
     repo update >/dev/null
   "$HOST_MOSS" -D "$SYSTEMD_MOSS_ROOT" --cache "$SYSTEMD_MOSS_CACHE" \
@@ -3181,12 +3182,12 @@ ensure_bootstrap_policy_dropbear_no_motd() {
 install_bootstrap_policy_stone_payload() {
   [[ -x "$HOST_MOSS" ]] \
     || die "missing host moss: ${HOST_MOSS#$ONIX_ROOT/} (run make phase 202)"
-  [[ -f "$LOCAL_REPO_DIR/stone.index" ]] \
-    || die "missing local Phase 4 repo index: ${LOCAL_REPO_DIR#$ONIX_ROOT/}/stone.index (run make phase 418)"
+  [[ -f "$IMAGE_REPO_DIR/stone.index" ]] \
+    || die "missing ONIX image package repo index: ${IMAGE_REPO_DIR#$ONIX_ROOT/}/stone.index (run make phase 505)"
 
   need_cmd tar
 
-  log "materializing onix-bootstrap-policy from local moss repo into a scratch target"
+  log "materializing onix-bootstrap-policy from the image package repo into a scratch target"
   if [[ -d "$BOOTSTRAP_POLICY_MOSS_ROOT" ||
         -d "$BOOTSTRAP_POLICY_MOSS_CACHE" ||
         -d "$BOOTSTRAP_POLICY_INSTALL_TARGET" ]]; then
@@ -3199,8 +3200,8 @@ install_bootstrap_policy_stone_payload() {
   install -dm0755 "$BOOTSTRAP_POLICY_MOSS_ROOT" "$BOOTSTRAP_POLICY_MOSS_CACHE" "$BOOTSTRAP_POLICY_INSTALL_TARGET"
 
   "$HOST_MOSS" -D "$BOOTSTRAP_POLICY_MOSS_ROOT" --cache "$BOOTSTRAP_POLICY_MOSS_CACHE" \
-    repo add onix-local "file://$LOCAL_REPO_DIR/stone.index" \
-    -c "ONIX Phase 4 local repo" >/dev/null
+    repo add onix-image "file://$IMAGE_REPO_DIR/stone.index" \
+    -c "ONIX image package repo" >/dev/null
   "$HOST_MOSS" -D "$BOOTSTRAP_POLICY_MOSS_ROOT" --cache "$BOOTSTRAP_POLICY_MOSS_CACHE" \
     repo update >/dev/null
   "$HOST_MOSS" -D "$BOOTSTRAP_POLICY_MOSS_ROOT" --cache "$BOOTSTRAP_POLICY_MOSS_CACHE" \
@@ -4353,7 +4354,7 @@ case "$ACTION" in
     preview_ssh_access
     ;;
   busybox-stone)
-    log "installing and activating onix-busybox from the local Phase 4 repo"
+    log "installing and activating onix-busybox from the ONIX image package repo"
     test -x "$MNT/usr/lib/onix/bootstrap-serial-shell" \
       || die "missing bootstrap serial shell; run make phase 403 first"
     test -f "$MNT/usr/lib/onix/bootstrap-network-up" \
@@ -4373,7 +4374,7 @@ case "$ACTION" in
     preview_busybox_stone
     ;;
   dropbear-stone)
-    log "installing and activating onix-dropbear from the local Phase 4 repo"
+    log "installing and activating onix-dropbear from the ONIX image package repo"
     test -x "$MNT/usr/lib/onix/bootstrap-serial-shell" \
       || die "missing bootstrap serial shell; run make phase 403 first"
     test -x "$MNT/usr/bin/busybox" \
@@ -4400,7 +4401,7 @@ case "$ACTION" in
     preview_dropbear_stone
     ;;
   systemd-stone)
-    log "installing and activating onix-systemd from the local Phase 4 repo"
+    log "installing and activating onix-systemd from the ONIX image package repo"
     test -x "$MNT/usr/bin/busybox" \
       || die "missing onix-busybox /usr/bin/busybox; run make phase 410 first"
     test -x "$MNT/usr/sbin/dropbear" \
@@ -4420,7 +4421,7 @@ case "$ACTION" in
     preview_systemd_stone
     ;;
   native-systemd-stone)
-    log "installing and activating native onix-systemd from the local Phase 4 repo"
+    log "installing and activating native onix-systemd from the ONIX image package repo"
     test -x "$MNT/usr/bin/busybox" \
       || die "missing onix-busybox /usr/bin/busybox; run make phase 410 first"
     test -x "$MNT/usr/sbin/dropbear" \
@@ -4444,7 +4445,7 @@ case "$ACTION" in
     preview_native_systemd_stone
     ;;
   bootstrap-policy-stone)
-    log "installing and activating onix-bootstrap-policy from the local Phase 4 repo"
+    log "installing and activating onix-bootstrap-policy from the ONIX image package repo"
     test -x "$MNT/usr/bin/busybox" \
       || die "missing onix-busybox /usr/bin/busybox; run make phase 410 first"
     test -x "$MNT/usr/sbin/dropbear" \
