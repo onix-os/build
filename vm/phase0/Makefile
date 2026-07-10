@@ -3,6 +3,7 @@
 
 VM := .
 BUILD_USER ?= mason
+DISPLAY_MODE ?= vnc
 # Default to the forge build user. Preserve the internal `make ssh USER=root`
 # only when USER was supplied on the make command line, not inherited from the
 # host login environment.
@@ -114,7 +115,7 @@ run: ## boot the forge (grub-efi + OVMF, VNC by default)
 	$(VM)/launch.sh
 
 run-wait: ## boot the forge in background, show serial log, continue when SSH is ready
-	$(VM)/launch.sh --background --wait --display vnc
+	$(VM)/launch.sh --background --wait --display $(DISPLAY_MODE)
 
 direct: ## boot via QEMU direct-kernel (grub bypass / safety net)
 	$(VM)/launch.sh --direct

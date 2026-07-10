@@ -1,12 +1,12 @@
-# Phase 418 — package/prove bootstrap policy
+# Phase 418 — package/prove bootstrap
 
 | Item | Value |
 |---|---|
 | Command | `make phase 418` |
-| Build script | `vm/phase4/build-bootstrap-policy-stone.sh` |
-| Install script | `vm/phase4/materialize-etc.sh --bootstrap-policy-stone` |
-| Runtime probe | `vm/phase4/stone-bootstrap-policy-probe.sh` |
-| New stone | `bootstrap-policy` |
+| Build script | `vm/phase4/build-bootstrap-stone.sh` |
+| Install script | `vm/phase4/materialize-etc.sh --bootstrap-stone` |
+| Runtime probe | `vm/phase4/stone-bootstrap-probe.sh` |
+| New stone | `bootstrap` |
 | Mutates disk/image? | Yes |
 | Boots QEMU? | Yes |
 | Main proof | Bootstrap helper scripts, proof docs, and unit source files are package-owned by a stone, activated into the image, and visible in the booted guest while systemd and SSH still work. |
@@ -57,9 +57,9 @@ Machine behavior should become package-owned.
 
 Phase 418 starts that migration.
 
-## What `bootstrap-policy` is
+## What `bootstrap` is
 
-`bootstrap-policy` is a data/policy stone.
+`bootstrap` is a data/policy stone.
 
 It does not compile a C or Rust binary.
 
@@ -89,9 +89,15 @@ It also packages source copies of the temporary bootstrap systemd units:
 And it packages explanatory notes:
 
 ```text
-/usr/share/onix/bootstrap/bootstrap-policy.txt
-/usr/share/onix/packages/bootstrap-policy.md
+/usr/share/onix/bootstrap/bootstrap.txt
+/usr/share/onix/bootstrap/bootstrap-debt.tsv
+/usr/share/onix/packages/bootstrap.md
 ```
+
+`bootstrap-debt.tsv` is deliberately machine-readable. It lists the pieces that
+are useful during bring-up but are not final OS policy: the unauthenticated serial
+root shell, the static QEMU-only network helper, the temporary TCP inspection
+listener, Dropbear as bootstrap SSH, and the active-unit copy glue.
 
 ## Background: systemd units and "enabling" a service
 
@@ -190,8 +196,8 @@ chain.
 Phase 418 moves one layer:
 
 ```text
-from heredoc-owned bootstrap policy
-to stone-owned bootstrap policy
+from heredoc-owned bootstrap behavior
+to stone-owned bootstrap behavior
 ```
 
 The next layers can be smaller and clearer.
@@ -207,7 +213,7 @@ make phase 418
 The first script is:
 
 ```text
-vm/phase4/build-bootstrap-policy-stone.sh
+vm/phase4/build-bootstrap-stone.sh
 ```
 
 It:
@@ -232,25 +238,27 @@ It:
    usr/share/onix/packages/
    ```
 
-5. Archives that payload.
-6. Sends the payload and recipe template to the forge VM.
-7. Builds:
+5. Writes `usr/share/onix/bootstrap/bootstrap-debt.tsv` so later proofs can
+   tell the difference between accepted bootstrap debt and finished OS design.
+6. Archives that payload.
+7. Sends the payload and recipe template to the forge VM.
+8. Builds:
 
    ```text
-   bootstrap-policy-0.1.0-...
+   bootstrap-0.1.0-...
    ```
 
-8. Runs `moss inspect --check`.
-9. Extracts and verifies the stone.
-10. Installs it into a disposable target.
-11. Copies it back into:
+9. Runs `moss inspect --check`.
+10. Extracts and verifies the stone.
+11. Installs it into a disposable target.
+12. Copies it back into:
 
     ```text
     artifacts/onix-stones/
     artifacts/onix-local-repo/
     ```
 
-12. Re-indexes:
+13. Re-indexes:
 
     ```text
     artifacts/onix-local-repo/stone.index
@@ -262,14 +270,14 @@ After building the stone, Phase 418 runs:
 
 ```sh
 ./materialize-etc.sh --systemd-stone
-./materialize-etc.sh --bootstrap-policy-stone
+./materialize-etc.sh --bootstrap-stone
 ```
 
 The first command reasserts the Phase 416 systemd layout.
 
 The second command:
 
-1. Uses host-side Moss to install `bootstrap-policy` into a scratch target.
+1. Uses host-side Moss to install `bootstrap` into a scratch target.
 2. Verifies the scratch target.
 3. Copies the package payload into the mounted image.
 4. Activates package-owned unit source files into the current systemd unit tree.
@@ -290,15 +298,16 @@ bootstrap units.
 The runtime probe is:
 
 ```text
-vm/phase4/stone-bootstrap-policy-probe.sh
+vm/phase4/stone-bootstrap-probe.sh
 ```
 
 It boots QEMU and checks from inside the guest:
 
 ```text
 /proc/1/comm == systemd
-/usr/share/onix/packages/bootstrap-policy.md exists
-/usr/share/onix/bootstrap/bootstrap-policy.txt exists
+/usr/share/onix/packages/bootstrap.md exists
+/usr/share/onix/bootstrap/bootstrap.txt exists
+/usr/share/onix/bootstrap/bootstrap-debt.tsv exists
 /usr/lib/onix/bootstrap-network-proof is executable
 /usr/lib/onix/bootstrap-ssh-proof is executable
 /usr/lib/onix/systemd/system/onix-bootstrap-network.service exists
@@ -309,16 +318,16 @@ SSH still works
 The proof markers are:
 
 ```text
-ONIX_BOOTSTRAP_POLICY_SERIAL_OK
-ONIX_BOOTSTRAP_POLICY_SSH_OK
+ONIX_BOOTSTRAP_SERIAL_OK
+ONIX_BOOTSTRAP_SSH_OK
 ```
 
 ## What Phase 418 proves
 
 Phase 418 proves:
 
-- ONIX can build a policy/data `.stone`,
-- Moss can install that policy package,
+- ONIX can build a data `.stone`,
+- Moss can install that bootstrap package,
 - the ONIX image can consume it,
 - bootstrap helper scripts are package-owned,
 - source copies of bootstrap units are package-owned,
@@ -363,18 +372,18 @@ That is a meaningful improvement.
 Successful output should include:
 
 ```text
-==> Phase 418 bootstrap-policy stone
-==> building bootstrap-policy stone
+==> Phase 418 bootstrap stone
+==> building bootstrap stone
 ==> success
-bootstrap-policy stone: artifacts/onix-stones/bootstrap-policy-...
+bootstrap stone: artifacts/onix-stones/bootstrap-...
 
-==> installing and activating bootstrap-policy from the local Phase 4 repo
-stone    : bootstrap-policy installed under /usr/lib/onix + /usr/share/onix
+==> installing and activating bootstrap from the local Phase 4 repo
+stone    : bootstrap installed under /usr/lib/onix + /usr/share/onix
 unit     : /nix/store/.../onix-bootstrap-network.service from /usr/lib/onix/systemd/system/...
-==> verifying Phase 418 bootstrap-policy image install
+==> verifying Phase 418 bootstrap image install
 
-ONIX_BOOTSTRAP_POLICY_SERIAL_OK pid1=systemd package=present units=active source=present
-ONIX_BOOTSTRAP_POLICY_SSH_OK user=onix uid=1000 pid1=systemd package=present units=active
+ONIX_BOOTSTRAP_SERIAL_OK pid1=systemd package=present units=active source=present
+ONIX_BOOTSTRAP_SSH_OK user=onix uid=1000 pid1=systemd package=present units=active
 ```
 
 Evidence logs go under:

@@ -48,7 +48,7 @@ usage: phase5-runtime-proof.sh [--apply|--check]
 
 --apply  refresh the canonical local repo, install the Phase 5 runtime package
          set into the ONIX image, boot the VM, then prove Phase 5 runtime
-         ownership over SSH: uutils links, RootAsRole, owned PAM/seccomp/libgcc
+         ownership over SSH: uutils links, RootAsRole, owned PAM/seccomp/musl
          shared surface, and no obvious /nix/store runtime leak
 --check  validate local docs/scripts only; does not require a running VM
 EOF
@@ -73,14 +73,10 @@ check_source_files() {
     || die "missing uutils package contract"
   [[ -f "$ONIX_ROOT/packages/core/rootasrole/PACKAGE.md" ]] \
     || die "missing rootasrole package contract"
-  [[ -f "$ONIX_ROOT/packages/services/rootasrole-policy/PACKAGE.md" ]] \
-    || die "missing rootasrole-policy package contract"
   [[ -f "$ONIX_ROOT/packages/libs/linux-pam/PACKAGE.md" ]] \
     || die "missing linux-pam package contract"
   [[ -f "$ONIX_ROOT/packages/libs/libseccomp/PACKAGE.md" ]] \
     || die "missing libseccomp package contract"
-  [[ -f "$ONIX_ROOT/packages/libs/libgcc-runtime/PACKAGE.md" ]] \
-    || die "missing libgcc-runtime package contract"
   [[ -f "$ONIX_ROOT/packages/core/moss/PACKAGE.md" ]] \
     || die "missing moss package contract"
   [[ -x "$SCRIPT_DIR/assemble-canonical-local-repo.sh" ]] \
@@ -95,7 +91,7 @@ check_source_files() {
   grep -q 'Phase 513' "$ONIX_ROOT/packages/core/uutils-coreutils/PACKAGE.md"
   grep -q 'dosr' "$ONIX_ROOT/packages/core/rootasrole/PACKAGE.md"
   grep -q '/etc/pam.d/sr' "$ONIX_ROOT/packages/core/rootasrole/PACKAGE.md"
-  grep -q '/etc/pam.d/sr' "$ONIX_ROOT/packages/services/rootasrole-policy/PACKAGE.md"
+  grep -q '/usr/share/factory/etc/security/rootasrole.json' "$ONIX_ROOT/packages/core/rootasrole/PACKAGE.md"
   grep -q '/etc/pam.d/sr' "$ONIX_ROOT/vm/phase5/docs/514_booted_phase_5_runtime_proof.md"
   grep -q 'libpam.so.0' "$ONIX_ROOT/packages/core/rootasrole/PACKAGE.md"
   grep -q 'libseccomp.so.2' "$ONIX_ROOT/packages/core/rootasrole/PACKAGE.md"
@@ -183,6 +179,15 @@ $bb grep -q '^uutils-coreutils[[:space:]]' /tmp/onix-phase514-moss-available.log
   || fail "direct live moss list available does not show uutils-coreutils"
 /usr/bin/moss li >/tmp/onix-phase514-moss-installed.log 2>&1 \
   || fail "direct live moss li failed"
+old_prefix=onix-
+for forbidden_suffix in systemd busybox dropbear bootstrap branding filesystem; do
+  forbidden_package="${old_prefix}${forbidden_suffix}"
+  if $bb grep -q "^${forbidden_package}[[:space:]]" \
+      /tmp/onix-phase514-moss-installed.log \
+      /tmp/onix-phase514-moss-available.log; then
+    fail "old package id is visible to moss: ${forbidden_package}"
+  fi
+done
 for installed_package in \
   branding \
   filesystem \
@@ -190,13 +195,11 @@ for installed_package in \
   uutils-coreutils \
   dropbear \
   systemd \
-  bootstrap-policy \
+  bootstrap \
   musl \
   linux-pam \
   libseccomp \
-  libgcc-runtime \
   rootasrole \
-  rootasrole-policy \
   moss
 do
   $bb grep -q "^${installed_package}[[:space:]]" /tmp/onix-phase514-moss-installed.log \
@@ -211,7 +214,6 @@ need_exec /usr/bin/dosr
 need_exec /usr/bin/chsr
 test -u /usr/bin/dosr || fail "/usr/bin/dosr is not setuid"
 need_file /usr/share/onix/packages/rootasrole.md
-need_file /usr/share/onix/packages/rootasrole-policy.md
 need_file /usr/share/factory/etc/security/rootasrole.json
 need_file /usr/share/factory/etc/security/rootasrole.d/policy.json
 need_file /usr/share/factory/etc/pam.d/sr
@@ -221,6 +223,7 @@ need_file /etc/security/rootasrole.d/policy.json
 need_file /etc/pam.d/sr
 need_file /etc/pam.d/dosr
 need_file /usr/share/onix/bootstrap/phase5-runtime.txt
+need_file /usr/share/onix/bootstrap/bootstrap-debt.tsv
 test -L /var/run || fail "/var/run is not a symlink"
 case "$($bb readlink /var/run)" in
   ../run|/run) ;;
@@ -247,6 +250,10 @@ $bb grep -q 'pam_permit.so' /etc/pam.d/dosr \
   || fail "live PAM policy does not mention pam_permit.so"
 $bb grep -q 'pam_permit.so' /etc/pam.d/sr \
   || fail "live RootAsRole PAM service sr does not mention pam_permit.so"
+$bb grep -q '^remote-inspection-listener[[:space:]]' /usr/share/onix/bootstrap/bootstrap-debt.tsv \
+  || fail "bootstrap debt ledger does not list temporary remote inspection"
+$bb grep -q '^active-unit-copy-glue[[:space:]]' /usr/share/onix/bootstrap/bootstrap-debt.tsv \
+  || fail "bootstrap debt ledger does not list active unit copy glue"
 /usr/bin/dosr /usr/bin/busybox id >/tmp/onix-phase514-dosr-id.log 2>&1 \
   || fail "dosr could not execute /usr/bin/busybox id"
 $bb grep -q 'uid=0(root)' /tmp/onix-phase514-dosr-id.log \
@@ -255,27 +262,24 @@ test -d /run/rar/ts || fail "RootAsRole did not create timeout storage under /ru
 
 need_file /usr/lib/libpam.so.0
 need_file /usr/lib/libseccomp.so.2
-need_file /usr/lib/libgcc_s.so.1
 need_file /usr/lib/ld-musl-x86_64.so.1
 need_file /usr/share/onix/packages/linux-pam.md
 need_file /usr/share/onix/packages/libseccomp.md
-need_file /usr/share/onix/packages/libgcc-runtime.md
 need_file /usr/share/onix/packages/musl.md
 
 if $bb grep -R -F /nix/store \
     /usr/share/onix/packages/uutils-coreutils.md \
     /usr/share/onix/packages/moss.md \
     /usr/share/onix/packages/rootasrole.md \
-    /usr/share/onix/packages/rootasrole-policy.md \
     /usr/share/onix/packages/linux-pam.md \
     /usr/share/onix/packages/libseccomp.md \
-    /usr/share/onix/packages/libgcc-runtime.md \
     /usr/share/onix/packages/musl.md \
     /etc/moss/repo.d/onix-image.kdl \
     /usr/share/factory/etc/pam.d/sr \
     /usr/share/factory/etc/pam.d/dosr \
     /etc/pam.d/sr \
     /etc/pam.d/dosr \
+    /usr/share/onix/bootstrap/bootstrap-debt.tsv \
     /usr/share/onix/bootstrap/phase5-runtime.txt >/dev/null 2>&1; then
   fail "Phase 5 package notes, PAM policy, or proof note contain /nix/store"
 fi
@@ -364,7 +368,7 @@ run_apply() {
   log "Phase 514 booted Phase 5 runtime proof"
   log "mode      : inspect the freshly booted Phase 514 VM"
   log "ssh       : ${USER}@${HOST}:${PORT}"
-  log "goal      : prove uutils, RootAsRole, PAM/seccomp/libgcc ownership at runtime"
+  log "goal      : prove uutils, RootAsRole, PAM/seccomp/musl ownership at runtime"
 
   local remote_output remote_status
   set +e
@@ -407,7 +411,7 @@ Phase 514 proved the running ONIX VM has the Phase 5 runtime package ownership:
   - moss is installed as an ONIX-owned runtime package
   - direct live-root "moss list available" works against /
   - direct live-root "moss li" shows the Phase 5 packages as installed
-  - PAM, seccomp, musl, and libgcc runtime files are ONIX-owned package files
+  - PAM, seccomp, and musl runtime files are ONIX-owned package files
   - package notes, PAM policy, and proof notes have no obvious /nix/store runtime leak
 
 The Phase 514 VM was stopped after the proof.

@@ -36,7 +36,7 @@ packages/base/filesystem/
 packages/core/busybox/
 packages/services/dropbear/
 packages/services/systemd/
-packages/services/bootstrap-policy/
+packages/services/bootstrap/
 ```
 
 ## Why the old paths still exist
@@ -64,7 +64,7 @@ vm/phase1/build-branding-stone.sh
 vm/phase1/build-filesystem-stone.sh
 vm/phase4/build-busybox-stone.sh
 vm/phase4/build-dropbear-stone.sh
-vm/phase4/build-bootstrap-policy-stone.sh
+vm/phase4/build-bootstrap-stone.sh
 vm/phase4/build-native-systemd-stone.sh
 vm/phase4/native-systemd-prep.sh
 ```
@@ -164,7 +164,7 @@ branding
 filesystem
 busybox
 dropbear
-bootstrap-policy
+bootstrap
 ```
 
 Native systemd rebuild is intentionally one more explicit flag:
@@ -227,7 +227,7 @@ Expected:
 busybox-*.stone
 dropbear-*.stone
 systemd-*.stone
-bootstrap-policy-*.stone
+bootstrap-*.stone
 stone.index
 ```
 

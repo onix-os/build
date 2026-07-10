@@ -3,7 +3,7 @@
 
 PHASE_ARG := $(word 2,$(MAKECMDGOALS))
 
-.PHONY: help phases phase phase-5 5 500 501 502 503 504 505 506 507 508 509 510 511 512 513 514 515 list check package-policy package-layout payload-audit canonical-package-copies canonical-essential-builds canonical-local-repo ownership-collision-fix canonical-image-repo-consumption local-public-repo rust-essential-stones privilege-shared-surface rootasrole rootasrole-policy uutils-coreutils-wiring runtime-proof moss-runtime
+.PHONY: help phases phase phase-5 5 500 501 502 503 504 505 506 507 508 509 510 511 512 513 514 515 516 517 518 list check package-policy package-layout payload-audit canonical-package-copies canonical-essential-builds canonical-local-repo ownership-collision-fix canonical-image-repo-consumption local-public-repo rust-essential-stones privilege-shared-surface rootasrole rootasrole-integration uutils-coreutils-wiring runtime-proof moss-runtime shell-policy fish-stone shell-runtime
 
 help: ## show Phase 5 help
 	@echo "ONIX Phase 5 targets:"
@@ -24,10 +24,13 @@ phases: ## list the learning-phase aliases
 	@printf "  \033[36mmake phase 509\033[0m  build/audit first Rust essential stones\n"
 	@printf "  \033[36mmake phase 510\033[0m  build/audit PAM + seccomp shared-library stones\n"
 	@printf "  \033[36mmake phase 511\033[0m  build/audit RootAsRole privilege stone\n"
-	@printf "  \033[36mmake phase 512\033[0m  build/audit live RootAsRole policy stone\n"
+	@printf "  \033[36mmake phase 512\033[0m  prove RootAsRole integrated bootstrap policy\n"
 	@printf "  \033[36mmake phase 513\033[0m  wire uutils command links instead of BusyBox links\n"
 	@printf "  \033[36mmake phase 514\033[0m  install, boot, and prove Phase 5 runtime ownership\n"
 	@printf "  \033[36mmake phase 515\033[0m  package moss and prove in-VM repo consumption\n"
+	@printf "  \033[36mmake phase 516\033[0m  define BusyBox sh + fish shell policy\n"
+	@printf "  \033[36mmake phase 517\033[0m  build/audit the fish shell stone\n"
+	@printf "  \033[36mmake phase 518\033[0m  install fish and prove default login shell\n"
 
 phase: ## run a Phase 5 learning alias
 	@case "$(PHASE_ARG)" in \
@@ -44,15 +47,18 @@ phase: ## run a Phase 5 learning alias
 	  509) $(MAKE) --no-print-directory rust-essential-stones ;; \
 	  510) $(MAKE) --no-print-directory privilege-shared-surface ;; \
 	  511) $(MAKE) --no-print-directory rootasrole ;; \
-	  512) $(MAKE) --no-print-directory rootasrole-policy ;; \
+	  512) $(MAKE) --no-print-directory rootasrole-integration ;; \
 	  513) $(MAKE) --no-print-directory uutils-coreutils-wiring ;; \
 	  514) $(MAKE) --no-print-directory runtime-proof ;; \
 	  515) $(MAKE) --no-print-directory moss-runtime ;; \
+	  516) $(MAKE) --no-print-directory shell-policy ;; \
+	  517) $(MAKE) --no-print-directory fish-stone ;; \
+	  518) $(MAKE) --no-print-directory shell-runtime ;; \
 	  ""|list) $(MAKE) --no-print-directory phases ;; \
 	  *) echo "unknown Phase 5 step: $(PHASE_ARG)" >&2; $(MAKE) --no-print-directory phases; exit 2 ;; \
 	esac
 
-5 500 501 502 503 504 505 506 507 508 509 510 511 512 513 514 515 list:
+5 500 501 502 503 504 505 506 507 508 509 510 511 512 513 514 515 516 517 518 list:
 	@:
 
 phase-5: ## run current Phase 5 build/repo gates in order
@@ -77,10 +83,13 @@ check: ## host-side validation for Phase 5 docs/routing
 	@test -f docs/509_first_rust_essential_stones.md
 	@test -f docs/510_privilege_shared_library_surface.md
 	@test -f docs/511_rootasrole_privilege_stone.md
-	@test -f docs/512_rootasrole_policy_stone.md
+	@test -f docs/512_rootasrole_integrated_policy.md
 	@test -f docs/513_uutils_command_ownership.md
 	@test -f docs/514_booted_phase_5_runtime_proof.md
 	@test -f docs/515_moss_runtime_package_and_self_repo_probe.md
+	@test -f docs/516_busybox_sh_and_fish_shell_policy.md
+	@test -f docs/517_fish_shell_stone.md
+	@test -f docs/518_default_login_shell_runtime_proof.md
 	@bash -n audit-stone-payload.sh
 	@bash -n canonical-package-copies.sh
 	@bash -n canonical-essential-builds.sh
@@ -91,11 +100,15 @@ check: ## host-side validation for Phase 5 docs/routing
 	@bash -n build-rust-essential-stones.sh
 	@bash -n build-privilege-shared-surface.sh
 	@bash -n build-rootasrole.sh
-	@bash -n build-rootasrole-policy.sh
+	@bash -n check-rootasrole-integration.sh
 	@bash -n wire-uutils-coreutils.sh
+	@bash -n package-name-guard.sh
 	@bash -n phase5-runtime-proof.sh
 	@bash -n build-moss-runtime.sh
 	@bash -n moss-runtime-self-repo-proof.sh
+	@bash -n shell-policy.sh
+	@bash -n build-fish-stone.sh
+	@bash -n shell-runtime-proof.sh
 	@./audit-stone-payload.sh --self-test >/dev/null
 	@./canonical-package-copies.sh --check >/dev/null
 	@./canonical-essential-builds.sh --check >/dev/null
@@ -106,10 +119,14 @@ check: ## host-side validation for Phase 5 docs/routing
 	@./build-rust-essential-stones.sh --check >/dev/null
 	@./build-privilege-shared-surface.sh --check >/dev/null
 	@./build-rootasrole.sh --check >/dev/null
-	@./build-rootasrole-policy.sh --check >/dev/null
+	@./check-rootasrole-integration.sh --check >/dev/null
 	@./wire-uutils-coreutils.sh --check >/dev/null
+	@./package-name-guard.sh --check >/dev/null
 	@./phase5-runtime-proof.sh --check >/dev/null
 	@./moss-runtime-self-repo-proof.sh --check >/dev/null
+	@./shell-policy.sh --check >/dev/null
+	@./build-fish-stone.sh --check >/dev/null
+	@./shell-runtime-proof.sh --check >/dev/null
 	@test -d ../../packages
 	@test -d ../../packages/base
 	@test -d ../../packages/core
@@ -126,24 +143,21 @@ check: ## host-side validation for Phase 5 docs/routing
 	@test -f ../../packages/core/rootasrole/stone.yaml.in
 	@test -f ../../packages/core/moss/PACKAGE.md
 	@test -f ../../packages/core/moss/stone.yaml.in
-	@test -f ../../packages/services/rootasrole-policy/PACKAGE.md
-	@test -f ../../packages/services/rootasrole-policy/stone.yaml.in
+	@test -f ../../packages/core/fish/PACKAGE.md
+	@test -f ../../packages/core/fish/stone.yaml.in
 	@test -f ../../packages/libs/linux-pam/PACKAGE.md
 	@test -f ../../packages/libs/linux-pam/stone.yaml.in
 	@test -f ../../packages/libs/libseccomp/PACKAGE.md
 	@test -f ../../packages/libs/libseccomp/stone.yaml.in
-	@test -f ../../packages/libs/libgcc-runtime/PACKAGE.md
-	@test -f ../../packages/libs/libgcc-runtime/stone.yaml.in
 	@grep -q 'Rust-first' ../../packages/README.md
 	@grep -q 'musl-only' ../../packages/README.md
 	@grep -q 'runtime-clean' ../../packages/README.md
 	@grep -q 'uutils-coreutils' ../../packages/STONES.md
 	@grep -q 'rootasrole' ../../packages/STONES.md
 	@grep -q 'moss' ../../packages/STONES.md
+	@grep -q 'fish' ../../packages/STONES.md
 	@grep -q 'linux-pam' ../../packages/STONES.md
 	@grep -q 'libseccomp' ../../packages/STONES.md
-	@grep -q 'libgcc-runtime' ../../packages/STONES.md
-	@grep -q 'rootasrole-policy' ../../packages/STONES.md
 	@grep -q 'Implementation language' ../../packages/templates/PACKAGE.md
 	@grep -q 'Rust alternative considered' ../../packages/templates/PACKAGE.md
 	@grep -q 'Link model' ../../packages/templates/PACKAGE.md
@@ -163,7 +177,7 @@ package-policy: ## define Rust-first musl-only static-first package law
 	@echo "  - package-owned: installed system files come from stones consumed by moss."
 	@echo
 	@echo "Allowed during bootstrap:"
-	@echo "  - Nix may provide build tools like rustc, cargo, gcc, make, or pkg-config."
+	@echo "  - nix may provide build tools like rustc, cargo, gcc, make, or pkg-config."
 	@echo
 	@echo "Not allowed in finished system stones:"
 	@echo "  - glibc loader paths such as /lib64/ld-linux-x86-64.so.2"
@@ -263,11 +277,11 @@ rootasrole: ## build/audit RootAsRole privilege stone
 	  ./build-rootasrole.sh --apply; \
 	fi
 
-rootasrole-policy: ## build/audit live RootAsRole policy stone
+rootasrole-integration: ## prove RootAsRole integrated bootstrap policy
 	@if [ "$${ONIX_PHASE512_REBUILD:-0}" = "1" ]; then \
-	  ./build-rootasrole-policy.sh --rebuild; \
+	  ./check-rootasrole-integration.sh --rebuild; \
 	else \
-	  ./build-rootasrole-policy.sh --apply; \
+	  ./check-rootasrole-integration.sh --apply; \
 	fi
 
 uutils-coreutils-wiring: ## move command links from BusyBox to uutils
@@ -282,3 +296,12 @@ runtime-proof: ## install, boot, and prove Phase 5 runtime ownership
 
 moss-runtime: ## package moss and prove in-VM repo consumption
 	./moss-runtime-self-repo-proof.sh --apply
+
+shell-policy: ## define BusyBox sh + fish shell policy
+	./shell-policy.sh --apply
+
+fish-stone: ## build/audit the fish shell stone
+	./build-fish-stone.sh --apply
+
+shell-runtime: ## install fish and prove default login shell
+	./shell-runtime-proof.sh --apply

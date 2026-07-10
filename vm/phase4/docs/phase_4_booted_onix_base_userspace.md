@@ -239,7 +239,7 @@ inspection VM from Phase 424.
 - [415 — build `systemd.stone`](./415_build_onix_systemd_stone.md)
 - [416 — install/use `systemd`](./416_install_use_onix_systemd.md)
 - [417 — boot-prove `systemd`](./417_boot_prove_onix_systemd.md)
-- [418 — package/prove bootstrap policy](./418_package_prove_bootstrap_policy.md)
+- [418 — package/prove bootstrap](./418_package_prove_bootstrap.md)
 - [419 — booted-base ownership audit](./419_booted_base_ownership_audit.md)
 - [420 — prune stale old Nix BusyBox/Dropbear payloads](./420_prune_stale_old_nix_busybox_dropbear_payloads.md)
 - [421 — prepare native `systemd`](./421_prepare_native_onix_systemd.md)

@@ -43,7 +43,7 @@ The second was built in Phase 4 to prove booted-base system packages for:
 busybox
 dropbear
 systemd
-bootstrap-policy
+bootstrap
 ```
 
 That split was fine while ONIX was learning.
@@ -73,7 +73,7 @@ artifacts/onix-repo/
       busybox-*.stone
       dropbear-*.stone
       systemd-*.stone
-      bootstrap-policy-*.stone
+      bootstrap-*.stone
 ```
 
 The important file for Moss is:
@@ -196,7 +196,7 @@ filesystem
 busybox
 dropbear
 systemd
-bootstrap-policy
+bootstrap
 ```
 
 These are the minimum current ONIX base packages:
@@ -324,7 +324,7 @@ filesystem
 busybox
 dropbear
 systemd
-bootstrap-policy
+bootstrap
 ```
 
 Then it checks for key installed files:
@@ -335,7 +335,7 @@ Then it checks for key installed files:
 /usr/bin/busybox
 /usr/sbin/dropbear
 /usr/lib/systemd/systemd
-/usr/share/onix/packages/bootstrap-policy.md
+/usr/share/onix/packages/bootstrap.md
 ```
 
 This proves the combined repo is not only a directory of files.

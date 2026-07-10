@@ -74,7 +74,6 @@ Examples:
 ```text
 branding
 filesystem
-bootstrap-policy
 ```
 
 ### `packages/core/`
@@ -105,7 +104,6 @@ Examples:
 musl
 linux-pam
 libseccomp
-libgcc-runtime
 ```
 
 This group exists because the static-first rule is not a static-only rule.
@@ -121,7 +119,7 @@ Examples:
 ```text
 dropbear
 systemd
-rootasrole-policy
+bootstrap
 ```
 
 ## Required files per package
@@ -218,30 +216,34 @@ https://repo.onix-os.com
 ```
 
 Phases 509–513 add the first Rust essential package contracts, shared surfaces,
-RootAsRole package build, live policy, and the first BusyBox-to-uutils ownership
+RootAsRole package build, integrated factory policy, and the first BusyBox-to-uutils ownership
 migration:
 
 ```text
 packages/core/uutils-coreutils/
 packages/core/rootasrole/
 packages/core/moss/
-packages/services/rootasrole-policy/
+packages/core/fish/
 packages/libs/musl/
 packages/libs/linux-pam/
 packages/libs/libseccomp/
-packages/libs/libgcc-runtime/
 ```
 
 `uutils-coreutils` is the first built/audited Rust essential stone.
 `musl`, `linux-pam`, and `libseccomp` are the first package-owned
-shared-library/runtime surface stones. `libgcc-runtime` is added when
-RootAsRole proves the current Rust/musl forge toolchain emits `libgcc_s.so.1`.
-`rootasrole` is then built as the first ONIX privilege-delegation stone.
-`rootasrole-policy` materializes the first live RootAsRole `/etc` policy.
+shared-library/runtime surface stones. `rootasrole` is then built as the first
+ONIX privilege-delegation stone; its build links GCC runtime support from static
+archives so ONIX does not need a runtime `libgcc_s.so.1` stone.
+The same `rootasrole` stone owns the first RootAsRole factory policy under
+`/usr/share/factory/etc`; the image/runtime materializer copies that factory
+policy into live `/etc` when needed.
 Phase 513 rebuilds `uutils-coreutils` with command-name links and reduces
 `busybox` to bootstrap/recovery command ownership for overlapping names.
 Phase 515 packages `moss` itself so the booted system has an ONIX-owned
 package manager instead of depending only on host-side bootstrap tooling.
+Phase 517 packages `fish` as the first interactive shell essential, and Phase
+518 makes it the normal user's default login shell while BusyBox remains the
+system `/bin/sh` provider.
 
 The human-maintained stone catalog lives at:
 

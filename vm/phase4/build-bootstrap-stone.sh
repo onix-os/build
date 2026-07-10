@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# vm/phase4/build-bootstrap-policy-stone.sh — Phase 418 bootstrap policy stone.
+# vm/phase4/build-bootstrap-stone.sh — Phase 418 bootstrap stone.
 #
 # This package is deliberately data/policy, not compiled software. It moves the
 # bootstrap helper scripts, proof notes, and source copies of bootstrap systemd
@@ -17,13 +17,14 @@ user="${1:-$BUILD_USER}"
 STONE_DIR="${ONIX_STONE_DIR:-$ONIX_ROOT/artifacts/onix-stones}"
 LOCAL_REPO_DIR="${ONIX_LOCAL_REPO_DIR:-$ONIX_ROOT/artifacts/onix-local-repo}"
 STONE_WORK_DIR="${ONIX_STONE_WORK_DIR:-$ONIX_ROOT/artifacts/onix-stone-work}"
-RECIPE_TEMPLATE="${ONIX_BOOTSTRAP_POLICY_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/services/bootstrap-policy/stone.yaml.in}"
+RECIPE_TEMPLATE="${ONIX_BOOTSTRAP_RECIPE_TEMPLATE:-${ONIX_BOOTSTRAP_POLICY_RECIPE_TEMPLATE:-}}"
+RECIPE_TEMPLATE="${RECIPE_TEMPLATE:-$ONIX_ROOT/packages/services/bootstrap/stone.yaml.in}"
 HOST_MOSS="${ONIX_HOST_MOSS:-$ONIX_ROOT/artifacts/host-tools/bin/moss}"
 BOOTSTRAP_POLICY_VERSION="${ONIX_BOOTSTRAP_POLICY_VERSION:-0.1.0}"
 SERIAL_CONSOLE_TTY="${ONIX_SERIAL_CONSOLE_TTY:-ttyS1}"
 SSH_USER="${ONIX_SSH_USER:-onix}"
 
-LAB="/home/$user/stone-lab/bootstrap-policy"
+LAB="/home/$user/stone-lab/bootstrap"
 
 need_cmd awk
 need_cmd install
@@ -51,15 +52,15 @@ safe_artifact_path "$STONE_DIR"
 safe_artifact_path "$LOCAL_REPO_DIR"
 safe_artifact_path "$STONE_WORK_DIR"
 
-WORK="$STONE_WORK_DIR/bootstrap-policy"
-PAYLOAD_NAME="bootstrap-policy-payload-$BOOTSTRAP_POLICY_VERSION"
+WORK="$STONE_WORK_DIR/bootstrap"
+PAYLOAD_NAME="bootstrap-payload-$BOOTSTRAP_POLICY_VERSION"
 PAYLOAD_ROOT="$WORK/$PAYLOAD_NAME"
 PAYLOAD_ARCHIVE="$WORK/$PAYLOAD_NAME.tar.gz"
 BUILD_ENV="$WORK/build.env"
 
 cleanup_work_dir() {
   case "$WORK" in
-    "$ONIX_ROOT"/artifacts/onix-stone-work/bootstrap-policy) ;;
+    "$ONIX_ROOT"/artifacts/onix-stone-work/bootstrap) ;;
     *) die "refusing unsafe work cleanup path: $WORK" ;;
   esac
 
@@ -391,12 +392,12 @@ WantedBy=multi-user.target
 EOF
   chmod 0644 "$PAYLOAD_ROOT"/usr/lib/onix/systemd/system/*.service
 
-  cat > "$PAYLOAD_ROOT/usr/share/onix/bootstrap/bootstrap-policy.txt" <<EOF
-ONIX Phase 418 bootstrap policy package
+  cat > "$PAYLOAD_ROOT/usr/share/onix/bootstrap/bootstrap.txt" <<EOF
+ONIX Phase 418 bootstrap package
 
 Package:
 
-- bootstrap-policy
+- bootstrap
 
 Policy:
 
@@ -434,6 +435,19 @@ The active unit files are still copied into the current systemd unit tree:
 
 That activation copy is still image-assembly glue. The improvement is that the
 source files now come from a package instead of shell heredocs.
+
+Bootstrap debt ledger:
+
+- /usr/share/onix/bootstrap/bootstrap-debt.tsv
+EOF
+
+  cat > "$PAYLOAD_ROOT/usr/share/onix/bootstrap/bootstrap-debt.tsv" <<'EOF'
+item	status	owned_by	next_step
+serial-root-shell	bootstrap-only	bootstrap	replace with authenticated login/session policy
+static-qemu-network	bootstrap-only	bootstrap	replace after native systemd grows networkd or ONIX packages another network manager
+remote-inspection-listener	bootstrap-only	bootstrap	remove before any real user image
+dropbear-ssh-bootstrap	bootstrap-access	dropbear+bootstrap	decide final SSH/server access policy
+active-unit-copy-glue	bootstrap-only	image-assembly	replace with package preset/trigger activation
 EOF
 
   cat > "$PAYLOAD_ROOT/usr/share/onix/bootstrap/serial-console.txt" <<EOF
@@ -442,7 +456,7 @@ ONIX bootstrap serial console
 This is temporary bootstrap access for bring-up. It is unauthenticated and not
 the final ONIX login design.
 
-The service source is now package-owned by bootstrap-policy.
+The service source is now package-owned by bootstrap.
 
 Proof marker:
 
@@ -459,7 +473,7 @@ ONIX bootstrap networking
 This is the minimal QEMU user-mode networking proof used during Phase 4.
 
 The service source and helper scripts are now package-owned by
-bootstrap-policy.
+bootstrap.
 
 Proof marker:
 
@@ -473,7 +487,7 @@ This listener is unauthenticated and temporary inspection glue. It exists only
 to prove host-to-guest connectivity before the SSH path is available.
 
 The service source and helper scripts are now package-owned by
-bootstrap-policy.
+bootstrap.
 
 Proof marker:
 
@@ -492,7 +506,7 @@ Policy:
 - Password authentication is disabled
 - public-key authentication only
 
-The status/proof scripts are now package-owned by bootstrap-policy.
+The status/proof scripts are now package-owned by bootstrap.
 
 Proof marker:
 
@@ -507,19 +521,21 @@ ONIX dropbear bootstrap service policy
 The Dropbear binary is owned by dropbear.
 
 The bootstrap service source that starts Dropbear is now owned by
-bootstrap-policy.
+bootstrap.
 
 The active service starts:
 
 /usr/sbin/dropbear
 EOF
 
-  chmod 0644 "$PAYLOAD_ROOT"/usr/share/onix/bootstrap/*.txt
+  chmod 0644 \
+    "$PAYLOAD_ROOT"/usr/share/onix/bootstrap/*.txt \
+    "$PAYLOAD_ROOT/usr/share/onix/bootstrap/bootstrap-debt.tsv"
 
-  cat > "$PAYLOAD_ROOT/usr/share/onix/packages/bootstrap-policy.md" <<EOF
-# bootstrap-policy
+  cat > "$PAYLOAD_ROOT/usr/share/onix/packages/bootstrap.md" <<EOF
+# bootstrap
 
-\`bootstrap-policy\` is the Phase 418 package-owned source of the
+\`bootstrap\` is the Phase 418 package-owned source of the
 temporary ONIX bootstrap service policy.
 
 Version:
@@ -532,7 +548,9 @@ It owns:
 
 - bootstrap helper scripts under \`/usr/lib/onix\`,
 - source copies of bootstrap systemd units under \`/usr/lib/onix/systemd/system\`,
-- bootstrap proof and explanation notes under \`/usr/share/onix/bootstrap\`.
+- bootstrap proof and explanation notes under \`/usr/share/onix/bootstrap\`,
+- a machine-readable bootstrap debt ledger at
+  \`/usr/share/onix/bootstrap/bootstrap-debt.tsv\`.
 
 It does not yet remove all image-assembly glue.
 
@@ -545,14 +563,14 @@ The active systemd unit tree is currently:
 Phase 418 copies package-owned unit source files into that active tree. Later
 ONIX should make unit activation a normal package-manager/systemd preset flow.
 EOF
-  chmod 0644 "$PAYLOAD_ROOT/usr/share/onix/packages/bootstrap-policy.md"
+  chmod 0644 "$PAYLOAD_ROOT/usr/share/onix/packages/bootstrap.md"
 }
 
 mkdir -p "$STONE_DIR" "$LOCAL_REPO_DIR" "$STONE_WORK_DIR"
 cleanup_work_dir
 mkdir -p "$PAYLOAD_ROOT"
 
-log "Phase 418 bootstrap-policy stone"
+log "Phase 418 bootstrap stone"
 cat <<EOF
 version    : $BOOTSTRAP_POLICY_VERSION
 serial tty : $SERIAL_CONSOLE_TTY
@@ -569,14 +587,17 @@ test -x "$PAYLOAD_ROOT/usr/lib/onix/bootstrap-serial-shell"
 test -x "$PAYLOAD_ROOT/usr/lib/onix/bootstrap-network-up"
 test -x "$PAYLOAD_ROOT/usr/lib/onix/bootstrap-ssh-proof"
 test -f "$PAYLOAD_ROOT/usr/lib/onix/systemd/system/onix-bootstrap-network.service"
-test -f "$PAYLOAD_ROOT/usr/share/onix/bootstrap/bootstrap-policy.txt"
-test -f "$PAYLOAD_ROOT/usr/share/onix/packages/bootstrap-policy.md"
+test -f "$PAYLOAD_ROOT/usr/share/onix/bootstrap/bootstrap.txt"
+test -f "$PAYLOAD_ROOT/usr/share/onix/bootstrap/bootstrap-debt.tsv"
+test -f "$PAYLOAD_ROOT/usr/share/onix/packages/bootstrap.md"
 grep -q 'ExecStart=/usr/sbin/dropbear ' \
   "$PAYLOAD_ROOT/usr/lib/onix/systemd/system/onix-bootstrap-dropbear.service"
 grep -q ' -m ' \
   "$PAYLOAD_ROOT/usr/lib/onix/systemd/system/onix-bootstrap-dropbear.service"
 grep -q 'ONIX_BOOTSTRAP_SERIAL_CONSOLE_READY' \
   "$PAYLOAD_ROOT/usr/lib/onix/bootstrap-serial-shell"
+grep -q '^remote-inspection-listener[[:space:]]' \
+  "$PAYLOAD_ROOT/usr/share/onix/bootstrap/bootstrap-debt.tsv"
 
 log "creating prepared payload archive"
 tar --numeric-owner -C "$WORK" -czf "$PAYLOAD_ARCHIVE" "$PAYLOAD_NAME"
@@ -616,7 +637,7 @@ need_tool grep
 need_tool awk
 need_tool install
 
-LAB="$HOME/stone-lab/bootstrap-policy"
+LAB="$HOME/stone-lab/bootstrap"
 OUT="$LAB/out"
 EXTRACT="$LAB/extracted"
 REPO="$LAB/repo"
@@ -660,7 +681,7 @@ echo "==> recipe"
 sed -n '1,240p' "$LAB/stone.yaml"
 
 echo
-echo "==> building bootstrap-policy stone"
+echo "==> building bootstrap stone"
 safe_rm_rf "$OUT"
 mkdir -p "$OUT"
 (
@@ -668,9 +689,9 @@ mkdir -p "$OUT"
     boulder build -y --normal-priority -o "$OUT" stone.yaml
 )
 
-STONE="$(find "$OUT" -maxdepth 1 -name 'bootstrap-policy-*.stone' ! -name '*dbginfo*' | sort | head -n 1)"
+STONE="$(find "$OUT" -maxdepth 1 -name 'bootstrap-*.stone' ! -name '*dbginfo*' | sort | head -n 1)"
 if [ ! -f "$STONE" ]; then
-    echo "error: boulder did not produce an bootstrap-policy .stone under $OUT" >&2
+    echo "error: boulder did not produce a bootstrap .stone under $OUT" >&2
     exit 1
 fi
 printf '%s\n' "$STONE" > "$LAB/stone.path"
@@ -705,11 +726,13 @@ test -f "$PAYLOAD/usr/lib/onix/systemd/system/onix-bootstrap-serial-shell.servic
 test -f "$PAYLOAD/usr/lib/onix/systemd/system/onix-bootstrap-network.service"
 test -f "$PAYLOAD/usr/lib/onix/systemd/system/onix-bootstrap-remote-inspection.service"
 test -f "$PAYLOAD/usr/lib/onix/systemd/system/onix-bootstrap-dropbear.service"
-test -f "$PAYLOAD/usr/share/onix/bootstrap/bootstrap-policy.txt"
-test -f "$PAYLOAD/usr/share/onix/packages/bootstrap-policy.md"
+test -f "$PAYLOAD/usr/share/onix/bootstrap/bootstrap.txt"
+test -f "$PAYLOAD/usr/share/onix/bootstrap/bootstrap-debt.tsv"
+test -f "$PAYLOAD/usr/share/onix/packages/bootstrap.md"
 grep -q 'ONIX_BOOTSTRAP_SERIAL_CONSOLE_READY' "$PAYLOAD/usr/lib/onix/bootstrap-serial-shell"
 grep -q '^ExecStart=/usr/sbin/dropbear ' "$PAYLOAD/usr/lib/onix/systemd/system/onix-bootstrap-dropbear.service"
 grep -q ' -m ' "$PAYLOAD/usr/lib/onix/systemd/system/onix-bootstrap-dropbear.service"
+grep -q '^active-unit-copy-glue[[:space:]]' "$PAYLOAD/usr/share/onix/bootstrap/bootstrap-debt.tsv"
 
 echo
 echo "==> index local repo and install into disposable target"
@@ -717,14 +740,16 @@ safe_rm_rf "$REPO" "$ROOT" "$CACHE" "$TARGET"
 mkdir -p "$REPO" "$ROOT" "$CACHE" "$TARGET"
 cp "$STONE" "$REPO/"
 moss index "$REPO"
-moss -D "$ROOT" --cache "$CACHE" repo add local "file://$REPO/stone.index" -c "local onix bootstrap policy repo"
+moss -D "$ROOT" --cache "$CACHE" repo add local "file://$REPO/stone.index" -c "local ONIX bootstrap repo"
 moss -D "$ROOT" --cache "$CACHE" repo update
-moss -D "$ROOT" --cache "$CACHE" -y install --to "$TARGET" bootstrap-policy
+moss -D "$ROOT" --cache "$CACHE" -y install --to "$TARGET" bootstrap
 
 test -x "$TARGET/usr/lib/onix/bootstrap-serial-shell"
 test -f "$TARGET/usr/lib/onix/systemd/system/onix-bootstrap-network.service"
-test -f "$TARGET/usr/share/onix/bootstrap/bootstrap-policy.txt"
-test -f "$TARGET/usr/share/onix/packages/bootstrap-policy.md"
+test -f "$TARGET/usr/share/onix/bootstrap/bootstrap.txt"
+test -f "$TARGET/usr/share/onix/bootstrap/bootstrap-debt.tsv"
+test -f "$TARGET/usr/share/onix/packages/bootstrap.md"
+grep -q '^static-qemu-network[[:space:]]' "$TARGET/usr/share/onix/bootstrap/bootstrap-debt.tsv"
 
 echo
 echo "==> success"
@@ -735,25 +760,33 @@ echo "target: $TARGET"
 REMOTE
 
 log "copying built stone back to host artifacts"
-rm -f "$STONE_DIR"/bootstrap-policy-*.stone "$STONE_DIR"/bootstrap-policy-dbginfo-*.stone
+rm -f \
+  "$STONE_DIR"/bootstrap-[0-9]*.stone \
+  "$STONE_DIR"/bootstrap-dbginfo-*.stone \
+  "$STONE_DIR"/bootstrap-policy-*.stone \
+  "$STONE_DIR"/bootstrap-policy-dbginfo-*.stone
 "$PHASE0_DIR/ssh.sh" "$user" "stone=\$(cat '$LAB/stone.path') && cd \"\$(dirname \"\$stone\")\" && tar -cf - \"\$(basename \"\$stone\")\"" \
   | tar -C "$STONE_DIR" -xf -
 
-HOST_STONE="$(find "$STONE_DIR" -maxdepth 1 -name 'bootstrap-policy-*.stone' ! -name '*dbginfo*' | sort | tail -n 1)"
-[[ -f "$HOST_STONE" ]] || die "failed to copy bootstrap-policy stone into ${STONE_DIR#$ONIX_ROOT/}"
+HOST_STONE="$(find "$STONE_DIR" -maxdepth 1 -name 'bootstrap-[0-9]*.stone' ! -name '*dbginfo*' | sort | tail -n 1)"
+[[ -f "$HOST_STONE" ]] || die "failed to copy bootstrap stone into ${STONE_DIR#$ONIX_ROOT/}"
 
 log "host moss integrity check"
 "$HOST_MOSS" inspect --check "$HOST_STONE"
 
 log "refreshing local Phase 4 moss repo"
-rm -f "$LOCAL_REPO_DIR"/bootstrap-policy-*.stone "$LOCAL_REPO_DIR"/bootstrap-policy-dbginfo-*.stone
+rm -f \
+  "$LOCAL_REPO_DIR"/bootstrap-[0-9]*.stone \
+  "$LOCAL_REPO_DIR"/bootstrap-dbginfo-*.stone \
+  "$LOCAL_REPO_DIR"/bootstrap-policy-*.stone \
+  "$LOCAL_REPO_DIR"/bootstrap-policy-dbginfo-*.stone
 cp "$HOST_STONE" "$LOCAL_REPO_DIR/"
 "$HOST_MOSS" index "$LOCAL_REPO_DIR"
 
 cat <<EOF
 
 ==> success
-bootstrap-policy stone: ${HOST_STONE#$ONIX_ROOT/}
+bootstrap stone: ${HOST_STONE#$ONIX_ROOT/}
 local repo index           : ${LOCAL_REPO_DIR#$ONIX_ROOT/}/stone.index
 
 Next:

@@ -84,8 +84,8 @@ check_builder_defaults() {
     "vm/phase4/build-dropbear-stone.sh" \
     'RECIPE_TEMPLATE="${ONIX_DROPBEAR_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/services/dropbear/stone.yaml.in}"'
   expect_line \
-    "vm/phase4/build-bootstrap-policy-stone.sh" \
-    'RECIPE_TEMPLATE="${ONIX_BOOTSTRAP_POLICY_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/services/bootstrap-policy/stone.yaml.in}"'
+    "vm/phase4/build-bootstrap-stone.sh" \
+    'RECIPE_TEMPLATE="${RECIPE_TEMPLATE:-$ONIX_ROOT/packages/services/bootstrap/stone.yaml.in}"'
   expect_line \
     "vm/phase4/build-native-systemd-stone.sh" \
     'RECIPE_TEMPLATE="${ONIX_SYSTEMD_NATIVE_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/services/systemd/stone.yaml.in}"'
@@ -107,19 +107,19 @@ check_canonical_inputs() {
   require_file "packages/services/dropbear/PACKAGE.md"
   require_file "packages/services/systemd/stone.yaml.in"
   require_file "packages/services/systemd/PACKAGE.md"
-  require_file "packages/services/bootstrap-policy/stone.yaml.in"
-  require_file "packages/services/bootstrap-policy/PACKAGE.md"
+  require_file "packages/services/bootstrap/stone.yaml.in"
+  require_file "packages/services/bootstrap/PACKAGE.md"
 }
 
 check_old_paths_still_exist() {
-  log "safety    : verifying old paths still exist for compatibility"
+  log "safety    : verifying source recipe paths exist"
 
   require_file "recipes/branding/stone.yaml"
   require_file "recipes/filesystem/stone.yaml"
   require_file "vm/phase4/stone-recipes/busybox/stone.yaml.in"
   require_file "vm/phase4/stone-recipes/dropbear/stone.yaml.in"
   require_file "vm/phase4/stone-recipes/systemd-native/stone.yaml.in"
-  require_file "vm/phase4/stone-recipes/bootstrap-policy/stone.yaml.in"
+  require_file "vm/phase4/stone-recipes/bootstrap/stone.yaml.in"
 }
 
 check_existing_artifacts() {
@@ -132,7 +132,7 @@ check_existing_artifacts() {
   require_glob "artifacts/onix-local-repo/busybox-*.stone"
   require_glob "artifacts/onix-local-repo/dropbear-*.stone"
   require_glob "artifacts/onix-local-repo/systemd-*.stone"
-  require_glob "artifacts/onix-local-repo/bootstrap-policy-*.stone"
+  require_glob "artifacts/onix-local-repo/bootstrap-*.stone"
   require_file "artifacts/onix-local-repo/stone.index"
 }
 
@@ -147,7 +147,7 @@ check_moss_integrity() {
     "$(first_glob 'artifacts/onix-local-repo/busybox-*.stone')" \
     "$(first_glob 'artifacts/onix-local-repo/dropbear-*.stone')" \
     "$(first_glob 'artifacts/onix-local-repo/systemd-*.stone')" \
-    "$(first_glob 'artifacts/onix-local-repo/bootstrap-policy-*.stone')"; do
+    "$(first_glob 'artifacts/onix-local-repo/bootstrap-*.stone')"; do
     [[ -f "$stone" ]] || die "missing stone selected for check"
     "$HOST_MOSS" inspect --check "$stone" >/dev/null
     log "stone     : ${stone#$ONIX_ROOT/}"
@@ -170,7 +170,7 @@ Phase 504 proved the essential package build lane is canonicalized.
 
 What changed:
   - builders now default to packages/ recipes
-  - old paths remain for compatibility/history
+  - phase source recipe paths and canonical package paths agree
   - existing essential stones are present and pass moss integrity checks
 
 Full rebuild is explicit:
@@ -188,7 +188,7 @@ run_rebuild() {
   "$PHASE1_DIR/build-filesystem-stone.sh"
   "$PHASE4_DIR/build-busybox-stone.sh"
   "$PHASE4_DIR/build-dropbear-stone.sh"
-  "$PHASE4_DIR/build-bootstrap-policy-stone.sh"
+  "$PHASE4_DIR/build-bootstrap-stone.sh"
 
   if [[ "${ONIX_PHASE504_REBUILD_NATIVE_SYSTEMD:-0}" = "1" ]]; then
     "$PHASE4_DIR/native-systemd-prep.sh"

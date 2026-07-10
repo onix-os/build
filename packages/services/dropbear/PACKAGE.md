@@ -45,8 +45,7 @@ This is a documented non-Rust bootstrap service package.
 - No runtime `/nix/store` dependency: yes
 - No `/nix/store` shebangs: yes
 - No `/nix/store` RPATH/RUNPATH: yes
-- No systemd units calling `/nix/store`: yes, when paired with
-  `bootstrap-policy`
+- No systemd units calling `/nix/store`: yes, when paired with `bootstrap`
 - No glibc loader path: yes
 - No unexpected shared runtime libraries: yes
 
@@ -65,7 +64,7 @@ None expected. Dropbear binaries are intended to be static musl.
 ## Stone ownership
 
 The finished `.stone` owns Dropbear binaries directly. Service units are owned
-by `bootstrap-policy` for now.
+by `bootstrap` for now.
 
 ## Exceptions
 

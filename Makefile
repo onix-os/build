@@ -7,11 +7,12 @@ PHASE2 := vm/phase2
 PHASE3 := vm/phase3
 PHASE4 := vm/phase4
 PHASE5 := vm/phase5
+PHASE6 := vm/phase6
 
 PHASE_ARG := $(word 2,$(MAKECMDGOALS))
 ATTACHED ?= 0
 
-.PHONY: help phases phase 0 1 2 3 4 5 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 300 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 424 425 500 501 502 503 504 505 506 507 508 509 510 511 512 513 514 515 list \
+.PHONY: help phases phase 0 1 2 3 4 5 6 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 300 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 424 425 500 501 502 503 504 505 506 507 508 509 510 511 512 513 514 515 516 517 518 600 601 602 603 604 605 list \
 	doctor kvm stop cleanup up book book-serve
 
 help: ## show top-level help and phase map
@@ -37,6 +38,11 @@ help: ## show top-level help and phase map
 	@echo "  make phase 5         run current Phase 5 package/repository gates"
 	@echo "  make phase 514       install, boot, and prove Phase 5 runtime ownership"
 	@echo "  make phase 515       package moss and prove in-VM repo consumption"
+	@echo "  make phase 516       define BusyBox sh + fish shell policy"
+	@echo "  make phase 517       build/audit the fish shell stone"
+	@echo "  make phase 518       install fish and prove BusyBox sh + fish login"
+	@echo "  make phase 6         read current Phase 6 nix-only guide gates"
+	@echo "  make phase 600       read the nix architecture contract plan"
 	@echo "  ATTACHED=1 make phase 212   run visual/interactive when a phase supports it"
 	@echo
 	@$(MAKE) --no-print-directory phases
@@ -59,6 +65,9 @@ phases: ## list learning-phase aliases
 	@printf "\n"
 	@printf "  \033[1m--- Phase 5: Rust-first musl package/repository plane ---\033[0m\n"
 	@$(MAKE) --no-print-directory -C $(PHASE5) phases
+	@printf "\n"
+	@printf "  \033[1m--- Phase 6: nix toolbox plane ---\033[0m\n"
+	@$(MAKE) --no-print-directory -C $(PHASE6) phases
 
 phase: ## run a learning phase alias, e.g. `make phase 002`
 	@case "$(PHASE_ARG)" in \
@@ -68,13 +77,14 @@ phase: ## run a learning phase alias, e.g. `make phase 002`
 	  2|200|201|202|203|204|205|206|207|208|209|210|211|212|213|214) $(MAKE) --no-print-directory -C $(PHASE2) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
 	  3|300) $(MAKE) --no-print-directory -C $(PHASE3) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
 	  4|400|401|402|403|404|405|406|407|408|409|410|411|412|413|414|415|416|417|418|419|420|421|422|424|425) $(MAKE) --no-print-directory -C $(PHASE4) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
-	  5|500|501|502|503|504|505|506|507|508|509|510|511|512|513|514|515) $(MAKE) --no-print-directory -C $(PHASE5) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
+	  5|500|501|502|503|504|505|506|507|508|509|510|511|512|513|514|515|516|517|518) $(MAKE) --no-print-directory -C $(PHASE5) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
+	  6|600|601|602|603|604|605) $(MAKE) --no-print-directory -C $(PHASE6) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
 	  *) echo "unknown phase: $(PHASE_ARG)" >&2; $(MAKE) --no-print-directory phases; exit 2 ;; \
 	esac
 
 # Absorb the second goal in commands like `make phase 002`, otherwise Make
 # would try to build a separate target named `002` after `phase` completes.
-0 1 2 3 4 5 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 300 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 424 425 500 501 502 503 504 505 506 507 508 509 510 511 512 513 514 515 list:
+0 1 2 3 4 5 6 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 300 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 424 425 500 501 502 503 504 505 506 507 508 509 510 511 512 513 514 515 516 517 518 600 601 602 603 604 605 list:
 	@:
 
 doctor: ## common health check; not a phase step
@@ -84,6 +94,7 @@ doctor: ## common health check; not a phase step
 	@$(MAKE) --no-print-directory -C $(PHASE3) check
 	@$(MAKE) --no-print-directory -C $(PHASE4) check
 	@$(MAKE) --no-print-directory -C $(PHASE5) check
+	@$(MAKE) --no-print-directory -C $(PHASE6) check
 	@missing=0; \
 	for c in qemu-system-x86_64 losetup findmnt sgdisk partprobe mkfs.fat mkfs.ext4 mkfs.xfs mount umount chroot modprobe depmod truncate tar blkid bootctl cpio curl gzip sha256sum sudo ssh ssh-keygen visudo mdbook systemd-sysusers nix readelf file nc; do \
 	  if ! command -v $$c >/dev/null 2>&1; then echo "missing   : $$c"; missing=1; fi; \

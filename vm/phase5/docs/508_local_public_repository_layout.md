@@ -126,8 +126,6 @@ artifacts/onix-public-repo/
     pool/
       v0/
         l/
-          libgcc-runtime/
-            libgcc-runtime-*.stone
           libseccomp/
             libseccomp-*.stone
           linux-pam/
@@ -148,13 +146,11 @@ artifacts/onix-public-repo/
             dropbear-*.stone
           systemd/
             systemd-*.stone
-          bootstrap-policy/
-            bootstrap-policy-*.stone
-          rootasrole-policy/
-            rootasrole-policy-*.stone
+          bootstrap/
+            bootstrap-*.stone
         r/
           rootasrole/
-            rootasrole-*.stone
+            rootasrole-[0-9]*.stone
         u/
           uutils-coreutils/
             uutils-coreutils-*.stone
@@ -436,13 +432,11 @@ busybox
 uutils-coreutils
 dropbear
 systemd
-bootstrap-policy
+bootstrap
 musl
 linux-pam
 libseccomp
-libgcc-runtime
 rootasrole
-rootasrole-policy
 moss
 ```
 
@@ -542,13 +536,11 @@ busybox
 uutils-coreutils
 dropbear
 systemd
-bootstrap-policy
+bootstrap
 musl
 linux-pam
 libseccomp
-libgcc-runtime
 rootasrole
-rootasrole-policy
 moss
 ```
 
@@ -565,7 +557,7 @@ Then they check for expected files such as:
 /usr/lib/libseccomp.so.2
 /usr/bin/dosr
 /usr/share/factory/etc/security/rootasrole.json
-/usr/share/onix/packages/bootstrap-policy.md
+/usr/share/onix/packages/bootstrap.md
 /usr/share/onix/packages/moss.md
 ```
 

@@ -131,6 +131,16 @@ mkdir -p "$work/root" "$work/cache" "$work/target"
   >/tmp/onix-phase515-available.log 2>&1 \
   || fail "moss list available failed"
 
+old_prefix=onix-
+for forbidden_suffix in systemd busybox dropbear bootstrap branding filesystem; do
+  forbidden_package="${old_prefix}${forbidden_suffix}"
+  if $bb grep -q "^${forbidden_package}[[:space:]]" \
+      /tmp/onix-phase515-available.log \
+      /tmp/onix-phase515-info.log; then
+    fail "old package id is visible to in-VM moss: ${forbidden_package}"
+  fi
+done
+
 $bb grep -q 'moss' /tmp/onix-phase515-info.log \
   || fail "moss info output does not mention moss"
 $bb grep -q 'uutils-coreutils' /tmp/onix-phase515-info.log \

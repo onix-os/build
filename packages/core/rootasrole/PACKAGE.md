@@ -13,8 +13,14 @@ path.
 
 Phase 509 records the package decision. Phase 510 creates the required
 ONIX-owned PAM and libseccomp stones. Phase 511 builds the actual
-`rootasrole` stone against that owned surface and records the extra
-toolchain-runtime surface the current Rust/musl build needs.
+`rootasrole` stone against that owned surface. The accepted build uses a
+build-only linker wrapper to keep GCC's runtime archive static, so RootAsRole
+does not add a `libgcc_s.so.1` runtime stone to ONIX.
+
+The RootAsRole stone also owns ONIX's first factory privilege policy under
+`/usr/share/factory/etc`. That means the privilege tool and its bootstrap
+policy travel together as one package; ONIX does not ship a separate policy
+stone for this bootstrap role.
 
 ## System role
 
@@ -58,10 +64,20 @@ compatibility command if users really need the familiar command name.
 RootAsRole was first tried under the earlier static-only rule. That probe
 showed:
 
-- `dosr` builds dynamically but links `libpam.so.0` and `libgcc_s.so.1`;
+- `dosr` builds dynamically and links `libpam.so.0`;
 - static `dosr` fails without `libpam.a`;
-- `chsr` builds dynamically but links `libseccomp.so.2` and `libgcc_s.so.1`;
+- `chsr` builds dynamically and links `libseccomp.so.2`;
 - static `chsr` fails without `libseccomp.a`.
+
+The forge Rust toolchain also emits an explicit `-lgcc_s` linker argument for
+this Alpine/musl target. ONIX does not accept that as a runtime dependency.
+Phase 511 filters that linker argument through a build-only wrapper and appends
+the static GCC archives instead:
+
+```text
+/usr/lib/gcc/.../libgcc.a
+/usr/lib/gcc/.../libgcc_eh.a
+```
 
 ONIX now allows a small, explicit, package-owned shared-library surface where
 the upstream design needs it. For RootAsRole this means:
@@ -89,7 +105,6 @@ Expected allowed shared libraries for the first accepted RootAsRole package:
 ```text
 libpam.so.0       owner: linux-pam
 libseccomp.so.2   owner: libseccomp
-libgcc_s.so.1     owner: libgcc-runtime
 libc.musl-*.so.1  owner: musl
 ```
 
@@ -111,11 +126,6 @@ Initial expected dependencies:
 - musl:
   reason: dynamic musl interpreter and libc.
   owner package: musl
-
-- libgcc-runtime:
-  reason: the current Alpine/musl Rust toolchain emits a `libgcc_s.so.1`
-  runtime dependency for the RootAsRole build.
-  owner package: libgcc-runtime
 ```
 
 Metadata note: dynamic musl binaries name `/lib/ld-musl-x86_64.so.1` as their
@@ -134,13 +144,27 @@ Expected installed files once accepted:
 /usr/share/defaults/rootasrole/
 /usr/share/defaults/pam.d/sr
 /usr/share/defaults/pam.d/dosr
+/usr/share/factory/etc/security/rootasrole.json
+/usr/share/factory/etc/security/rootasrole.d/policy.json
+/usr/share/factory/etc/pam.d/sr
+/usr/share/factory/etc/pam.d/dosr
 /usr/share/onix/packages/rootasrole.md
 ```
 
 The user-facing command is `dosr`, but RootAsRole's PAM transaction uses service
-name `sr`. ONIX policy packages therefore materialize `/etc/pam.d/sr` for
-runtime and keep `/etc/pam.d/dosr` as the obvious companion for humans reading
-the system.
+name `sr`. ONIX materialization therefore copies
+`/usr/share/factory/etc/pam.d/sr` into `/etc/pam.d/sr` for runtime and keeps
+`/etc/pam.d/dosr` as the obvious companion for humans reading the system.
+
+The first factory policy is intentionally a bootstrap policy:
+
+- UID `0` (`root`) is an actor;
+- UID `1000` (`onix`) is an actor for early VM bring-up proofs;
+- the bootstrap task can run commands as root;
+- `chsr` remains controlled by the RootAsRole policy.
+
+This is not the final ONIX administrator model. It is the first package-owned
+policy that lets the development VM prove `dosr` works.
 
 ONIX may later add:
 

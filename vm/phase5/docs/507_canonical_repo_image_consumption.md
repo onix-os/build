@@ -23,7 +23,7 @@ They proved different things:
   `branding` and `filesystem`;
 - `artifacts/onix-local-repo/` proved the Phase 4 and Phase 5 booted-base
   packages such as `busybox`, `dropbear`, `systemd`,
-  `bootstrap-policy`, `uutils-coreutils`, `rootasrole`, and `moss`.
+  `bootstrap`, `uutils-coreutils`, `rootasrole`, and `moss`.
 
 But a real distribution image should not be assembled from two separate
 historical artifact roots.
@@ -211,13 +211,11 @@ busybox
 uutils-coreutils
 dropbear
 systemd
-bootstrap-policy
+bootstrap
 musl
 linux-pam
 libseccomp
-libgcc-runtime
 rootasrole
-rootasrole-policy
 moss
 ```
 
@@ -297,13 +295,11 @@ busybox
 uutils-coreutils
 dropbear
 systemd
-bootstrap-policy
+bootstrap
 musl
 linux-pam
 libseccomp
-libgcc-runtime
 rootasrole
-rootasrole-policy
 moss
 ```
 

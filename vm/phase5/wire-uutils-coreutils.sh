@@ -47,7 +47,10 @@ cd "$ONIX_ROOT"
 
 local_stone_for() {
   local package="$1"
-  find "$LOCAL_REPO_DIR" -maxdepth 1 -name "$package-*.stone" ! -name '*dbginfo*' ! -name '*devel*' | sort | tail -n 1
+  # Package ids can be prefixes of other package ids, for example rootasrole
+  # and retired similarly-prefixed package ids. Require the next filename segment to start with a
+  # version digit so "$package" cannot accidentally select "$package-suffix".
+  find "$LOCAL_REPO_DIR" -maxdepth 1 -name "$package-[0-9]*.stone" ! -name '*dbginfo*' ! -name '*devel*' | sort | tail -n 1
 }
 
 check_source_files() {

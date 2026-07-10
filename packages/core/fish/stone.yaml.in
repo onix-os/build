@@ -1,0 +1,45 @@
+name        : fish
+version     : "@FISH_VERSION@"
+release     : @FISH_RELEASE@
+homepage    : https://github.com/fish-shell/fish-shell
+summary     : Friendly Rust interactive shell for ONIX users
+description : |
+    fish is the ONIX default interactive shell for the normal user.
+
+    BusyBox remains the ONIX /bin/sh provider for scripts and recovery. fish is
+    installed as /usr/bin/fish and is listed in /etc/shells by Phase 518.
+
+    Source hash: @FISH_SOURCE_SHA256@
+license     :
+    - GPL-2.0-only
+    - LGPL-2.0-or-later
+    - MIT
+    - PSF-2.0
+upstreams   :
+    - "@FISH_PAYLOAD_URL@" : "@FISH_PAYLOAD_SHA256@"
+builddeps   : []
+install     : |
+    install -dm00755 %(installroot)/usr
+    cp -a usr/. %(installroot)/usr/
+
+    chmod 00755 %(installroot)/usr
+    chmod 00755 %(installroot)/usr/bin
+    chmod 00755 %(installroot)/usr/bin/fish
+    chmod 00755 %(installroot)/usr/bin/fish_indent
+    chmod 00755 %(installroot)/usr/bin/fish_key_reader
+    chmod 00755 %(installroot)/usr/share
+    chmod 00755 %(installroot)/usr/share/fish
+    chmod 00755 %(installroot)/usr/share/onix
+    chmod 00755 %(installroot)/usr/share/onix/defaults
+    chmod 00755 %(installroot)/usr/share/onix/defaults/etc
+    chmod 00755 %(installroot)/usr/share/onix/defaults/etc/fish
+    chmod 00755 %(installroot)/usr/share/onix/defaults/etc/fish/conf.d
+    chmod 00755 %(installroot)/usr/share/onix/packages
+    chmod 00755 %(installroot)/usr/share/onix/shells
+    chmod 0644 %(installroot)/usr/share/onix/defaults/etc/fish/conf.d/branding.fish
+    chmod 0644 %(installroot)/usr/share/onix/packages/fish.md
+    chmod 0644 %(installroot)/usr/share/onix/shells/fish-policy.txt
+
+    find %(installroot)/usr/share/fish -type d -exec chmod 00755 {} \;
+    find %(installroot)/usr/share/fish -type f -exec chmod 00644 {} \;
+    find %(installroot)/usr -type d -exec chmod g-s {} \;

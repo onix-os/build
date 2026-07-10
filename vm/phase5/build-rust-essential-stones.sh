@@ -214,8 +214,10 @@ RootAsRole needs:
 linux-pam
 libseccomp
 musl
-toolchain runtime, only if libgcc_s is still needed
 ```
+
+Phase 511 later resolved the temporary `libgcc_s` question by filtering rustc's
+dynamic `-lgcc_s` request and linking GCC runtime support from static archives.
 
 The rule is static/static-PIE first by default, with a minimal ONIX-owned shared
 surface only when static is not the right model.
@@ -682,8 +684,10 @@ owns and audits the required shared-library stones:
 linux-pam
 libseccomp
 musl
-toolchain runtime, if libgcc_s is still needed
 ```
+
+Phase 511 later resolved the temporary `libgcc_s` question by filtering rustc's
+dynamic `-lgcc_s` request and linking GCC runtime support from static archives.
 
 ## Decision
 

@@ -90,9 +90,7 @@ uutils-coreutils
 musl
 linux-pam
 libseccomp
-libgcc-runtime
 rootasrole
-rootasrole-policy
 moss
 ```
 
@@ -132,6 +130,19 @@ Phase 514    -> copies the combined moss install target into the image
 If the systemd stone accidentally bundles musl again, the local repository will
 hit file-ownership collisions or the boot proof will fail. That is intentional:
 there must be one canonical musl owner.
+
+Phase 514 also checks the Phase 418 bootstrap debt ledger:
+
+```text
+/usr/share/onix/bootstrap/bootstrap-debt.tsv
+```
+
+This file is not a fix by itself. It is an honesty check. It makes sure the
+booted image still names the temporary pieces we have deliberately not finalized
+yet: the serial root shell, static QEMU networking, the temporary TCP inspection
+listener, Dropbear bootstrap SSH, and the active systemd-unit copy glue. That
+prevents us from accidentally treating bootstrap conveniences as finished ONIX
+design.
 
 ## uutils proof
 
@@ -215,8 +226,8 @@ ONIX-owned.
 
 ## Policy proof
 
-The RootAsRole package owns binaries. The `rootasrole-policy` package owns
-the factory source for live machine policy.
+The RootAsRole package owns both binaries and the factory source for live
+machine policy.
 
 Phase 514 checks:
 
@@ -229,7 +240,7 @@ Phase 514 checks:
 /etc/security/rootasrole.d/policy.json
 /etc/pam.d/sr
 /etc/pam.d/dosr
-/usr/share/onix/packages/rootasrole-policy.md
+/usr/share/onix/packages/rootasrole.md
 ```
 
 RootAsRole's ONIX build uses a split config layout:
@@ -324,7 +335,7 @@ RootAsRole currently needs a small dynamic-musl surface:
 ```text
 dosr -> libpam.so.0
 chsr -> libseccomp.so.2
-both -> libgcc_s.so.1 and musl
+both -> musl
 ```
 
 Phase 514 checks that those files exist in the running VM:
@@ -332,7 +343,6 @@ Phase 514 checks that those files exist in the running VM:
 ```text
 /usr/lib/libpam.so.0
 /usr/lib/libseccomp.so.2
-/usr/lib/libgcc_s.so.1
 /usr/lib/ld-musl-x86_64.so.1
 ```
 
@@ -341,9 +351,13 @@ It also checks their package notes:
 ```text
 /usr/share/onix/packages/linux-pam.md
 /usr/share/onix/packages/libseccomp.md
-/usr/share/onix/packages/libgcc-runtime.md
 /usr/share/onix/packages/musl.md
 ```
+
+RootAsRole's Rust build originally emitted a dynamic `libgcc_s.so.1`
+dependency. Phase 511 now filters that linker request and links GCC runtime
+support from static archives, so Phase 514 should not need a separate GCC
+runtime stone in the booted machine.
 
 This is the "minimal shared-library surface" rule in practice. Shared libraries
 are allowed only when they are deliberate, documented, and owned by ONIX stones.
@@ -372,7 +386,8 @@ The deeper ELF checks happen before this:
 - Phase 502 defines the payload audit helper.
 - Phase 509 audits uutils.
 - Phase 510 audits PAM/seccomp.
-- Phase 511 audits RootAsRole and libgcc runtime.
+- Phase 511 audits RootAsRole and proves its GCC runtime support is linked
+  from static archives rather than a runtime stone.
 
 Phase 514 asks a simpler but important live question:
 

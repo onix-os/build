@@ -111,7 +111,6 @@ Examples:
 ```text
 branding
 filesystem
-bootstrap-policy
 ```
 
 These packages may be mostly data, templates, or scripts.

@@ -31,14 +31,13 @@ REQUIRED_PACKAGES=(
   uutils-coreutils
   dropbear
   systemd
-  bootstrap-policy
+  bootstrap
   musl
   linux-pam
   libseccomp
-  libgcc-runtime
   rootasrole
-  rootasrole-policy
   moss
+  fish
 )
 
 die() {
@@ -418,7 +417,7 @@ verify_public_repo() {
     || die "expected ${#REQUIRED_PACKAGES[@]} stones in pool, found $stone_count"
 
   for package in "${REQUIRED_PACKAGES[@]}"; do
-    stone=("$POOL_ROOT"/*/"$package"/"$package"-*.stone)
+    stone=("$POOL_ROOT"/*/"$package"/"$package"-[0-9]*.stone)
     [[ "${#stone[@]}" -eq 1 ]] \
       || die "expected exactly one pooled stone for $package, found ${#stone[@]}"
     "$HOST_MOSS" inspect --check "${stone[0]}" >/dev/null
@@ -492,9 +491,8 @@ prove_one_repo() {
   need_file "$work/install-target/usr/share/factory/etc/pam.d/sr"
   need_file "$work/install-target/usr/share/factory/etc/pam.d/dosr"
   need_file "$work/install-target/usr/share/factory/etc/security/rootasrole.json"
-  need_file "$work/install-target/usr/share/onix/packages/bootstrap-policy.md"
+  need_file "$work/install-target/usr/share/onix/packages/bootstrap.md"
   need_file "$work/install-target/usr/share/onix/packages/rootasrole.md"
-  need_file "$work/install-target/usr/share/onix/packages/rootasrole-policy.md"
   need_file "$work/install-target/usr/share/onix/packages/moss.md"
 
   log "proof     : $proof_name install target OK"

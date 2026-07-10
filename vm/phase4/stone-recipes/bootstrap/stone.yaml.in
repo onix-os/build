@@ -1,13 +1,13 @@
-name        : bootstrap-policy
+name        : bootstrap
 version     : @BOOTSTRAP_POLICY_VERSION@
 release     : 1
 summary     : Bootstrap service policy and helper scripts for ONIX
-license     : LicenseRef-ONIX-bootstrap-policy
+license     : LicenseRef-ONIX-bootstrap
 homepage    : https://github.com/onix-os
 upstreams   :
     - @BOOTSTRAP_POLICY_PAYLOAD_URL@: @BOOTSTRAP_POLICY_PAYLOAD_SHA256@
 description : |
-    Package-owned ONIX bootstrap policy.
+    Package-owned ONIX bootstrap helpers and early service policy.
 
     This package owns the scripts, proof notes, and source copies of the
     temporary bootstrap systemd units used while Phase 4 brings the base system
@@ -43,13 +43,14 @@ install     : |
         %(installroot)/usr/lib/onix/systemd/system/onix-bootstrap-network.service \
         %(installroot)/usr/lib/onix/systemd/system/onix-bootstrap-remote-inspection.service \
         %(installroot)/usr/lib/onix/systemd/system/onix-bootstrap-serial-shell.service \
-        %(installroot)/usr/share/onix/bootstrap/bootstrap-policy.txt \
+        %(installroot)/usr/share/onix/bootstrap/bootstrap-debt.tsv \
+        %(installroot)/usr/share/onix/bootstrap/bootstrap.txt \
         %(installroot)/usr/share/onix/bootstrap/dropbear-stone.txt \
         %(installroot)/usr/share/onix/bootstrap/networking.txt \
         %(installroot)/usr/share/onix/bootstrap/remote-inspection.txt \
         %(installroot)/usr/share/onix/bootstrap/serial-console.txt \
         %(installroot)/usr/share/onix/bootstrap/ssh.txt \
-        %(installroot)/usr/share/onix/packages/bootstrap-policy.md
+        %(installroot)/usr/share/onix/packages/bootstrap.md
 
     # Boulder build dirs inherit setgid. Clear it on directories we created so
     # Moss receives ordinary directory layout metadata.

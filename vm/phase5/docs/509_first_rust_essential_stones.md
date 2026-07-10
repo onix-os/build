@@ -38,7 +38,7 @@ ONIX currently boots because of bootstrap packages:
 busybox
 dropbear
 systemd
-bootstrap-policy
+bootstrap
 ```
 
 That is enough to boot, log in, and inspect the machine.
@@ -230,8 +230,11 @@ for the shared surface:
 linux-pam
 libseccomp
 musl
-toolchain runtime, if libgcc_s is still needed
 ```
+
+The later Phase 511 build proved that `libgcc_s` does not need to become a
+runtime stone: rustc's dynamic `-lgcc_s` request can be filtered by a build-only
+linker wrapper and satisfied with static GCC archives.
 
 Only then can the RootAsRole package honestly say:
 
@@ -354,7 +357,6 @@ Expected future allowed shared-library surface:
 libpam.so.0       owner: linux-pam
 libseccomp.so.2   owner: libseccomp
 ld-musl-*.so.1    owner: musl
-libgcc_s.so.1     owner: toolchain runtime package, only if still needed
 ```
 
 Phase 509 records this as:

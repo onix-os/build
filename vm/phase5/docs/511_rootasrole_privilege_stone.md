@@ -133,9 +133,9 @@ keeping the real musl dependency. This is not permission to hide arbitrary
 runtime edges. It is a narrow workaround for the usr-merged musl loader metadata
 shape.
 
-## The libgcc-runtime discovery
+## The libgcc link discovery
 
-The RootAsRole probe showed this final ELF truth:
+The first RootAsRole probe showed this final ELF truth:
 
 ```text
 dosr:
@@ -150,49 +150,59 @@ chsr:
 ```
 
 `libgcc_s.so.1` is the GCC runtime shared object. It is not Rust code and it is
-not a feature we wanted to add casually, so Phase 511 tries the reduction path
-first:
+not a runtime library ONIX wants to add casually. The first reduction attempts
+did not solve it:
 
 ```text
 -static-libgcc  -> still needs libgcc_s.so.1
 panic=abort     -> still needs libgcc_s.so.1
 +crt-static     -> not usable for this build in the forge
+clang/compiler-rt -> still needs libgcc_s.so.1
 ```
 
-So ONIX accepts a tiny explicit runtime stone:
+The important discovery was that rustc itself passes an explicit linker
+argument:
 
 ```text
-libgcc-runtime
+-lgcc_s
 ```
 
-This keeps the rule honest:
+That means `-static-libgcc` cannot win by itself: the link line still contains a
+direct request for the shared GCC runtime.
+
+Phase 511 solves this with a build-only linker wrapper:
 
 ```text
-no random forge library at runtime
+rustc link args
+  -> wrapper removes -lgcc_s
+  -> wrapper appends /usr/lib/gcc/.../libgcc.a
+  -> wrapper appends /usr/lib/gcc/.../libgcc_eh.a
+  -> gcc performs the final link
 ```
 
-If RootAsRole needs `libgcc_s.so.1`, ONIX owns a `libgcc-runtime` stone that
-provides it.
+The wrapper is not installed into ONIX. It is only a forge build tool. The
+resulting RootAsRole binaries keep the required dynamic PAM/seccomp/musl edges
+but do not need `libgcc_s.so.1` at runtime:
 
-Later, when ONIX has an owned compiler toolchain phase, this bootstrap runtime
-stone should be replaced by a source-built ONIX compiler-runtime package or
-eliminated if the toolchain can do so cleanly.
+```text
+dosr:
+  NEEDED libpam.so.0
+  NEEDED libc.musl-x86_64.so.1
+
+chsr:
+  NEEDED libseccomp.so.2
+  NEEDED libc.musl-x86_64.so.1
+```
+
+This keeps the rule honest: ONIX can use static compiler-runtime archive code at
+build time without adding a new runtime shared-library stone.
 
 ## What gets built
 
-Phase 511 builds two stones:
+Phase 511 builds one stone:
 
 ```text
-libgcc-runtime
 rootasrole
-```
-
-`libgcc-runtime` owns:
-
-```text
-/usr/lib/libgcc_s.so.1
-/usr/lib/libgcc_s.so
-/usr/share/onix/packages/libgcc-runtime.md
 ```
 
 `rootasrole` owns:
@@ -289,9 +299,10 @@ Phase 511 proves:
 - RootAsRole source is pinned to `v4.0.0`;
 - the resolved commit matches the expected pin;
 - Cargo builds `dosr` and `chsr` with locked dependencies;
-- the build uses an ONIX-owned PAM/seccomp/libgcc/musl sysroot;
-- boulder cuts `libgcc-runtime` and `rootasrole` stones;
-- host Moss can inspect both stones;
+- the build uses an ONIX-owned PAM/seccomp/musl sysroot;
+- rustc's dynamic `-lgcc_s` request is filtered and replaced by static GCC archives;
+- boulder cuts the `rootasrole` stone;
+- host Moss can inspect the stone;
 - the local ONIX repo is refreshed;
 - Moss can install `rootasrole` and automatically pull its owned shared surface;
 - `/usr/bin/dosr` is installed with mode `4755`;
@@ -302,8 +313,8 @@ Phase 511 proves:
 - the exact allowed runtime dependencies are:
 
   ```text
-  dosr -> libpam.so.0, libgcc_s.so.1, libc.musl-x86_64.so.1
-  chsr -> libseccomp.so.2, libgcc_s.so.1, libc.musl-x86_64.so.1
+  dosr -> libpam.so.0, libc.musl-x86_64.so.1
+  chsr -> libseccomp.so.2, libc.musl-x86_64.so.1
   ```
 
 Anything outside that list fails the phase.
@@ -313,15 +324,13 @@ Anything outside that list fails the phase.
 Generated stones:
 
 ```text
-artifacts/onix-stones/libgcc-runtime-*.stone
-artifacts/onix-stones/rootasrole-*.stone
+artifacts/onix-stones/rootasrole-[0-9]*.stone
 ```
 
 Local repo copies:
 
 ```text
-artifacts/onix-local-repo/libgcc-runtime-*.stone
-artifacts/onix-local-repo/rootasrole-*.stone
+artifacts/onix-local-repo/rootasrole-[0-9]*.stone
 artifacts/onix-local-repo/stone.index
 ```
 

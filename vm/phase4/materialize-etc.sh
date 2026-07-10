@@ -47,7 +47,7 @@
 # /persist/nix/store so the absolute musl loader and runtime paths resolve when
 # the kernel starts PID 1.
 #
-# Phase 418 consumes bootstrap-policy. That package owns the bootstrap
+# Phase 418 consumes bootstrap. That package owns the bootstrap
 # helper scripts, proof notes, and source copies of temporary bootstrap systemd
 # units. The active unit tree is still the current bootstrap systemd tree, so
 # this script activates package-owned unit sources into that tree as a temporary
@@ -111,14 +111,19 @@ DROPBEAR_INSTALL_TARGET="$WORK_DIR/dropbear-install-target"
 SYSTEMD_MOSS_ROOT="$WORK_DIR/systemd-moss-root"
 SYSTEMD_MOSS_CACHE="$WORK_DIR/systemd-moss-cache"
 SYSTEMD_INSTALL_TARGET="$WORK_DIR/systemd-install-target"
-BOOTSTRAP_POLICY_MOSS_ROOT="$WORK_DIR/bootstrap-policy-moss-root"
-BOOTSTRAP_POLICY_MOSS_CACHE="$WORK_DIR/bootstrap-policy-moss-cache"
-BOOTSTRAP_POLICY_INSTALL_TARGET="$WORK_DIR/bootstrap-policy-install-target"
+BOOTSTRAP_MOSS_ROOT="$WORK_DIR/bootstrap-moss-root"
+BOOTSTRAP_MOSS_CACHE="$WORK_DIR/bootstrap-moss-cache"
+BOOTSTRAP_INSTALL_TARGET="$WORK_DIR/bootstrap-install-target"
 PHASE5_RUNTIME_MOSS_ROOT="$WORK_DIR/phase5-runtime-moss-root"
 PHASE5_RUNTIME_MOSS_CACHE="$WORK_DIR/phase5-runtime-moss-cache"
 PHASE5_RUNTIME_INSTALL_TARGET="$WORK_DIR/phase5-runtime-install-target"
 PHASE5_LIVE_MOSS_ROOT="$WORK_DIR/phase5-live-moss-root"
 PHASE5_LIVE_MOSS_CACHE="$WORK_DIR/phase5-live-moss-cache"
+PHASE5_SHELL_MOSS_ROOT="$WORK_DIR/phase5-shell-moss-root"
+PHASE5_SHELL_MOSS_CACHE="$WORK_DIR/phase5-shell-moss-cache"
+PHASE5_SHELL_INSTALL_TARGET="$WORK_DIR/phase5-shell-install-target"
+PHASE5_SHELL_LIVE_MOSS_ROOT="$WORK_DIR/phase5-shell-live-moss-root"
+PHASE5_SHELL_LIVE_MOSS_CACHE="$WORK_DIR/phase5-shell-live-moss-cache"
 MNT="$WORK_DIR/mnt"
 DISK_DEV=""
 ACTION="etc"
@@ -2970,11 +2975,11 @@ prune_systemd_bootstrap_nix_payloads() {
   printf 'removed  : old package-owned systemd bootstrap compatibility copy\n'
 }
 
-activate_bootstrap_policy_units_native() {
+activate_bootstrap_units_native() {
   local native_unit_dir="$MNT/usr/lib/systemd/system"
   local mask_tty
 
-  activate_bootstrap_policy_unit_tree "$native_unit_dir"
+  activate_bootstrap_unit_tree "$native_unit_dir"
 
   install -dm0755 "$MNT/etc/systemd/system"
   for mask_tty in ttyS0 "$SERIAL_CONSOLE_TTY"; do
@@ -2995,7 +3000,7 @@ Policy:
 - Phase 422 consumes the native source-built systemd stone.
 - The active PID 1 binary is now a real file at /usr/lib/systemd/systemd.
 - The active unit tree is now the native /usr/lib/systemd/system tree.
-- Bootstrap unit sources still come from bootstrap-policy.
+- Bootstrap unit sources still come from bootstrap.
 
 Installed package-owned payload:
 
@@ -3049,7 +3054,7 @@ verify_native_bootstrap_units() {
       || die "active native bootstrap unit is not enabled: $unit"
     [[ "$(readlink "$wants/$unit")" == "../$unit" ]] \
       || die "active native bootstrap unit enable symlink target is wrong: $unit"
-  done < <(bootstrap_policy_units)
+  done < <(bootstrap_units)
 
   grep -q '^ExecStart=/usr/bin/busybox sh /usr/lib/onix/bootstrap-serial-shell$' \
     "$unit_dir/onix-bootstrap-serial-shell.service" \
@@ -3092,7 +3097,7 @@ verify_native_systemd_stone_image() {
   log "verifying Phase 422 native systemd image install"
 
   verify_native_systemd_stone_target "$MNT"
-  verify_bootstrap_policy_target "$MNT"
+  verify_bootstrap_target "$MNT"
   verify_busybox_stone_target "$MNT"
   verify_dropbear_stone_target "$MNT"
 
@@ -3158,7 +3163,7 @@ preview_native_systemd_stone() {
   sed -n '1,120p' "$MNT/usr/share/onix/packages/systemd.md"
 }
 
-bootstrap_policy_units() {
+bootstrap_units() {
   cat <<'EOF'
 onix-bootstrap-serial-shell.service
 onix-bootstrap-network.service
@@ -3167,7 +3172,7 @@ onix-bootstrap-dropbear.service
 EOF
 }
 
-verify_bootstrap_policy_target() {
+verify_bootstrap_target() {
   local target="$1"
   local script
   local unit
@@ -3184,19 +3189,21 @@ verify_bootstrap_policy_target() {
     bootstrap-ssh-proof
   do
     [[ -x "$target/usr/lib/onix/$script" ]] \
-      || die "bootstrap-policy target is missing executable /usr/lib/onix/$script"
+      || die "bootstrap target is missing executable /usr/lib/onix/$script"
   done
 
   while IFS= read -r unit; do
     [[ -n "$unit" ]] || continue
     [[ -f "$target/usr/lib/onix/systemd/system/$unit" ]] \
-      || die "bootstrap-policy target is missing unit source: $unit"
-  done < <(bootstrap_policy_units)
+      || die "bootstrap target is missing unit source: $unit"
+  done < <(bootstrap_units)
 
-  [[ -f "$target/usr/share/onix/bootstrap/bootstrap-policy.txt" ]] \
-    || die "bootstrap-policy target is missing bootstrap policy proof"
-  [[ -f "$target/usr/share/onix/packages/bootstrap-policy.md" ]] \
-    || die "bootstrap-policy target is missing package note"
+  [[ -f "$target/usr/share/onix/bootstrap/bootstrap.txt" ]] \
+    || die "bootstrap target is missing bootstrap proof"
+  [[ -f "$target/usr/share/onix/bootstrap/bootstrap-debt.tsv" ]] \
+    || die "bootstrap target is missing bootstrap debt ledger"
+  [[ -f "$target/usr/share/onix/packages/bootstrap.md" ]] \
+    || die "bootstrap target is missing package note"
 
   grep -q 'ONIX_BOOTSTRAP_SERIAL_CONSOLE_READY' "$target/usr/lib/onix/bootstrap-serial-shell" \
     || die "bootstrap serial shell script does not print the ready marker"
@@ -3206,12 +3213,18 @@ verify_bootstrap_policy_target() {
   grep -q '^ExecStart=/usr/sbin/dropbear ' \
     "$target/usr/lib/onix/systemd/system/onix-bootstrap-dropbear.service" \
     || die "package-owned Dropbear unit should use dropbear"
-  grep -q 'ONIX Phase 418 bootstrap policy package' \
-    "$target/usr/share/onix/bootstrap/bootstrap-policy.txt" \
-    || die "bootstrap policy proof file is missing the Phase 418 marker"
-  grep -q 'bootstrap-policy' \
-    "$target/usr/share/onix/packages/bootstrap-policy.md" \
-    || die "bootstrap policy package note is missing package name"
+  grep -q 'ONIX Phase 418 bootstrap package' \
+    "$target/usr/share/onix/bootstrap/bootstrap.txt" \
+    || die "bootstrap proof file is missing the Phase 418 marker"
+  grep -q '^remote-inspection-listener[[:space:]]' \
+    "$target/usr/share/onix/bootstrap/bootstrap-debt.tsv" \
+    || die "bootstrap debt ledger is missing remote-inspection-listener"
+  grep -q '^active-unit-copy-glue[[:space:]]' \
+    "$target/usr/share/onix/bootstrap/bootstrap-debt.tsv" \
+    || die "bootstrap debt ledger is missing active-unit-copy-glue"
+  grep -q 'bootstrap' \
+    "$target/usr/share/onix/packages/bootstrap.md" \
+    || die "bootstrap package note is missing package name"
 }
 
 ensure_dropbear_no_motd_unit() {
@@ -3233,12 +3246,12 @@ ensure_dropbear_no_motd_unit() {
   printf 'unit     : %s disables Dropbear MOTD with -m\n' "${unit#$MNT}"
 }
 
-ensure_bootstrap_policy_dropbear_no_motd() {
+ensure_bootstrap_dropbear_no_motd() {
   ensure_dropbear_no_motd_unit \
     "$MNT/usr/lib/onix/systemd/system/onix-bootstrap-dropbear.service"
 }
 
-install_bootstrap_policy_stone_payload() {
+install_bootstrap_stone_payload() {
   [[ -x "$HOST_MOSS" ]] \
     || die "missing host moss: ${HOST_MOSS#$ONIX_ROOT/} (run make phase 202)"
   [[ -f "$IMAGE_REPO_DIR/stone.index" ]] \
@@ -3246,38 +3259,38 @@ install_bootstrap_policy_stone_payload() {
 
   need_cmd tar
 
-  log "materializing bootstrap-policy from the image package repo into a scratch target"
-  if [[ -d "$BOOTSTRAP_POLICY_MOSS_ROOT" ||
-        -d "$BOOTSTRAP_POLICY_MOSS_CACHE" ||
-        -d "$BOOTSTRAP_POLICY_INSTALL_TARGET" ]]; then
+  log "materializing bootstrap from the image package repo into a scratch target"
+  if [[ -d "$BOOTSTRAP_MOSS_ROOT" ||
+        -d "$BOOTSTRAP_MOSS_CACHE" ||
+        -d "$BOOTSTRAP_INSTALL_TARGET" ]]; then
     chmod -R u+rwX \
-      "$BOOTSTRAP_POLICY_MOSS_ROOT" \
-      "$BOOTSTRAP_POLICY_MOSS_CACHE" \
-      "$BOOTSTRAP_POLICY_INSTALL_TARGET" 2>/dev/null || true
+      "$BOOTSTRAP_MOSS_ROOT" \
+      "$BOOTSTRAP_MOSS_CACHE" \
+      "$BOOTSTRAP_INSTALL_TARGET" 2>/dev/null || true
   fi
-  rm -rf "$BOOTSTRAP_POLICY_MOSS_ROOT" "$BOOTSTRAP_POLICY_MOSS_CACHE" "$BOOTSTRAP_POLICY_INSTALL_TARGET"
-  install -dm0755 "$BOOTSTRAP_POLICY_MOSS_ROOT" "$BOOTSTRAP_POLICY_MOSS_CACHE" "$BOOTSTRAP_POLICY_INSTALL_TARGET"
+  rm -rf "$BOOTSTRAP_MOSS_ROOT" "$BOOTSTRAP_MOSS_CACHE" "$BOOTSTRAP_INSTALL_TARGET"
+  install -dm0755 "$BOOTSTRAP_MOSS_ROOT" "$BOOTSTRAP_MOSS_CACHE" "$BOOTSTRAP_INSTALL_TARGET"
 
-  "$HOST_MOSS" -D "$BOOTSTRAP_POLICY_MOSS_ROOT" --cache "$BOOTSTRAP_POLICY_MOSS_CACHE" \
+  "$HOST_MOSS" -D "$BOOTSTRAP_MOSS_ROOT" --cache "$BOOTSTRAP_MOSS_CACHE" \
     repo add onix-image "file://$IMAGE_REPO_DIR/stone.index" \
     -c "ONIX image package repo" >/dev/null
-  "$HOST_MOSS" -D "$BOOTSTRAP_POLICY_MOSS_ROOT" --cache "$BOOTSTRAP_POLICY_MOSS_CACHE" \
+  "$HOST_MOSS" -D "$BOOTSTRAP_MOSS_ROOT" --cache "$BOOTSTRAP_MOSS_CACHE" \
     repo update >/dev/null
-  "$HOST_MOSS" -D "$BOOTSTRAP_POLICY_MOSS_ROOT" --cache "$BOOTSTRAP_POLICY_MOSS_CACHE" \
-    -y install --to "$BOOTSTRAP_POLICY_INSTALL_TARGET" bootstrap-policy
+  "$HOST_MOSS" -D "$BOOTSTRAP_MOSS_ROOT" --cache "$BOOTSTRAP_MOSS_CACHE" \
+    -y install --to "$BOOTSTRAP_INSTALL_TARGET" bootstrap
 
-  verify_bootstrap_policy_target "$BOOTSTRAP_POLICY_INSTALL_TARGET"
+  verify_bootstrap_target "$BOOTSTRAP_INSTALL_TARGET"
 
-  log "copying bootstrap-policy package payload into the ONIX image"
+  log "copying bootstrap package payload into the ONIX image"
   install -dm0755 "$MNT/usr"
-  tar --numeric-owner -C "$BOOTSTRAP_POLICY_INSTALL_TARGET" -cpf - \
+  tar --numeric-owner -C "$BOOTSTRAP_INSTALL_TARGET" -cpf - \
     usr/lib/onix \
     usr/share/onix/bootstrap \
-    usr/share/onix/packages/bootstrap-policy.md \
+    usr/share/onix/packages/bootstrap.md \
     | tar --numeric-owner -C "$MNT" -xpf -
 
-  verify_bootstrap_policy_target "$MNT"
-  printf 'stone    : bootstrap-policy installed under /usr/lib/onix + /usr/share/onix\n'
+  verify_bootstrap_target "$MNT"
+  printf 'stone    : bootstrap installed under /usr/lib/onix + /usr/share/onix\n'
 }
 
 phase5_runtime_packages() {
@@ -3287,9 +3300,7 @@ uutils-coreutils
 musl
 linux-pam
 libseccomp
-libgcc-runtime
 rootasrole
-rootasrole-policy
 moss
 EOF
 }
@@ -3302,13 +3313,11 @@ busybox
 uutils-coreutils
 dropbear
 systemd
-bootstrap-policy
+bootstrap
 musl
 linux-pam
 libseccomp
-libgcc-runtime
 rootasrole
-rootasrole-policy
 moss
 EOF
 }
@@ -3509,9 +3518,7 @@ Installed from the image package repository:
 - musl
 - linux-pam
 - libseccomp
-- libgcc-runtime
 - rootasrole
-- rootasrole-policy
 - moss
 
 This proof means the booted image has consumed the Phase 5 package/repository
@@ -3531,7 +3538,6 @@ verify_phase5_runtime_target() {
   [[ -x "$target/usr/bin/chsr" ]] || die "Phase 5 target missing /usr/bin/chsr"
   [[ -e "$target/usr/lib/libpam.so.0" ]] || die "Phase 5 target missing libpam.so.0"
   [[ -e "$target/usr/lib/libseccomp.so.2" ]] || die "Phase 5 target missing libseccomp.so.2"
-  [[ -e "$target/usr/lib/libgcc_s.so.1" ]] || die "Phase 5 target missing libgcc_s.so.1"
   [[ -e "$target/usr/lib/ld-musl-x86_64.so.1" ]] || die "Phase 5 target missing musl loader"
   [[ -f "$target/usr/share/onix/packages/uutils-coreutils.commands" ]] \
     || die "Phase 5 target missing uutils command manifest"
@@ -3641,7 +3647,6 @@ preview_phase5_runtime() {
     /usr/bin/chsr \
     /usr/lib/libpam.so.0 \
     /usr/lib/libseccomp.so.2 \
-    /usr/lib/libgcc_s.so.1 \
     /.moss/db \
     /etc/moss/repo.d/onix-image.kdl \
     /etc/security/rootasrole.json \
@@ -3657,7 +3662,276 @@ preview_phase5_runtime() {
   sed -n '1,40p' "$MNT/usr/share/onix/packages/uutils-coreutils.commands"
 }
 
-activate_bootstrap_policy_unit_tree() {
+phase5_shell_packages() {
+  cat <<'EOF'
+fish
+EOF
+}
+
+phase5_shell_live_moss_installed_packages() {
+  live_moss_installed_packages
+  phase5_shell_packages
+}
+
+verify_phase5_shell_target() {
+  local target="$1"
+
+  [[ -x "$target/usr/bin/fish" ]] || die "Phase 5 shell target missing /usr/bin/fish"
+  [[ -x "$target/usr/bin/fish_indent" ]] || die "Phase 5 shell target missing /usr/bin/fish_indent"
+  [[ -x "$target/usr/bin/fish_key_reader" ]] || die "Phase 5 shell target missing /usr/bin/fish_key_reader"
+  [[ -d "$target/usr/share/fish" ]] || die "Phase 5 shell target missing /usr/share/fish"
+  [[ -f "$target/usr/share/onix/defaults/etc/fish/conf.d/branding.fish" ]] \
+    || die "Phase 5 shell target missing ONIX fish branding config"
+  [[ -f "$target/usr/share/onix/packages/fish.md" ]] \
+    || die "Phase 5 shell target missing fish package note"
+  [[ -f "$target/usr/share/onix/shells/fish-policy.txt" ]] \
+    || die "Phase 5 shell target missing fish shell policy note"
+  grep -q 'Welcome to ONIX' "$target/usr/share/onix/defaults/etc/fish/conf.d/branding.fish" \
+    || die "ONIX fish branding config is missing greeting text"
+
+  install -dm0755 "$WORK_DIR/fish-proof-home" "$WORK_DIR/fish-proof-config"
+  HOME="$WORK_DIR/fish-proof-home" XDG_CONFIG_HOME="$WORK_DIR/fish-proof-config" \
+    "$target/usr/bin/fish" --version >/dev/null
+  HOME="$WORK_DIR/fish-proof-home" XDG_CONFIG_HOME="$WORK_DIR/fish-proof-config" \
+    "$target/usr/bin/fish" -c 'echo ONIX_FISH_TARGET_OK' | grep -qx 'ONIX_FISH_TARGET_OK'
+}
+
+ensure_shells_has_phase5_shells() {
+  local tmp_shells
+  local shell_path
+
+  install -dm0755 "$MNT/usr/share/defaults/etc" "$MNT/etc"
+  cat > "$MNT/usr/share/defaults/etc/shells" <<'EOF'
+# ONIX Phase 5 shell policy.
+#
+# BusyBox remains the system /bin/sh provider for scripts and recovery.
+# fish is the normal user's interactive login shell.
+/bin/sh
+/usr/bin/sh
+/usr/bin/fish
+/usr/sbin/nologin
+EOF
+  chmod 0644 "$MNT/usr/share/defaults/etc/shells"
+
+  if [[ ! -f "$MNT/etc/shells" ]]; then
+    install -m0644 "$MNT/usr/share/defaults/etc/shells" "$MNT/etc/shells"
+    printf 'created  : /etc/shells from Phase 5 shell default\n'
+    return 0
+  fi
+
+  tmp_shells="$(mktemp "${TMPDIR:-/tmp}/onix-phase5-shells.XXXXXX")"
+  cat "$MNT/etc/shells" > "$tmp_shells"
+  for shell_path in /bin/sh /usr/bin/sh /usr/bin/fish /usr/sbin/nologin; do
+    if ! grep -qx "$shell_path" "$tmp_shells"; then
+      printf '%s\n' "$shell_path" >> "$tmp_shells"
+    fi
+  done
+  install -m0644 "$tmp_shells" "$MNT/etc/shells"
+  rm -f "$tmp_shells"
+  printf 'updated  : /etc/shells includes BusyBox sh and fish\n'
+}
+
+set_onix_user_shell_to_fish() {
+  local tmp_passwd tmp_sysusers
+
+  [[ -f "$MNT/etc/passwd" ]] || die "missing /etc/passwd; run make phase 406 or 514 first"
+  grep -q "^${SSH_USER}:" "$MNT/etc/passwd" \
+    || die "missing ${SSH_USER} user in /etc/passwd"
+
+  tmp_passwd="$(mktemp "${TMPDIR:-/tmp}/onix-phase5-passwd.XXXXXX")"
+  awk -F: -v OFS=: -v user="$SSH_USER" '
+    $1 == user { $7 = "/usr/bin/fish" }
+    { print }
+  ' "$MNT/etc/passwd" > "$tmp_passwd"
+  grep -q "^${SSH_USER}:.*:/usr/bin/fish$" "$tmp_passwd" \
+    || die "failed to set ${SSH_USER} login shell to /usr/bin/fish"
+  install -m0644 "$tmp_passwd" "$MNT/etc/passwd"
+  rm -f "$tmp_passwd"
+  printf 'account  : %s login shell -> /usr/bin/fish\n' "$SSH_USER"
+
+  install -dm0755 "$MNT/usr/lib/sysusers.d"
+  cat > "$MNT/usr/lib/sysusers.d/onix-ssh.conf" <<EOF
+# ONIX Phase 518 bootstrap SSH account policy.
+#
+# BusyBox remains /bin/sh. The normal ONIX user logs into fish.
+u $SSH_USER $SSH_UID:$SSH_GID "ONIX Bootstrap SSH User" /home/$SSH_USER /usr/bin/fish
+EOF
+  chmod 0644 "$MNT/usr/lib/sysusers.d/onix-ssh.conf"
+
+  if [[ -f "$MNT/etc/shadow" ]]; then
+    chmod 0600 "$MNT/etc/shadow"
+  fi
+  tmp_sysusers="$MNT/usr/lib/sysusers.d/onix-ssh.conf"
+  [[ -f "$tmp_sysusers" ]] || die "failed to write Phase 518 sysusers policy"
+}
+
+materialize_phase5_shell_policy() {
+  verify_phase5_shell_target "$MNT"
+  ensure_shells_has_phase5_shells
+  set_onix_user_shell_to_fish
+}
+
+initialize_phase5_shell_live_moss_root() {
+  local live_packages=()
+  local installed_log="$PHASE5_SHELL_LIVE_MOSS_CACHE/installed.list"
+  local package_name
+
+  [[ -x "$HOST_MOSS" ]] \
+    || die "missing host moss: ${HOST_MOSS#$ONIX_ROOT/} (run make phase 202)"
+  [[ -f "$IMAGE_REPO_DIR/stone.index" ]] \
+    || die "missing ONIX image package repo index: ${IMAGE_REPO_DIR#$ONIX_ROOT/}/stone.index (run make phase 505)"
+
+  log "refreshing live moss metadata with the Phase 5 shell package"
+  rm -rf "$MNT/.moss" "$MNT/etc/moss" "$PHASE5_SHELL_LIVE_MOSS_ROOT" "$PHASE5_SHELL_LIVE_MOSS_CACHE"
+  install -dm0755 "$PHASE5_SHELL_LIVE_MOSS_ROOT" "$PHASE5_SHELL_LIVE_MOSS_CACHE"
+
+  "$HOST_MOSS" -D "$PHASE5_SHELL_LIVE_MOSS_ROOT" --cache "$PHASE5_SHELL_LIVE_MOSS_CACHE" \
+    repo add onix-image "file://$IMAGE_REPO_DIR/stone.index" \
+    -c "ONIX image package repo" >/dev/null
+  "$HOST_MOSS" -D "$PHASE5_SHELL_LIVE_MOSS_ROOT" --cache "$PHASE5_SHELL_LIVE_MOSS_CACHE" \
+    repo update >/dev/null
+
+  mapfile -t live_packages < <(phase5_shell_live_moss_installed_packages)
+  "$HOST_MOSS" -D "$PHASE5_SHELL_LIVE_MOSS_ROOT" --cache "$PHASE5_SHELL_LIVE_MOSS_CACHE" \
+    -y install "${live_packages[@]}" >/dev/null
+
+  install -dm0755 "$MNT/etc" "$MNT/usr/lib"
+  cp -a "$PHASE5_SHELL_LIVE_MOSS_ROOT/.moss" "$MNT/.moss"
+  cp -a "$PHASE5_SHELL_LIVE_MOSS_ROOT/etc/moss" "$MNT/etc/moss"
+  install -m0644 "$PHASE5_SHELL_LIVE_MOSS_ROOT/usr/.stateID" "$MNT/usr/.stateID"
+  install -m0644 "$PHASE5_SHELL_LIVE_MOSS_ROOT/usr/lib/system-model.kdl" \
+    "$MNT/usr/lib/system-model.kdl"
+
+  chmod -R a+rX "$MNT/.moss" "$MNT/etc/moss"
+  "$HOST_MOSS" -D "$MNT" --cache "$PHASE5_SHELL_LIVE_MOSS_CACHE" \
+    list installed > "$installed_log"
+  for package_name in "${live_packages[@]}"; do
+    grep -q "^${package_name}[[:space:]]" "$installed_log" \
+      || die "live moss installed DB does not list $package_name"
+  done
+  printf 'moss     : live package metadata now includes fish\n'
+}
+
+write_phase5_shell_runtime_proof() {
+  install -dm0755 "$MNT/usr/share/onix/bootstrap"
+  cat > "$MNT/usr/share/onix/bootstrap/phase5-shell-runtime.txt" <<'EOF'
+ONIX Phase 518 shell runtime policy
+
+Installed from the image package repository:
+
+- fish
+
+Active shell policy:
+
+- /usr/bin/fish is the normal user's interactive login shell.
+- /bin/sh and /usr/bin/sh remain BusyBox for system scripts and recovery.
+- fish is intentionally not used as /bin/sh.
+- /usr/share/onix/defaults/etc/fish/conf.d/branding.fish is the packaged default.
+- /etc/fish/conf.d/branding.fish provides the active ONIX fish greeting.
+EOF
+  chmod 0644 "$MNT/usr/share/onix/bootstrap/phase5-shell-runtime.txt"
+}
+
+verify_phase5_shell_runtime_image() {
+  local installed_log="$PHASE5_SHELL_LIVE_MOSS_CACHE/verify-installed.list"
+
+  log "verifying Phase 518 shell runtime image install"
+  verify_phase5_shell_target "$MNT"
+  [[ -L "$MNT/usr/bin/sh" ]] || die "/usr/bin/sh is not a symlink"
+  [[ "$(readlink "$MNT/usr/bin/sh")" == "busybox" ]] \
+    || die "/usr/bin/sh does not point at busybox"
+  [[ -x "$MNT/bin/sh" ]] || die "/bin/sh does not resolve to an executable"
+  grep -qx '/bin/sh' "$MNT/etc/shells"
+  grep -qx '/usr/bin/sh' "$MNT/etc/shells"
+  grep -qx '/usr/bin/fish' "$MNT/etc/shells"
+  grep -qx '/usr/sbin/nologin' "$MNT/etc/shells"
+  grep -q "^${SSH_USER}:.*:/usr/bin/fish$" "$MNT/etc/passwd" \
+    || die "${SSH_USER} login shell is not /usr/bin/fish"
+  grep -q '/usr/bin/fish' "$MNT/usr/lib/sysusers.d/onix-ssh.conf" \
+    || die "sysusers SSH policy does not mention /usr/bin/fish"
+  [[ -f "$MNT/etc/fish/conf.d/branding.fish" ]] \
+    || die "missing ONIX fish branding config"
+  [[ -f "$MNT/usr/share/onix/defaults/etc/fish/conf.d/branding.fish" ]] \
+    || die "missing package-owned ONIX fish branding default"
+  grep -q 'Welcome to ONIX' "$MNT/etc/fish/conf.d/branding.fish" \
+    || die "ONIX fish branding config is missing greeting text"
+  [[ -f "$MNT/usr/share/onix/bootstrap/phase5-shell-runtime.txt" ]] \
+    || die "missing Phase 518 proof note"
+  [[ -d "$MNT/.moss/db" ]] || die "missing live moss database directory in image"
+  "$HOST_MOSS" -D "$MNT" --cache "$PHASE5_SHELL_LIVE_MOSS_CACHE" \
+    list installed > "$installed_log"
+  grep -q '^fish[[:space:]]' "$installed_log" \
+    || die "live moss root does not list fish as installed"
+}
+
+install_phase5_shell_runtime_payload() {
+  [[ -x "$HOST_MOSS" ]] \
+    || die "missing host moss: ${HOST_MOSS#$ONIX_ROOT/} (run make phase 202)"
+  [[ -f "$IMAGE_REPO_DIR/stone.index" ]] \
+    || die "missing ONIX image package repo index: ${IMAGE_REPO_DIR#$ONIX_ROOT/}/stone.index (run make phase 505)"
+
+  need_cmd tar
+
+  log "materializing fish from the image package repo"
+  if [[ -d "$PHASE5_SHELL_MOSS_ROOT" ||
+        -d "$PHASE5_SHELL_MOSS_CACHE" ||
+        -d "$PHASE5_SHELL_INSTALL_TARGET" ]]; then
+    chmod -R u+rwX \
+      "$PHASE5_SHELL_MOSS_ROOT" \
+      "$PHASE5_SHELL_MOSS_CACHE" \
+      "$PHASE5_SHELL_INSTALL_TARGET" 2>/dev/null || true
+  fi
+  rm -rf "$PHASE5_SHELL_MOSS_ROOT" "$PHASE5_SHELL_MOSS_CACHE" "$PHASE5_SHELL_INSTALL_TARGET"
+  install -dm0755 "$PHASE5_SHELL_MOSS_ROOT" "$PHASE5_SHELL_MOSS_CACHE" "$PHASE5_SHELL_INSTALL_TARGET"
+
+  "$HOST_MOSS" -D "$PHASE5_SHELL_MOSS_ROOT" --cache "$PHASE5_SHELL_MOSS_CACHE" \
+    repo add onix-image "file://$IMAGE_REPO_DIR/stone.index" \
+    -c "ONIX image package repo" >/dev/null
+  "$HOST_MOSS" -D "$PHASE5_SHELL_MOSS_ROOT" --cache "$PHASE5_SHELL_MOSS_CACHE" \
+    repo update >/dev/null
+
+  mapfile -t phase5_packages < <(phase5_shell_packages)
+  "$HOST_MOSS" -D "$PHASE5_SHELL_MOSS_ROOT" --cache "$PHASE5_SHELL_MOSS_CACHE" \
+    -y install --to "$PHASE5_SHELL_INSTALL_TARGET" "${phase5_packages[@]}"
+
+  verify_phase5_shell_target "$PHASE5_SHELL_INSTALL_TARGET"
+
+  log "copying fish package payload into the ONIX image"
+  install -dm0755 "$MNT/usr"
+  tar --numeric-owner \
+    -C "$PHASE5_SHELL_INSTALL_TARGET" -cpf - usr \
+    | tar --numeric-owner -C "$MNT" -xpf -
+  install -dm0755 "$MNT/etc/fish/conf.d"
+  install -m0644 \
+    "$MNT/usr/share/onix/defaults/etc/fish/conf.d/branding.fish" \
+    "$MNT/etc/fish/conf.d/branding.fish"
+
+  materialize_phase5_shell_policy
+  initialize_phase5_shell_live_moss_root
+  write_phase5_shell_runtime_proof
+  verify_phase5_shell_runtime_image
+  printf 'stone    : fish installed and login shell policy applied\n'
+}
+
+preview_phase5_shell_runtime() {
+  log "Phase 5 shell runtime image preview"
+  for path in \
+    /usr/bin/fish \
+    /usr/bin/sh \
+    /bin/sh \
+    /etc/shells \
+    /etc/passwd \
+    /.moss/db \
+    /etc/fish/conf.d/branding.fish \
+    /usr/share/onix/packages/fish.md \
+    /usr/share/onix/shells/fish-policy.txt \
+    /usr/share/onix/bootstrap/phase5-shell-runtime.txt
+  do
+    print_path_status "phase5-shell" "$path"
+  done
+}
+
+activate_bootstrap_unit_tree() {
   local unit_dir="$1"
   local src_dir="$MNT/usr/lib/onix/systemd/system"
   local unit
@@ -3666,7 +3940,7 @@ activate_bootstrap_policy_unit_tree() {
   [[ "$unit_dir" == "$MNT"/nix/store/*/example/systemd/system ||
      "$unit_dir" == "$MNT"/persist/nix/store/*/example/systemd/system ||
      "$unit_dir" == "$MNT"/usr/lib/systemd/system ]] \
-    || die "refusing to activate bootstrap policy unit outside image systemd tree: $unit_dir"
+    || die "refusing to activate bootstrap unit outside image systemd tree: $unit_dir"
   [[ -d "$src_dir" ]] \
     || die "missing package-owned bootstrap unit source dir: /usr/lib/onix/systemd/system"
 
@@ -3680,10 +3954,10 @@ activate_bootstrap_policy_unit_tree() {
     printf 'unit     : %s from /usr/lib/onix/systemd/system/%s\n' \
       "${unit_dir#$MNT}/$unit" "$unit"
     printf 'enable   : %s\n' "${wants#$MNT}/$unit"
-  done < <(bootstrap_policy_units)
+  done < <(bootstrap_units)
 }
 
-activate_bootstrap_policy_units() {
+activate_bootstrap_units() {
   local root_unit_dir
   local persist_unit_dir
   local mask_tty
@@ -3693,9 +3967,9 @@ activate_bootstrap_policy_units() {
   root_unit_dir="$MNT$SYSTEMD_PAYLOAD_OUT/example/systemd/system"
   persist_unit_dir="$MNT/persist$SYSTEMD_PAYLOAD_OUT/example/systemd/system"
 
-  activate_bootstrap_policy_unit_tree "$root_unit_dir"
+  activate_bootstrap_unit_tree "$root_unit_dir"
   if [[ -d "$persist_unit_dir" ]]; then
-    activate_bootstrap_policy_unit_tree "$persist_unit_dir"
+    activate_bootstrap_unit_tree "$persist_unit_dir"
   fi
 
   install -dm0755 "$MNT/etc/systemd/system"
@@ -3705,16 +3979,16 @@ activate_bootstrap_policy_units() {
   done
 }
 
-verify_bootstrap_policy_image() {
+verify_bootstrap_image() {
   local src_dir="$MNT/usr/lib/onix/systemd/system"
   local root_unit_dir
   local persist_unit_dir
   local wants
   local unit
 
-  log "verifying Phase 418 bootstrap-policy image install"
+  log "verifying Phase 418 bootstrap image install"
 
-  verify_bootstrap_policy_target "$MNT"
+  verify_bootstrap_target "$MNT"
   if [[ -f "$MNT/usr/share/onix/bootstrap/native-systemd-stone.txt" ]]; then
     verify_native_systemd_stone_image
     return 0
@@ -3724,10 +3998,10 @@ verify_bootstrap_policy_image() {
   else
     load_systemd_payload_metadata
     [[ -x "$MNT$SYSTEMD_PAYLOAD_OUT/lib/systemd/systemd" ]] \
-      || die "Phase 213 systemd payload is missing while verifying bootstrap policy"
+      || die "Phase 213 systemd payload is missing while verifying bootstrap"
     [[ -d "$MNT$SYSTEMD_PAYLOAD_OUT/example/systemd/system" ]] \
-      || die "Phase 213 systemd unit tree is missing while verifying bootstrap policy"
-    printf 'legacy  : verified bootstrap policy against Phase 213 systemd tree; Phase 416 proof absent\n'
+      || die "Phase 213 systemd unit tree is missing while verifying bootstrap"
+    printf 'legacy  : verified bootstrap against Phase 213 systemd tree; Phase 416 proof absent\n'
   fi
 
   root_unit_dir="$MNT$SYSTEMD_PAYLOAD_OUT/example/systemd/system"
@@ -3747,17 +4021,20 @@ verify_bootstrap_policy_image() {
       cmp -s "$src_dir/$unit" "$persist_unit_dir/$unit" \
         || die "persist systemd unit does not match package-owned source: $unit"
     fi
-  done < <(bootstrap_policy_units)
+  done < <(bootstrap_units)
 
-  grep -q 'ONIX Phase 418 bootstrap policy package' \
-    "$MNT/usr/share/onix/bootstrap/bootstrap-policy.txt" \
+  grep -q 'ONIX Phase 418 bootstrap package' \
+    "$MNT/usr/share/onix/bootstrap/bootstrap.txt" \
     || die "Phase 418 proof text is missing"
-  grep -q 'bootstrap-policy' \
-    "$MNT/usr/share/onix/packages/bootstrap-policy.md" \
-    || die "bootstrap-policy package note is missing"
+  grep -q '^static-qemu-network[[:space:]]' \
+    "$MNT/usr/share/onix/bootstrap/bootstrap-debt.tsv" \
+    || die "Phase 418 bootstrap debt ledger is missing static-qemu-network"
+  grep -q 'bootstrap' \
+    "$MNT/usr/share/onix/packages/bootstrap.md" \
+    || die "bootstrap package note is missing"
 }
 
-preview_bootstrap_policy() {
+preview_bootstrap() {
   local root_unit_dir
 
   if [[ -f "$MNT/usr/share/onix/bootstrap/native-systemd-stone.txt" ]]; then
@@ -3767,7 +4044,7 @@ preview_bootstrap_policy() {
     root_unit_dir="$MNT$SYSTEMD_PAYLOAD_OUT/example/systemd/system"
   fi
 
-  log "bootstrap-policy image preview"
+  log "bootstrap image preview"
   find \
     "$MNT/usr/lib/onix/bootstrap-serial-shell" \
     "$MNT/usr/lib/onix/bootstrap-network-up" \
@@ -3778,8 +4055,9 @@ preview_bootstrap_policy() {
     "$MNT/usr/lib/onix/systemd/system/onix-bootstrap-network.service" \
     "$MNT/usr/lib/onix/systemd/system/onix-bootstrap-remote-inspection.service" \
     "$MNT/usr/lib/onix/systemd/system/onix-bootstrap-dropbear.service" \
-    "$MNT/usr/share/onix/bootstrap/bootstrap-policy.txt" \
-    "$MNT/usr/share/onix/packages/bootstrap-policy.md" \
+    "$MNT/usr/share/onix/bootstrap/bootstrap-debt.tsv" \
+    "$MNT/usr/share/onix/bootstrap/bootstrap.txt" \
+    "$MNT/usr/share/onix/packages/bootstrap.md" \
     "$root_unit_dir/onix-bootstrap-serial-shell.service" \
     "$root_unit_dir/onix-bootstrap-network.service" \
     "$root_unit_dir/onix-bootstrap-remote-inspection.service" \
@@ -3798,8 +4076,8 @@ preview_bootstrap_policy() {
     "$root_unit_dir/onix-bootstrap-remote-inspection.service" \
     "$root_unit_dir/onix-bootstrap-dropbear.service" |
     sed "s#$MNT##"
-  printf '%s\n' '--- bootstrap-policy package note ---'
-  sed -n '1,120p' "$MNT/usr/share/onix/packages/bootstrap-policy.md"
+  printf '%s\n' '--- bootstrap package note ---'
+  sed -n '1,120p' "$MNT/usr/share/onix/packages/bootstrap.md"
 }
 
 preview() {
@@ -4380,7 +4658,7 @@ EOF
 verify_stale_bootstrap_nix_pruned_image() {
   log "verifying Phase 420 stale bootstrap Nix prune"
 
-  verify_bootstrap_policy_image
+  verify_bootstrap_image
   assert_old_payload_root_absent "BusyBox" "$SERIAL_CONSOLE_PAYLOAD_OUT_FILE"
   assert_old_payload_root_absent "Dropbear" "$DROPBEAR_PAYLOAD_OUT_FILE"
   verify_no_old_payload_references "BusyBox" "$SERIAL_CONSOLE_PAYLOAD_OUT_FILE"
@@ -4427,7 +4705,7 @@ prune_stale_bootstrap_nix_payloads() {
   mount_boot_partition
   mount_persist_partition
   load_systemd_payload_metadata
-  verify_bootstrap_policy_image
+  verify_bootstrap_image
 
   prune_stale_payload_closure "BusyBox" "$SERIAL_CONSOLE_CLOSURE_LIST"
   prune_stale_payload_closure "Dropbear" "$DROPBEAR_CLOSURE_LIST"
@@ -4450,7 +4728,7 @@ audit_booted_base_ownership() {
   mount_persist_partition
   load_systemd_payload_metadata
 
-  verify_bootstrap_policy_image
+  verify_bootstrap_image
 
   closure_count="$(wc -l < "$CLOSURE_LIST" | tr -d '[:space:]')"
   systemd_link="$(readlink "$MNT/usr/lib/systemd/systemd")"
@@ -4476,7 +4754,7 @@ audit_booted_base_ownership() {
   print_path_status "package" "/usr/share/onix/packages/dropbear.md"
   print_path_status "package" "/usr/share/onix/packages/systemd.md"
   print_path_status "package" "/usr/share/onix/packages/systemd.closure"
-  print_path_status "package" "/usr/share/onix/packages/bootstrap-policy.md"
+  print_path_status "package" "/usr/share/onix/packages/bootstrap.md"
 
   printf '\n%s\n' '== Active bootstrap units =='
   while IFS= read -r unit; do
@@ -4484,7 +4762,7 @@ audit_booted_base_ownership() {
     print_path_status "unit-src" "/usr/lib/onix/systemd/system/$unit"
     print_path_status "unit-live" "$SYSTEMD_PAYLOAD_OUT/example/systemd/system/$unit"
     print_unit_match_status "$unit"
-  done < <(bootstrap_policy_units)
+  done < <(bootstrap_units)
 
   printf '\n%s\n' '== Activation glue still present =='
   cat <<EOF
@@ -4544,14 +4822,14 @@ EOF
   print_host_artifact_status "stone" "artifacts/onix-local-repo/busybox-1.37.0-1-1-x86_64.stone"
   print_host_artifact_status "stone" "artifacts/onix-local-repo/dropbear-2025.89-1-1-x86_64.stone"
   print_host_artifact_status "stone" "artifacts/onix-local-repo/systemd-259.3-1-1-x86_64.stone"
-  print_host_artifact_status "stone" "artifacts/onix-local-repo/bootstrap-policy-0.1.0-1-1-x86_64.stone"
+  print_host_artifact_status "stone" "artifacts/onix-local-repo/bootstrap-0.1.0-1-1-x86_64.stone"
 
   printf '\n%s\n' '== Phase 419 conclusion =='
   cat <<EOF
 owned-now : BusyBox command payload is stone-owned by busybox.
 owned-now : Dropbear SSH payload is stone-owned by dropbear.
 owned-now : systemd runtime bytes are package-owned by systemd, but still Nix-built.
-owned-now : bootstrap scripts/unit source files are stone-owned by bootstrap-policy.
+owned-now : bootstrap scripts/unit source files are stone-owned by bootstrap.
 debt      : active unit activation is still image-assembly glue.
 debt      : systemd and its runtime closure are still built by pinned nixpkgs pkgsMusl.systemd.
 debt      : /nix/store runtime compatibility remains required for systemd.
@@ -4620,11 +4898,14 @@ case "${1:-}" in
   --native-systemd-stone)
     ACTION="native-systemd-stone"
     ;;
-  --bootstrap-policy-stone)
-    ACTION="bootstrap-policy-stone"
+  --bootstrap-stone)
+    ACTION="bootstrap-stone"
     ;;
   --phase5-runtime)
     ACTION="phase5-runtime"
+    ;;
+  --phase5-shell-runtime)
+    ACTION="phase5-shell-runtime"
     ;;
   --booted-base-audit)
     ACTION="booted-base-audit"
@@ -4879,8 +5160,8 @@ case "$ACTION" in
       || die "missing busybox /usr/bin/busybox; run make phase 410 first"
     test -x "$MNT/usr/sbin/dropbear" \
       || die "missing dropbear /usr/sbin/dropbear; run make phase 413 first"
-    test -f "$MNT/usr/share/onix/bootstrap/bootstrap-policy.txt" \
-      || die "missing bootstrap-policy proof; run make phase 418 first"
+    test -f "$MNT/usr/share/onix/bootstrap/bootstrap.txt" \
+      || die "missing bootstrap proof; run make phase 418 first"
 
     refresh_login_defaults
     log "mounting ONIX-BOOT partition for BLS verification"
@@ -4889,16 +5170,16 @@ case "$ACTION" in
     mount_persist_partition
     load_systemd_payload_metadata_if_present
     install_native_systemd_stone_payload
-    ensure_bootstrap_policy_dropbear_no_motd
-    activate_bootstrap_policy_units_native
+    ensure_bootstrap_dropbear_no_motd
+    activate_bootstrap_units_native
     prune_systemd_bootstrap_nix_payloads
     write_native_systemd_stone_proof
 
     verify_native_systemd_stone_image
     preview_native_systemd_stone
     ;;
-  bootstrap-policy-stone)
-    log "installing and activating bootstrap-policy from the ONIX image package repo"
+  bootstrap-stone)
+    log "installing and activating bootstrap from the ONIX image package repo"
     test -x "$MNT/usr/bin/busybox" \
       || die "missing busybox /usr/bin/busybox; run make phase 410 first"
     test -x "$MNT/usr/sbin/dropbear" \
@@ -4914,16 +5195,16 @@ case "$ACTION" in
     mount_boot_partition
     log "mounting actual ONIX-PERSIST partition"
     mount_persist_partition
-    install_bootstrap_policy_stone_payload
-    ensure_bootstrap_policy_dropbear_no_motd
+    install_bootstrap_stone_payload
+    ensure_bootstrap_dropbear_no_motd
     if [[ -f "$MNT/usr/share/onix/bootstrap/native-systemd-stone.txt" ]]; then
-      activate_bootstrap_policy_units_native
+      activate_bootstrap_units_native
     else
-      activate_bootstrap_policy_units
+      activate_bootstrap_units
     fi
 
-    verify_bootstrap_policy_image
-    preview_bootstrap_policy
+    verify_bootstrap_image
+    preview_bootstrap
     ;;
   phase5-runtime)
     log "installing and activating the Phase 5 runtime package set"
@@ -4937,6 +5218,21 @@ case "$ACTION" in
     mount_persist_partition
     install_phase5_runtime_payload
     preview_phase5_runtime
+    ;;
+  phase5-shell-runtime)
+    log "installing and activating the Phase 5 shell runtime policy"
+    test -x "$MNT/usr/bin/busybox" \
+      || die "missing busybox /usr/bin/busybox; run make phase 514 first"
+    test -x "$MNT/usr/bin/moss" \
+      || die "missing moss /usr/bin/moss; run make phase 515 first"
+    test -f "$MNT/usr/share/onix/bootstrap/phase5-runtime.txt" \
+      || die "missing Phase 5 runtime proof; run make phase 514 first"
+    test -f "$MNT/usr/share/onix/packages/moss.md" \
+      || die "missing moss package note; run make phase 515 first"
+
+    mount_persist_partition
+    install_phase5_shell_runtime_payload
+    preview_phase5_shell_runtime
     ;;
   booted-base-audit)
     audit_booted_base_ownership
@@ -4969,8 +5265,9 @@ case "$ACTION" in
   dropbear-stone) echo "status: dropbear stone is installed and active for bootstrap SSH" ;;
   systemd-stone) echo "status: systemd stone is installed and materialized for PID 1 runtime paths" ;;
   native-systemd-stone) echo "status: native systemd stone is installed and active as the PID 1 runtime" ;;
-  bootstrap-policy-stone) echo "status: bootstrap-policy owns bootstrap scripts/unit sources and active units match it" ;;
+  bootstrap-stone) echo "status: bootstrap owns bootstrap scripts/unit sources and active units match it" ;;
   phase5-runtime) echo "status: Phase 5 runtime package set is installed and active in the image" ;;
+  phase5-shell-runtime) echo "status: fish is installed and the normal ONIX user logs into fish" ;;
   booted-base-audit) echo "status: booted-base ownership audit complete; no image mutations performed" ;;
   prune-stale-bootstrap-nix) echo "status: stale old Nix BusyBox/Dropbear payloads pruned; systemd closure preserved" ;;
   systemd-audit) echo "status: systemd ownership boundary audited; systemd remains next package target" ;;

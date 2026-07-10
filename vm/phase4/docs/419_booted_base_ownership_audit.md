@@ -19,7 +19,7 @@ We now have several real stones:
 busybox
 dropbear
 systemd
-bootstrap-policy
+bootstrap
 ```
 
 And the image can boot with:

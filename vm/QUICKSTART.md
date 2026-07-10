@@ -121,7 +121,7 @@ make phase 403   # prove bootstrap serial root console
 make phase 404   # prove minimal QEMU user networking
 make phase 405   # prove host-to-guest TCP inspection
 make phase 406   # prove authenticated SSH access
-make phase 407   # audit temporary Nix-sourced system payloads
+make phase 407   # audit temporary nix-sourced system payloads
 make phase 408   # define local stone/repo contract
 make phase 409   # build source-based busybox stone
 make phase 410   # install/use busybox in the image
@@ -134,7 +134,7 @@ make phase 416   # install/use systemd in the image
 make phase 417   # boot-prove systemd as PID 1 runtime
 make phase 418   # package/prove bootstrap policy ownership
 make phase 419   # audit booted-base ownership/debt map
-make phase 420   # prune stale old Nix BusyBox/Dropbear payloads
+make phase 420   # prune stale old nix BusyBox/Dropbear payloads
 make phase 421   # prepare native source-built systemd plan
 make phase 422   # build/install/boot-prove native systemd
 make phase 424   # boot native ONIX, prove SSH, and leave QEMU running

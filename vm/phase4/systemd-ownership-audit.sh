@@ -35,7 +35,9 @@ need_repo_stone() {
   local name="$1"
   local matches
 
-  matches=("$LOCAL_REPO"/"$name"-*.stone)
+  # Require a version digit after the package id. That prevents prefix package
+  # ids from matching longer names if this audit grows new package pairs later.
+  matches=("$LOCAL_REPO"/"$name"-[0-9]*.stone)
   [[ -e "${matches[0]}" ]] || die "local Phase 4 repo is missing $name stone"
 }
 

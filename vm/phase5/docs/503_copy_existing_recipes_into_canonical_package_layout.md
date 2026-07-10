@@ -73,7 +73,7 @@ packages/base/filesystem/
 packages/core/busybox/
 packages/services/dropbear/
 packages/services/systemd/
-packages/services/bootstrap-policy/
+packages/services/bootstrap/
 ```
 
 ## Copy map
@@ -94,8 +94,8 @@ vm/phase4/stone-recipes/dropbear/stone.yaml.in
 vm/phase4/stone-recipes/systemd-native/stone.yaml.in
 -> packages/services/systemd/stone.yaml.in
 
-vm/phase4/stone-recipes/bootstrap-policy/stone.yaml.in
--> packages/services/bootstrap-policy/stone.yaml.in
+vm/phase4/stone-recipes/bootstrap/stone.yaml.in
+-> packages/services/bootstrap/stone.yaml.in
 ```
 
 Notice the systemd choice:
@@ -172,7 +172,7 @@ no serious Rust replacement for its full role.
 The canonical copy uses the native source-built Phase 422 recipe, not the older
 bootstrap Nix-payload recipe.
 
-### `bootstrap-policy`
+### `bootstrap`
 
 Shell/unit policy package. Accepted as small bootstrap glue.
 

@@ -346,7 +346,7 @@ make phase 405
 make phase 406
 make phase 410
 make phase 413
-make -C vm/phase4 bootstrap-policy-proof
+make -C vm/phase4 bootstrap-proof
 make phase 424
 ```
 

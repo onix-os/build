@@ -26,14 +26,13 @@ REQUIRED_PACKAGES=(
   uutils-coreutils
   dropbear
   systemd
-  bootstrap-policy
+  bootstrap
   musl
   linux-pam
   libseccomp
-  libgcc-runtime
   rootasrole
-  rootasrole-policy
   moss
+  fish
 )
 
 die() {
@@ -205,9 +204,8 @@ prove_canonical_install() {
   need_file "$WORK_ROOT/install-target/usr/share/defaults/pam.d/dosr"
   need_file "$WORK_ROOT/install-target/usr/share/factory/etc/pam.d/sr"
   need_file "$WORK_ROOT/install-target/usr/share/factory/etc/security/rootasrole.json"
-  need_file "$WORK_ROOT/install-target/usr/share/onix/packages/bootstrap-policy.md"
+  need_file "$WORK_ROOT/install-target/usr/share/onix/packages/bootstrap.md"
   need_file "$WORK_ROOT/install-target/usr/share/onix/packages/rootasrole.md"
-  need_file "$WORK_ROOT/install-target/usr/share/onix/packages/rootasrole-policy.md"
   need_file "$WORK_ROOT/install-target/usr/share/onix/packages/moss.md"
 
   log "proof     : canonical install target OK"

@@ -3,7 +3,7 @@
 
 PHASE_ARG := $(word 2,$(MAKECMDGOALS))
 
-.PHONY: help phases phase phase-4 4 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 424 425 list check stop cleanup readiness materialize-etc materialize-accounts serial-console network-inspection remote-inspection ssh-access ownership-audit local-stone-contract busybox-stone install-busybox-stone stone-busybox-proof dropbear-stone install-dropbear-stone systemd-ownership-audit systemd-stone install-systemd-stone stone-systemd-proof bootstrap-policy-stone bootstrap-policy-proof booted-base-ownership-audit prune-stale-bootstrap-nix native-systemd-prep native-systemd-stone native-systemd-proof native-systemd-up phase4-acceptance
+.PHONY: help phases phase phase-4 4 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 424 425 list check stop cleanup readiness materialize-etc materialize-accounts serial-console network-inspection remote-inspection ssh-access ownership-audit local-stone-contract busybox-stone install-busybox-stone stone-busybox-proof dropbear-stone install-dropbear-stone systemd-ownership-audit systemd-stone install-systemd-stone stone-systemd-proof bootstrap-stone bootstrap-proof booted-base-ownership-audit prune-stale-bootstrap-nix native-systemd-prep native-systemd-stone native-systemd-proof native-systemd-up phase4-acceptance
 
 help: ## show Phase 4 help
 	@echo "ONIX Phase 4 targets:"
@@ -19,7 +19,7 @@ phases: ## list the learning-phase aliases
 	@printf "  \033[36mmake phase 404\033[0m  prove minimal QEMU user networking\n"
 	@printf "  \033[36mmake phase 405\033[0m  prove host-to-guest TCP inspection\n"
 	@printf "  \033[36mmake phase 406\033[0m  prove authenticated SSH access\n"
-	@printf "  \033[36mmake phase 407\033[0m  audit temporary Nix-sourced system payloads\n"
+	@printf "  \033[36mmake phase 407\033[0m  audit temporary nix-sourced system payloads\n"
 	@printf "  \033[36mmake phase 408\033[0m  define local stone/repo contract\n"
 	@printf "  \033[36mmake phase 409\033[0m  build source-based busybox stone\n"
 	@printf "  \033[36mmake phase 410\033[0m  install/use busybox in the image\n"
@@ -30,9 +30,9 @@ phases: ## list the learning-phase aliases
 	@printf "  \033[36mmake phase 415\033[0m  build bootstrap systemd stone\n"
 	@printf "  \033[36mmake phase 416\033[0m  install/use systemd in the image\n"
 	@printf "  \033[36mmake phase 417\033[0m  boot-prove systemd as PID 1 runtime\n"
-	@printf "  \033[36mmake phase 418\033[0m  package/prove bootstrap policy ownership\n"
+	@printf "  \033[36mmake phase 418\033[0m  package/prove bootstrap ownership\n"
 	@printf "  \033[36mmake phase 419\033[0m  audit booted-base ownership/debt map\n"
-	@printf "  \033[36mmake phase 420\033[0m  prune stale old Nix BusyBox/Dropbear payloads\n"
+	@printf "  \033[36mmake phase 420\033[0m  prune stale old nix BusyBox/Dropbear payloads\n"
 	@printf "  \033[36mmake phase 421\033[0m  prepare native source-built systemd plan\n"
 	@printf "  \033[36mmake phase 422\033[0m  build/install/boot-prove native systemd\n"
 	@printf "  \033[36mmake phase 424\033[0m  boot native ONIX, prove SSH, and leave QEMU running\n"
@@ -59,7 +59,7 @@ phase: ## run a Phase 4 learning alias
 	  415) $(MAKE) --no-print-directory systemd-stone ;; \
 	  416) $(MAKE) --no-print-directory install-systemd-stone ;; \
 	  417) $(MAKE) --no-print-directory stone-systemd-proof ;; \
-	  418) $(MAKE) --no-print-directory bootstrap-policy-stone ;; \
+	  418) $(MAKE) --no-print-directory bootstrap-stone ;; \
 	  419) $(MAKE) --no-print-directory booted-base-ownership-audit ;; \
 	  420) $(MAKE) --no-print-directory prune-stale-bootstrap-nix ;; \
 	  421) $(MAKE) --no-print-directory native-systemd-prep ;; \
@@ -97,17 +97,19 @@ check: ## host-side validation for Phase 4 docs/routing
 	@bash -n ownership-audit.sh
 	@bash -n local-stone-contract.sh
 	@bash -n build-busybox-stone.sh
-	@bash -n build-bootstrap-policy-stone.sh
+	@bash -n build-bootstrap-stone.sh
+	@bash -n bootstrap-debt-audit.sh
 	@bash -n booted-base-ownership-audit.sh
 	@bash -n build-dropbear-stone.sh
 	@bash -n build-systemd-stone.sh
-	@bash -n stone-bootstrap-policy-probe.sh
+	@bash -n stone-bootstrap-probe.sh
 	@bash -n stone-busybox-probe.sh
 	@bash -n stone-dropbear-probe.sh
 	@bash -n stone-systemd-probe.sh
 	@bash -n systemd-ownership-audit.sh
+	@./bootstrap-debt-audit.sh --check >/dev/null
 	@test -f stone-recipes/busybox/stone.yaml.in
-	@test -f stone-recipes/bootstrap-policy/stone.yaml.in
+	@test -f stone-recipes/bootstrap/stone.yaml.in
 	@test -f stone-recipes/dropbear/stone.yaml.in
 	@test -f stone-recipes/systemd/stone.yaml.in
 	@test -f stone-recipes/systemd-native/stone.yaml.in
@@ -122,7 +124,7 @@ stop: ## stop Phase 4 QEMU probes and detach stale image mounts; keep generated 
 	@./stone-dropbear-probe.sh --kill
 	@./stone-systemd-probe.sh --kill
 	@./native-systemd-probe.sh --kill
-	@./stone-bootstrap-policy-probe.sh --kill
+	@./stone-bootstrap-probe.sh --kill
 	./materialize-etc.sh --cleanup-stale
 
 cleanup: ## stop Phase 4 QEMU probes and detach stale image mounts; keep generated image
@@ -164,7 +166,7 @@ ssh-access: ## install and prove authenticated SSH access
 	./materialize-etc.sh --ssh
 	./ssh-probe.sh
 
-ownership-audit: ## audit temporary Nix-sourced system payloads
+ownership-audit: ## audit temporary nix-sourced system payloads
 	./ownership-audit.sh
 
 local-stone-contract: ## define local Phase 4 stone/repo contract
@@ -200,19 +202,19 @@ stone-systemd-proof: ## boot-prove systemd as PID 1 runtime
 	./materialize-etc.sh --systemd-stone
 	./stone-systemd-probe.sh
 
-bootstrap-policy-stone: ## package/prove bootstrap policy ownership
-	./build-bootstrap-policy-stone.sh
-	./materialize-etc.sh --bootstrap-policy-stone
-	./stone-bootstrap-policy-probe.sh
+bootstrap-stone: ## package/prove bootstrap ownership
+	./build-bootstrap-stone.sh
+	./materialize-etc.sh --bootstrap-stone
+	./stone-bootstrap-probe.sh
 
-bootstrap-policy-proof: ## install/boot-prove existing bootstrap policy stone
-	./materialize-etc.sh --bootstrap-policy-stone
-	./stone-bootstrap-policy-probe.sh
+bootstrap-proof: ## install/boot-prove existing bootstrap stone
+	./materialize-etc.sh --bootstrap-stone
+	./stone-bootstrap-probe.sh
 
 booted-base-ownership-audit: ## audit booted-base ownership/debt map
 	./booted-base-ownership-audit.sh
 
-prune-stale-bootstrap-nix: ## prune stale old Nix BusyBox/Dropbear payloads
+prune-stale-bootstrap-nix: ## prune stale old nix BusyBox/Dropbear payloads
 	./prune-stale-bootstrap-nix.sh
 
 native-systemd-prep: ## prepare native source-built systemd plan

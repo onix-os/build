@@ -30,14 +30,13 @@ REQUIRED_PACKAGES=(
   uutils-coreutils
   dropbear
   systemd
-  bootstrap-policy
+  bootstrap
   musl
   linux-pam
   libseccomp
-  libgcc-runtime
   rootasrole
-  rootasrole-policy
   moss
+  fish
 )
 
 die() {
@@ -107,14 +106,13 @@ package_contract_path() {
     uutils-coreutils) printf '%s\n' "packages/core/uutils-coreutils/PACKAGE.md" ;;
     dropbear) printf '%s\n' "packages/services/dropbear/PACKAGE.md" ;;
     systemd) printf '%s\n' "packages/services/systemd/PACKAGE.md" ;;
-    bootstrap-policy) printf '%s\n' "packages/services/bootstrap-policy/PACKAGE.md" ;;
+    bootstrap) printf '%s\n' "packages/services/bootstrap/PACKAGE.md" ;;
     musl) printf '%s\n' "packages/libs/musl/PACKAGE.md" ;;
     linux-pam) printf '%s\n' "packages/libs/linux-pam/PACKAGE.md" ;;
     libseccomp) printf '%s\n' "packages/libs/libseccomp/PACKAGE.md" ;;
-    libgcc-runtime) printf '%s\n' "packages/libs/libgcc-runtime/PACKAGE.md" ;;
     rootasrole) printf '%s\n' "packages/core/rootasrole/PACKAGE.md" ;;
-    rootasrole-policy) printf '%s\n' "packages/services/rootasrole-policy/PACKAGE.md" ;;
     moss) printf '%s\n' "packages/core/moss/PACKAGE.md" ;;
+    fish) printf '%s\n' "packages/core/fish/PACKAGE.md" ;;
     *) die "unknown package contract mapping: $1" ;;
   esac
 }
@@ -122,7 +120,7 @@ package_contract_path() {
 package_source_dir() {
   case "$1" in
     branding|filesystem) printf '%s\n' "$BASE_SOURCE_DIR" ;;
-    busybox|uutils-coreutils|dropbear|systemd|bootstrap-policy|musl|linux-pam|libseccomp|libgcc-runtime|rootasrole|rootasrole-policy|moss) printf '%s\n' "$RUNTIME_SOURCE_DIR" ;;
+    busybox|uutils-coreutils|dropbear|systemd|bootstrap|musl|linux-pam|libseccomp|rootasrole|moss|fish) printf '%s\n' "$RUNTIME_SOURCE_DIR" ;;
     *) die "unknown package source mapping: $1" ;;
   esac
 }
@@ -398,7 +396,7 @@ prove_install() {
   need_file "$WORK_ROOT/install-target/usr/bin/ls"
   need_file "$WORK_ROOT/install-target/usr/sbin/dropbear"
   need_file "$WORK_ROOT/install-target/usr/lib/systemd/systemd"
-  need_file "$WORK_ROOT/install-target/usr/share/onix/packages/bootstrap-policy.md"
+  need_file "$WORK_ROOT/install-target/usr/share/onix/packages/bootstrap.md"
   need_file "$WORK_ROOT/install-target/usr/bin/dosr"
   need_file "$WORK_ROOT/install-target/usr/bin/moss"
   need_file "$WORK_ROOT/install-target/usr/share/factory/etc/security/rootasrole.json"

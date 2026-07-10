@@ -44,7 +44,7 @@ mappings=(
   "vm/phase4/stone-recipes/busybox/stone.yaml.in|packages/core/busybox/stone.yaml.in"
   "vm/phase4/stone-recipes/dropbear/stone.yaml.in|packages/services/dropbear/stone.yaml.in"
   "vm/phase4/stone-recipes/systemd-native/stone.yaml.in|packages/services/systemd/stone.yaml.in"
-  "vm/phase4/stone-recipes/bootstrap-policy/stone.yaml.in|packages/services/bootstrap-policy/stone.yaml.in"
+  "vm/phase4/stone-recipes/bootstrap/stone.yaml.in|packages/services/bootstrap/stone.yaml.in"
 )
 
 packages=(
@@ -53,7 +53,7 @@ packages=(
   "packages/core/busybox"
   "packages/services/dropbear"
   "packages/services/systemd"
-  "packages/services/bootstrap-policy"
+  "packages/services/bootstrap"
 )
 
 for mapping in "${mappings[@]}"; do

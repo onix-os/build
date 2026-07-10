@@ -250,21 +250,22 @@ busybox
 uutils-coreutils
 dropbear
 systemd
-bootstrap-policy
+bootstrap
 musl
 linux-pam
 libseccomp
-libgcc-runtime
 rootasrole
-rootasrole-policy
 moss
+fish
 ```
 
 Some entries started as earlier phase/lab stones. Phase 5 turns them into one
 canonical ONIX package/repo workflow and then keeps extending that workflow with
 Rust-first essentials, the minimal shared-library surface needed by privilege
 tools and systemd, RootAsRole policy, uutils command ownership, and packaged
-`moss` itself.
+`moss` itself. The shell work also belongs here: `fish` is a system package, and
+the default login shell is a base runtime policy, so 516–518 extend Phase 5
+instead of opening the nix phase.
 
 ## Package metadata should explain implementation choice
 
@@ -304,6 +305,9 @@ would be a better ONIX fit.
 513 — move coreutils command links from BusyBox to uutils
 514 — inspect the booted VM for Phase 5 runtime ownership
 515 — package moss and prove in-VM repo consumption
+516 — define BusyBox sh for scripts and fish for humans
+517 — build/audit the fish shell stone
+518 — install fish and prove the default login shell at boot
 ```
 
 The exact list can change as we learn.
@@ -337,13 +341,17 @@ right, each step relying on the guarantees the previous one established:
 513  uutils wiring        -> common coreutils commands point at uutils
 514  runtime proof        -> the booted VM exposes the Phase 5 ownership model
 515  moss runtime         -> the booted VM can run packaged moss against an ONIX repo
+516  shell policy         -> BusyBox remains sh; fish becomes the human shell
+517  fish package         -> fish is cut and audited as an ONIX-owned stone
+518  shell runtime        -> the booted VM logs the normal user into fish
 ```
 
 Read top to bottom, the arrow from "a rule on paper" (500) to "an image that boots
 from a publish-shaped repository and accepts its first Rust/shared-surface packages" (507–514)
 is the first Phase 5 deliverable. Phase 515 then gives that booted image its own
 package-manager binary and proves it can consume the same repository from inside
-the VM.
+the VM. Phases 516–518 finish the immediate base-user shell story before Phase 6
+focuses only on nix.
 
 ## Steps
 
@@ -359,7 +367,10 @@ the VM.
 - [509 — first Rust essential stones](./509_first_rust_essential_stones.md)
 - [510 — privilege shared-library surface](./510_privilege_shared_library_surface.md)
 - [511 — RootAsRole privilege stone](./511_rootasrole_privilege_stone.md)
-- [512 — live RootAsRole policy stone](./512_rootasrole_policy_stone.md)
+- [512 — RootAsRole integrated policy](./512_rootasrole_integrated_policy.md)
 - [513 — uutils command ownership](./513_uutils_command_ownership.md)
 - [514 — booted Phase 5 runtime proof](./514_booted_phase_5_runtime_proof.md)
 - [515 — `moss` runtime package and self-repo probe](./515_moss_runtime_package_and_self_repo_probe.md)
+- [516 — BusyBox `sh` and fish shell policy](./516_busybox_sh_and_fish_shell_policy.md)
+- [517 — fish shell stone](./517_fish_shell_stone.md)
+- [518 — default login shell runtime proof](./518_default_login_shell_runtime_proof.md)
