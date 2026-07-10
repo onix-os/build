@@ -60,21 +60,21 @@ phase-5: ## run current Phase 5 gates in order
 	done
 
 check: ## host-side validation for Phase 5 docs/routing
-	@test -f ../../book/src/phases/phase-5.md
-	@test -f ../../book/src/phases/500.md
-	@test -f ../../book/src/phases/501.md
-	@test -f ../../book/src/phases/502.md
-	@test -f ../../book/src/phases/503.md
-	@test -f ../../book/src/phases/504.md
-	@test -f ../../book/src/phases/505.md
-	@test -f ../../book/src/phases/506.md
-	@test -f ../../book/src/phases/507.md
-	@test -f ../../book/src/phases/508.md
-	@test -f ../../book/src/phases/509.md
-	@test -f ../../book/src/phases/510.md
-	@test -f ../../book/src/phases/511.md
-	@test -f ../../book/src/phases/512.md
-	@test -f ../../book/src/phases/513.md
+	@test -f docs/phase_5_rust_first_musl_package_repository_plane.md
+	@test -f docs/500_rust_first_musl_only_static_first_package_law.md
+	@test -f docs/501_canonical_package_layout_metadata_contract.md
+	@test -f docs/502_runtime_clean_stone_payload_audit_helper.md
+	@test -f docs/503_copy_existing_recipes_into_canonical_package_layout.md
+	@test -f docs/504_canonical_essential_package_build_lane.md
+	@test -f docs/505_canonical_local_onix_package_repo.md
+	@test -f docs/506_essential_package_ownership_collision_fix.md
+	@test -f docs/507_canonical_repo_image_consumption.md
+	@test -f docs/508_local_public_repository_layout.md
+	@test -f docs/509_first_rust_essential_stones.md
+	@test -f docs/510_privilege_shared_library_surface.md
+	@test -f docs/511_rootasrole_privilege_stone.md
+	@test -f docs/512_rootasrole_policy_stone.md
+	@test -f docs/513_uutils_command_ownership.md
 	@bash -n audit-stone-payload.sh
 	@bash -n canonical-package-copies.sh
 	@bash -n canonical-essential-builds.sh

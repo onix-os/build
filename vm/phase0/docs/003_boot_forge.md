@@ -103,7 +103,7 @@ Under the hood this is `launch.sh --background --wait --display vnc`. QEMU is
 succeeds — while also watching the log for the `quarry login:` marker so it
 knows userspace really came up. If QEMU exits before SSH is ready, or the wait
 times out (default 240s), it fails loudly instead of hanging forever. Only once
-SSH answers does the batch move on to [004](./004.md).
+SSH answers does the batch move on to [004](./004_provision_tools.md).
 
 ## Reading the serial log
 
@@ -121,9 +121,9 @@ port 6649.
 
 **Does not prove:** anything about moss or boulder — they are not built yet.
 Phase 003 is purely "the forge is alive and reachable." The tooling comes in
-[004](./004.md).
+[004](./004_provision_tools.md).
 
 ## What comes next
 
-With the forge booted and SSH ready, [004 — provision tools](./004.md) SSHes in
+With the forge booted and SSH ready, [004 — provision tools](./004_provision_tools.md) SSHes in
 as `mason` and compiles moss + boulder from the pinned `os-tools` commit.

@@ -22,7 +22,7 @@ id_ed25519.pub
 artifacts/
 
 # mdBook generated output.
-book/html/
+site/
 
 # Editors / OS cruft
 *.swp

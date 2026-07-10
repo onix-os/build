@@ -72,7 +72,7 @@ check_source_files() {
   [[ -f "$RECIPE_TEMPLATE" ]] || die "missing recipe template: ${RECIPE_TEMPLATE#$ONIX_ROOT/}"
   [[ -f "$ONIX_ROOT/packages/services/onix-rootasrole-policy/PACKAGE.md" ]] \
     || die "missing onix-rootasrole-policy PACKAGE.md"
-  [[ -f "$ONIX_ROOT/book/src/phases/512.md" ]] || die "missing Phase 512 book page"
+  [[ -f "$ONIX_ROOT/vm/phase5/docs/512_rootasrole_policy_stone.md" ]] || die "missing Phase 512 doc page"
   grep -q 'onix-rootasrole-policy' "$ONIX_ROOT/packages/STONES.md"
   grep -q '/etc/security/rootasrole.json' "$ONIX_ROOT/packages/services/onix-rootasrole-policy/PACKAGE.md"
 }

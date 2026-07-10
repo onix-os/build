@@ -44,13 +44,13 @@ Nix-store util-linux nologin              onix-util-linux or onix-base stone
 EOF
 
 log "checking architecture/book wording"
-need_doc_text 'Nix-sourced system payloads are bootstrap-only' "book/src/phases/407.md"
-need_doc_text 'onix-systemd' "book/src/phases/407.md"
-need_doc_text 'onix-busybox' "book/src/phases/407.md"
-need_doc_text 'onix-dropbear' "book/src/phases/407.md"
-need_doc_text 'onix-kernel' "book/src/phases/407.md"
-need_doc_text 'Nix controls the toolbox' "book/src/architecture.md"
-need_doc_text 'Nix-sourced system payloads are bootstrap-only' "book/src/architecture.md"
+need_doc_text 'Nix-sourced system payloads are bootstrap-only' "vm/phase4/docs/407_machine_plane_ownership_audit.md"
+need_doc_text 'onix-systemd' "vm/phase4/docs/407_machine_plane_ownership_audit.md"
+need_doc_text 'onix-busybox' "vm/phase4/docs/407_machine_plane_ownership_audit.md"
+need_doc_text 'onix-dropbear' "vm/phase4/docs/407_machine_plane_ownership_audit.md"
+need_doc_text 'onix-kernel' "vm/phase4/docs/407_machine_plane_ownership_audit.md"
+need_doc_text 'Nix controls the toolbox' "ARCHITECTURE.md"
+need_doc_text 'Nix-sourced system payloads are bootstrap-only' "ARCHITECTURE.md"
 
 echo
 echo "==> success"

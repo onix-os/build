@@ -6,7 +6,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 ONIX_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-PLAN="$ONIX_ROOT/book/src/phases/107.md"
+PLAN="$ONIX_ROOT/vm/phase1/docs/107_verify_no_upload_publishing_plan.md"
 
 die() {
   printf 'error: %s\n' "$*" >&2

@@ -101,7 +101,7 @@ When a new stone is accepted, update:
 packages/STONES.md
 packages/<group>/<stone>/PACKAGE.md
 packages/<group>/<stone>/stone.yaml or stone.yaml.in
-book/src/phases/<phase>.md
+vm/phaseN/docs/NNN_title.md
 ```
 
 That keeps package meaning, package recipe, and educational notes together.

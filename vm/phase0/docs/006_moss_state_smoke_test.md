@@ -64,7 +64,7 @@ That creates real state history under a disposable root.
 ## Walk the smoke test
 
 `state-smoke.sh` runs inside the forge over SSH and reuses the `.stone` built in
-[005](./005.md) (it fails early with a hint to run `make phase 005` if none
+[005](./005_first_stone.md) (it fails early with a hint to run `make phase 005` if none
 exists). Then it:
 
 1. **Prepares a disposable moss root**, cache, and a local repo directory;

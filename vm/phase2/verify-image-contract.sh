@@ -7,7 +7,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 ONIX_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-DOC="$ONIX_ROOT/book/src/phases/204.md"
+DOC="$ONIX_ROOT/vm/phase2/docs/204_image_disk_assembly_contract.md"
 ROOT_TREE_DIR="${ONIX_ROOT_TREE_DIR:-$ONIX_ROOT/artifacts/onix-root-tree}"
 FSTAB="$ROOT_TREE_DIR/etc/fstab"
 

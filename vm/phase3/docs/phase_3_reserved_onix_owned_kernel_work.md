@@ -175,7 +175,7 @@ userspace, is a project. That is the line Phase 3 is drawn around.
 
 For now, Phase 3 has one documentation/checkpoint step:
 
-- [300 — deferred kernel ownership contract](./300.md)
+- [300 — deferred kernel ownership contract](./300_deferred_kernel_ownership_contract.md)
 
 Running:
 

@@ -123,21 +123,21 @@ powering on a machine whose contracts you have not yet nailed down.
 
 ## Steps
 
-- [200 — image assembly readiness](./200.md)
-- [201 — assemble the first ONIX root tree](./201.md)
-- [202 — build host-side Moss](./202.md)
-- [203 — assemble the root tree with host-side Moss only](./203.md)
-- [204 — define image/disk assembly contract](./204.md)
-- [205 — create first non-booting disk/root skeleton](./205.md)
-- [206 — install the systemd-boot/BLS skeleton](./206.md)
-- [207 — kernel + initramfs contract](./207.md)
-- [208 — systemd userspace contract](./208.md)
-- [209 — systemd-on-musl feasibility gate](./209.md)
-- [210 — init path decision contract](./210.md)
-- [211 — first kernel + initramfs payload](./211.md)
-- [212 — first QEMU boot probe](./212.md)
-- [213 — first musl systemd userspace payload](./213.md)
-- [214 — first kernel module/kmod payload](./214.md)
+- [200 — image assembly readiness](./200_image_assembly_readiness.md)
+- [201 — assemble the first ONIX root tree](./201_assemble_first_onix_root_tree.md)
+- [202 — build host-side Moss](./202_build_host_side_moss.md)
+- [203 — assemble the root tree with host-side Moss only](./203_assemble_root_tree_with_host_moss_only.md)
+- [204 — define image/disk assembly contract](./204_image_disk_assembly_contract.md)
+- [205 — create first non-booting disk/root skeleton](./205_create_non_booting_disk_root_skeleton.md)
+- [206 — install the systemd-boot/BLS skeleton](./206_install_systemd_boot_bls_skeleton.md)
+- [207 — kernel + initramfs contract](./207_kernel_initramfs_contract.md)
+- [208 — systemd userspace contract](./208_systemd_userspace_contract.md)
+- [209 — systemd-on-musl feasibility gate](./209_systemd_on_musl_feasibility_gate.md)
+- [210 — init path decision contract](./210_init_path_decision_contract.md)
+- [211 — first kernel + initramfs payload](./211_first_kernel_initramfs_payload.md)
+- [212 — first QEMU boot probe](./212_first_qemu_boot_probe.md)
+- [213 — first musl systemd userspace payload](./213_first_musl_systemd_userspace_payload.md)
+- [214 — first kernel module/kmod payload](./214_first_kernel_module_kmod_payload.md)
 
 Running:
 

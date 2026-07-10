@@ -83,15 +83,15 @@ straight into live `/etc`.** More on why in step 101.
 
 ## Steps
 
-- [100 — forge readiness](./100.md)
-- [101 — build `onix-branding`](./101.md)
-- [102 — build `onix-filesystem`](./102.md)
-- [103 — assemble first named local ONIX repo](./103.md)
-- [104 — prepare publishable ONIX repo layout](./104.md)
-- [105 — export publishable repo to the host](./105.md)
-- [106 — verify exported host artifact](./106.md)
-- [107 — verify no-upload publishing plan](./107.md)
-- [108 — preview publication without upload](./108.md)
+- [100 — forge readiness](./100_forge_readiness.md)
+- [101 — build `onix-branding`](./101_build_onix_branding.md)
+- [102 — build `onix-filesystem`](./102_build_onix_filesystem.md)
+- [103 — assemble first named local ONIX repo](./103_assemble_first_named_local_onix_repo.md)
+- [104 — prepare publishable ONIX repo layout](./104_prepare_publishable_repo_layout.md)
+- [105 — export publishable repo to the host](./105_export_publishable_repo_to_host.md)
+- [106 — verify exported host artifact](./106_verify_exported_host_artifact.md)
+- [107 — verify no-upload publishing plan](./107_verify_no_upload_publishing_plan.md)
+- [108 — preview publication without upload](./108_preview_publication_without_upload.md)
 
 ## The host/guest split (read this once)
 

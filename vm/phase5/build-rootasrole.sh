@@ -88,12 +88,12 @@ check_source_files() {
   [[ -f "$ONIX_ROOT/packages/libs/libgcc-runtime/PACKAGE.md" ]] || die "missing libgcc-runtime PACKAGE.md"
   [[ -f "$ROOTASROLE_RECIPE_TEMPLATE" ]] || die "missing rootasrole recipe template"
   [[ -f "$LIBGCC_RUNTIME_RECIPE_TEMPLATE" ]] || die "missing libgcc-runtime recipe template"
-  [[ -f "$ONIX_ROOT/book/src/phases/511.md" ]] || die "missing Phase 511 book page"
+  [[ -f "$ONIX_ROOT/vm/phase5/docs/511_rootasrole_privilege_stone.md" ]] || die "missing Phase 511 doc page"
 
   grep -q 'rootasrole' "$ONIX_ROOT/packages/STONES.md"
   grep -q 'libgcc-runtime' "$ONIX_ROOT/packages/STONES.md"
   grep -q 'libgcc-runtime' "$ONIX_ROOT/packages/core/rootasrole/PACKAGE.md"
-  grep -q 'RootAsRole' "$ONIX_ROOT/book/src/phases/511.md"
+  grep -q 'RootAsRole' "$ONIX_ROOT/vm/phase5/docs/511_rootasrole_privilege_stone.md"
 }
 
 require_phase510_stones() {

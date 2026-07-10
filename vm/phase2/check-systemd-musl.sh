@@ -8,7 +8,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 ONIX_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-DOC="$ONIX_ROOT/book/src/phases/209.md"
+DOC="$ONIX_ROOT/vm/phase2/docs/209_systemd_on_musl_feasibility_gate.md"
 
 die() {
   printf 'error: %s\n' "$*" >&2

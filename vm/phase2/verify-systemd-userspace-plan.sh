@@ -7,7 +7,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 ONIX_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-DOC="$ONIX_ROOT/book/src/phases/208.md"
+DOC="$ONIX_ROOT/vm/phase2/docs/208_systemd_userspace_contract.md"
 IMAGE_SCRIPT="$SCRIPT_DIR/build-image-skeleton.sh"
 
 die() {

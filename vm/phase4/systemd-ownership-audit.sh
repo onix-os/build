@@ -8,7 +8,7 @@ ONIX_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 SYSTEMD_OUT_FILE="$ONIX_ROOT/artifacts/onix-image/systemd-payload.out"
 SYSTEMD_CLOSURE="$ONIX_ROOT/artifacts/onix-image/systemd-payload.closure"
 LOCAL_REPO="$ONIX_ROOT/artifacts/onix-local-repo"
-BOOK_PAGE="$ONIX_ROOT/book/src/phases/414.md"
+BOOK_PAGE="$ONIX_ROOT/vm/phase4/docs/414_systemd_ownership_audit.md"
 
 die() {
   printf 'error: %s\n' "$*" >&2

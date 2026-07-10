@@ -78,13 +78,13 @@ thing we prove.
 
 ## Steps
 
-- [000 — validate](./000.md)
-- [001 — passwordless disk builder](./001.md)
-- [002 — build the forge disk](./002.md)
-- [003 — boot the forge](./003.md)
-- [004 — provision tools](./004.md)
-- [005 — first `.stone`](./005.md)
-- [006 — real Moss state smoke test](./006.md)
+- [000 — validate](./000_validate.md)
+- [001 — passwordless disk builder](./001_passwordless_disk_builder.md)
+- [002 — build the forge disk](./002_build_forge_disk.md)
+- [003 — boot the forge](./003_boot_forge.md)
+- [004 — provision tools](./004_provision_tools.md)
+- [005 — first `.stone`](./005_first_stone.md)
+- [006 — real Moss state smoke test](./006_moss_state_smoke_test.md)
 
 Each step is a `make phase NNN` target and each has a single job. Read them in
 order: 000 checks the scripts are sane, 001 arranges passwordless root for the

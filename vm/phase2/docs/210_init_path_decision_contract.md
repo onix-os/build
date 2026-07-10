@@ -37,7 +37,7 @@ fail and catch the drift.
 The verifier is `vm/phase2/verify-init-decision.sh`, and it is deliberately
 humble. It does two things, both host-only:
 
-1. Greps this page (`book/src/phases/210.md`) for the exact decision statements
+1. Greps this page (`vm/phase2/docs/210_init_path_decision_contract.md`) for the exact decision statements
    listed below (`init path: systemd-on-musl`, `bootloader: systemd-boot`,
    `ONIX uses systemd as PID 1`, and so on).
 2. Greps the image-build script `vm/phase2/build-image-skeleton.sh` to confirm
@@ -178,4 +178,3 @@ QEMU reaches login
 ```
 
 It only makes the next engineering decision explicit.
-

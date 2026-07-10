@@ -3,13 +3,12 @@ title = "ONIX Book"
 authors = ["ONIX contributors"]
 description = "Step-by-step build book for the ONIX operating system."
 language = "en"
-src = "src"
+src = "."
 
 [build]
-build-dir = "html"
+build-dir = "site"
 create-missing = false
 
 [output.html]
 git-repository-url = "https://github.com/onix-os/build"
-edit-url-template = "https://github.com/onix-os/build/edit/main/book/{path}"
 site-url = "/"

@@ -244,7 +244,7 @@ The tracked source of truth is:
 ```text
 vm/phase4/native-systemd-prep.sh
 vm/phase4/stone-recipes/onix-systemd-native/stone.yaml.in
-book/src/phases/421.md
+vm/phase4/docs/421_prepare_native_onix_systemd.md
 ```
 
 ## The current wrapper truth

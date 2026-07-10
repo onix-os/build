@@ -7,21 +7,22 @@ ONIX is a step-by-step build of an atomic, **musl-based** Linux distro using:
 - systemd/systemd-boot for the real ONIX boot path
 - Nix as the host development toolbox
 
-The detailed learning documentation now lives in the mdBook:
+The detailed learning documentation is wired through the root mdBook files:
 
 ```text
-book/
+book.toml
+SUMMARY.md
 ```
 
 Start here:
 
-- [Book introduction](./book/src/introduction.md)
-- [Quickstart](./book/src/quickstart.md)
-- [Phase 0 — forge VM and first `.stone`](./book/src/phases/phase-0.md)
-- [Phase 1 — first real ONIX stones](./book/src/phases/phase-1.md)
-- [Phase 2 — first bootable ONIX image](./book/src/phases/phase-2.md)
-- [Phase 4 — booted ONIX base userspace](./book/src/phases/phase-4.md)
-- [Architecture](./book/src/architecture.md)
+- [Book introduction](./vm/INTRODUCTION.md)
+- [Quickstart](./vm/QUICKSTART.md)
+- [Phase 0 — forge VM and first `.stone`](./vm/phase0/docs/phase_0_forge_vm_and_first_stone.md)
+- [Phase 1 — first real ONIX stones](./vm/phase1/docs/phase_1_first_real_onix_stones.md)
+- [Phase 2 — first bootable ONIX image](./vm/phase2/docs/phase_2_first_bootable_onix_image.md)
+- [Phase 4 — booted ONIX base userspace](./vm/phase4/docs/phase_4_booted_onix_base_userspace.md)
+- [Architecture](./ARCHITECTURE.md)
 
 ## Common commands
 
@@ -31,7 +32,7 @@ make stop        # stop QEMU/probes and detach stale mounts; keep disks/images
 make cleanup     # destructive reset: stop everything and remove generated disks/images
 make up          # boot native ONIX, prove SSH, and leave QEMU running
 make phases      # print the numbered phase map
-make book        # build the mdBook into book/html/
+make book        # build the mdBook into site/
 make book-serve  # serve the mdBook locally
 ```
 
@@ -60,7 +61,7 @@ These are generated and gitignored:
 artifacts/
 vm/downloads/
 vm/state/
-book/html/
+site/
 ```
 
 ## Branding rule

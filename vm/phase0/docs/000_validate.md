@@ -84,6 +84,6 @@ run at any moment.
 
 ## What comes next
 
-If `make phase 000` is green, proceed to [001 — passwordless disk builder](./001.md),
+If `make phase 000` is green, proceed to [001 — passwordless disk builder](./001_passwordless_disk_builder.md),
 which arranges the one bit of privilege the disk build needs before 002 formats
 anything.

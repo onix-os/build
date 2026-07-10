@@ -51,7 +51,7 @@ local_stone_for() {
 }
 
 check_source_files() {
-  [[ -f "$ONIX_ROOT/book/src/phases/513.md" ]] || die "missing Phase 513 book page"
+  [[ -f "$ONIX_ROOT/vm/phase5/docs/513_uutils_command_ownership.md" ]] || die "missing Phase 513 doc page"
   [[ -f "$ONIX_ROOT/packages/core/uutils-coreutils/PACKAGE.md" ]] || die "missing uutils package contract"
   [[ -f "$ONIX_ROOT/packages/core/onix-busybox/PACKAGE.md" ]] || die "missing busybox package contract"
   grep -q 'Phase 513' "$ONIX_ROOT/packages/core/uutils-coreutils/PACKAGE.md"

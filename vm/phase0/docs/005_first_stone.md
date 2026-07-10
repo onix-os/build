@@ -116,7 +116,7 @@ source tarball -> stone.yaml -> boulder -> .stone -> moss inspect/extract/instal
 Note that step 6 uses `moss … install --to "$TARGET"`, which *blits the files*
 into a target directory. That is enough to prove the package installs and runs,
 but it is **not** a real moss state transaction with rollback history — that
-distinction is the whole subject of [006](./006.md), which uses `moss -D <root>
+distinction is the whole subject of [006](./006_moss_state_smoke_test.md), which uses `moss -D <root>
 install` instead. Keep the two apart: 005 proves *building and installing
 files*; 006 proves *transactional state*.
 
@@ -159,11 +159,11 @@ inspect, extract, index, and install it — the complete build-and-install
 pipeline end to end.
 
 **Does not prove:** atomic state management or rollback. `install --to` is a
-file blit, not a transaction. That final capability is [006](./006.md), the
+file blit, not a transaction. That final capability is [006](./006_moss_state_smoke_test.md), the
 Phase 0 gate.
 
 ## What comes next
 
-[006 — real Moss state smoke test](./006.md) reuses the `.stone` built here and
+[006 — real Moss state smoke test](./006_moss_state_smoke_test.md) reuses the `.stone` built here and
 installs it with `moss -D <root>` to create *real* states, then removes and
 rolls back.

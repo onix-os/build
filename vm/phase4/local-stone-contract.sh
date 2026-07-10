@@ -112,12 +112,12 @@ Planned local replacement path:
 EOF
 
 log "checking mdBook contract wording"
-need_doc_text 'artifacts/onix-stones' "book/src/phases/408.md"
-need_doc_text 'artifacts/onix-local-repo' "book/src/phases/408.md"
-need_doc_text 'vm/phase4/stone-recipes' "book/src/phases/408.md"
-need_doc_text '5xx = real stone factory' "book/src/phases/408.md"
-need_doc_text '409 — build `onix-busybox.stone`' "book/src/phases/408.md"
-need_doc_text '414 — systemd stone dependency audit' "book/src/phases/408.md"
+need_doc_text 'artifacts/onix-stones' "vm/phase4/docs/408_local_stone_repo_contract.md"
+need_doc_text 'artifacts/onix-local-repo' "vm/phase4/docs/408_local_stone_repo_contract.md"
+need_doc_text 'vm/phase4/stone-recipes' "vm/phase4/docs/408_local_stone_repo_contract.md"
+need_doc_text '5xx = real stone factory' "vm/phase4/docs/408_local_stone_repo_contract.md"
+need_doc_text '409 — build `onix-busybox.stone`' "vm/phase4/docs/408_local_stone_repo_contract.md"
+need_doc_text '414 — systemd stone dependency audit' "vm/phase4/docs/408_local_stone_repo_contract.md"
 
 echo
 echo "==> success"

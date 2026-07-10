@@ -190,8 +190,8 @@ Alpine VM.
 toolchain-equipped disk image, fully unattended, reproducibly from a pinned
 seed.
 
-**Does not prove:** that it boots (that's [003](./003.md)), or that moss/boulder
-build on it (that's [004](./004.md)). It only proves the disk was *assembled*
+**Does not prove:** that it boots (that's [003](./003_boot_forge.md)), or that moss/boulder
+build on it (that's [004](./004_provision_tools.md)). It only proves the disk was *assembled*
 correctly — the build script verifies the EFI loader exists on the ESP before
 declaring success.
 
@@ -212,5 +212,5 @@ declaring success.
 
 ## What comes next
 
-With `quarry.raw` built, [003 — boot the forge](./003.md) starts QEMU against
+With `quarry.raw` built, [003 — boot the forge](./003_boot_forge.md) starts QEMU against
 it and gets you a login on `quarry`.

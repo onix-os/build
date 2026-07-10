@@ -347,7 +347,7 @@ the docs.
 The generated HTML goes under:
 
 ```text
-book/html/
+site/
 ```
 
 That directory is generated output and is not committed.

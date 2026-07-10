@@ -132,7 +132,7 @@ few seconds of work.
 `vm/phase2/check-systemd-musl.sh` is host-only. It never uses `sudo`, never
 mounts the image, never boots QEMU. It does three things:
 
-1. Greps this very page (`book/src/phases/209.md`) for the decision text below,
+1. Greps this very page (`vm/phase2/docs/209_systemd_on_musl_feasibility_gate.md`) for the decision text below,
    so the documented contract and the code cannot silently drift apart.
 2. Runs `nix eval` on `pkgsMusl.systemd` from the pinned lock to read its
    metadata (`name`, `hostLibc`, `broken`, whether `-Dlibc=musl` is in its Meson
@@ -257,4 +257,3 @@ begin placing bytes on disk: kernel and initramfs (211), the first boot probe
 (212), the first musl systemd userspace at `/usr/lib/systemd/systemd` (213), and
 the first kernel-module payload (214). Every one of those later phases assumes
 the answer this gate produced: *systemd-on-musl is worth attempting.*
-

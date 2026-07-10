@@ -97,7 +97,7 @@ kernel. The forge has to actually be *running* to build and exercise the tools.
 
 "Atomically" and "states" are the words that matter. Every install or removal
 moss performs becomes a numbered, immutable state you can return to. That is the
-whole reason ONIX uses moss, and it is precisely what [006](./006.md) puts to
+whole reason ONIX uses moss, and it is precisely what [006](./006_moss_state_smoke_test.md) puts to
 the test.
 
 ## What it proves — and what it does not
@@ -107,7 +107,7 @@ core feasibility claim behind the entire project — a musl machine plane needs
 musl-built tooling, and here it is.
 
 **Does not prove:** that the tools can build or install a *package* yet. That is
-[005](./005.md) (cut a `.stone`) and [006](./006.md) (real moss states).
+[005](./005_first_stone.md) (cut a `.stone`) and [006](./006_moss_state_smoke_test.md) (real moss states).
 
 ## Gotchas
 
@@ -122,5 +122,5 @@ musl-built tooling, and here it is.
 
 ## What comes next
 
-With moss and boulder in `~/.local/bin`, [005 — first `.stone`](./005.md) cuts a
+With moss and boulder in `~/.local/bin`, [005 — first `.stone`](./005_first_stone.md) cuts a
 trivial package end-to-end through the build → inspect → install pipeline.

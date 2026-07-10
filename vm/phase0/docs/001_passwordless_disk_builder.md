@@ -110,5 +110,5 @@ the new path.
 
 ## What comes next
 
-With passwordless rootful builds arranged, [002 — build the forge disk](./002.md)
+With passwordless rootful builds arranged, [002 — build the forge disk](./002_build_forge_disk.md)
 can partition, format, and populate `quarry.raw` unattended.

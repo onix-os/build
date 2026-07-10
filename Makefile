@@ -107,7 +107,7 @@ up: ## boot native ONIX, prove SSH, and leave QEMU running
 	@$(MAKE) --no-print-directory -C $(PHASE4) native-systemd-up
 
 book: ## build the mdBook documentation
-	@mdbook build book
+	@mdbook build
 
 book-serve: ## serve the mdBook documentation locally
-	@mdbook serve book -n 127.0.0.1
+	@mdbook serve -n 127.0.0.1
