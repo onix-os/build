@@ -1,0 +1,26 @@
+name        : libseccomp
+version     : @LIBSECCOMP_VERSION@
+release     : 1
+summary     : ONIX-owned seccomp filtering library
+license     : LGPL-2.1-only
+homepage    : https://github.com/seccomp/libseccomp
+upstreams   :
+    - @LIBSECCOMP_PAYLOAD_URL@: @LIBSECCOMP_PAYLOAD_SHA256@
+description : |
+    libseccomp shared-library surface for ONIX.
+
+    This is an intentional dynamic-musl exception so privilege tooling can link
+    against an ONIX-owned seccomp library.
+
+    Source archive: @LIBSECCOMP_SOURCE_ARCHIVE@
+    Source SHA-256: @LIBSECCOMP_SOURCE_SHA256@
+install     : |
+    install -dm00755 %(installroot)
+    cp -a usr %(installroot)/
+
+    chmod 00755 %(installroot)/usr
+    chmod 00755 %(installroot)/usr/lib
+    chmod 00755 %(installroot)/usr/share
+    chmod 00755 %(installroot)/usr/share/onix
+    chmod 00755 %(installroot)/usr/share/onix/packages
+    chmod 0644 %(installroot)/usr/share/onix/packages/libseccomp.md

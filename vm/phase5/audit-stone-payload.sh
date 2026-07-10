@@ -85,7 +85,7 @@ run_audit() {
   if [[ "$ALLOW_DYNAMIC_MUSL" -eq 1 ]]; then
     log "mode      : dynamic musl exception allowed"
   else
-    log "mode      : strict static/self-contained musl"
+    log "mode      : strict static/static-PIE musl"
   fi
 
   log "text      : scanning for /nix/store references"

@@ -1,0 +1,33 @@
+name        : onix-rootasrole-policy
+version     : @ONIX_ROOTASROLE_POLICY_VERSION@
+release     : 1
+summary     : Live RootAsRole policy for ONIX
+license     : LicenseRef-ONIX-rootasrole-policy
+homepage    : https://github.com/onix-os
+upstreams   :
+    - @ONIX_ROOTASROLE_POLICY_PAYLOAD_URL@: @ONIX_ROOTASROLE_POLICY_PAYLOAD_SHA256@
+rundeps:
+    - rootasrole
+    - linux-pam
+description : |
+    Package-owned live RootAsRole policy for ONIX.
+
+    The rootasrole package ships binaries and safe defaults. This policy package
+    owns the factory source for /etc/security/rootasrole.json and /etc/pam.d/dosr.
+install     : |
+    install -dm00755 %(installroot)/usr
+    cp -a usr/. %(installroot)/usr/
+
+    chmod 00755 %(installroot)/usr
+    chmod 00755 %(installroot)/usr/share
+    chmod 00755 %(installroot)/usr/share/factory
+    chmod 00755 %(installroot)/usr/share/factory/etc
+    chmod 00755 %(installroot)/usr/share/factory/etc/security
+    chmod 00755 %(installroot)/usr/share/factory/etc/pam.d
+    chmod 00755 %(installroot)/usr/share/onix
+    chmod 00755 %(installroot)/usr/share/onix/packages
+    chmod 00600 %(installroot)/usr/share/factory/etc/security/rootasrole.json
+    chmod 00644 %(installroot)/usr/share/factory/etc/pam.d/dosr
+    chmod 00644 %(installroot)/usr/share/onix/packages/onix-rootasrole-policy.md
+
+    find %(installroot)/usr -type d -exec chmod g-s {} \;

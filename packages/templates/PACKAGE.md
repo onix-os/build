@@ -36,10 +36,12 @@ Rust implementation, explain why that is acceptable.
 - Target triple:
 - C runtime: `musl`
 - Link model: `static musl` / `static-pie musl` / `dynamic musl exception`
-- Shared runtime libraries: `none` / `documented exception`
+- Static attempt/result:
+- Shared runtime libraries: `none` / `documented minimal surface`
 
-ONIX system packages must avoid glibc and avoid shared runtime dependencies by
-default. Any dynamic musl or shared-library exception must be explained here.
+ONIX system packages must avoid glibc and must try static/static-PIE musl first
+by default. If static is not the right model, document the minimal
+shared-library surface here. Every shared object must be owned by an ONIX stone.
 
 ## Runtime-clean contract
 
@@ -49,6 +51,7 @@ default. Any dynamic musl or shared-library exception must be explained here.
 - No systemd units calling `/nix/store`: `yes` / `no` / `not applicable`
 - No glibc loader path: `yes` / `no`
 - No unexpected shared runtime libraries: `yes` / `no`
+- All expected shared libraries are ONIX-owned: `yes` / `no` / `not applicable`
 
 Required checks before accepting the package:
 
@@ -65,6 +68,14 @@ List the runtime dependencies that are allowed after installation.
 
 ```text
 - dependency:
+  reason:
+  owner package:
+```
+
+For shared libraries, list the soname and owner package:
+
+```text
+- soname:
   reason:
   owner package:
 ```
@@ -98,6 +109,7 @@ Good:
 ## Exceptions
 
 Document every exception to the Rust-first, musl-only, runtime-clean package
-law.
+law. Dynamic musl is acceptable only when the shared surface is minimal,
+intentional, and package-owned.
 
 No unchecked exceptions.

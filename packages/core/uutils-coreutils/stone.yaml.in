@@ -1,0 +1,40 @@
+name        : uutils-coreutils
+version     : @UUTILS_VERSION@
+release     : @UUTILS_RELEASE@
+summary     : Rust coreutils multicall binary for ONIX
+license     : MIT
+homepage    : https://github.com/uutils/coreutils
+upstreams   :
+    - @UUTILS_PAYLOAD_URL@: @UUTILS_PAYLOAD_SHA256@
+description : |
+    Rust-first coreutils package for ONIX.
+
+    Phase 509 installs the uutils multicall binary at /usr/bin/coreutils.
+    Phase 513 can rebuild the same source with command-name links after
+    onix-busybox command ownership is reduced.
+
+    Source archive: @UUTILS_SOURCE_ARCHIVE@
+    Source SHA-256: @UUTILS_SOURCE_SHA256@
+install     : |
+    install -dm00755 %(installroot)
+    cp -a usr %(installroot)/
+
+    chmod 00755 %(installroot)/usr
+    chmod 00755 %(installroot)/usr/bin
+    chmod 00755 %(installroot)/usr/share
+    chmod 00755 %(installroot)/usr/share/onix
+    chmod 00755 %(installroot)/usr/share/onix/packages
+    chmod 00755 %(installroot)/usr/bin/coreutils
+    chmod 0644 \
+        %(installroot)/usr/share/onix/packages/uutils-coreutils.commands \
+        %(installroot)/usr/share/onix/packages/uutils-coreutils.pending-links \
+        %(installroot)/usr/share/onix/packages/uutils-coreutils.md
+
+    # Boulder build dirs inherit setgid. Clear it on directories we created so
+    # Moss receives ordinary directory layout metadata.
+    chmod g-s \
+        %(installroot)/usr \
+        %(installroot)/usr/bin \
+        %(installroot)/usr/share \
+        %(installroot)/usr/share/onix \
+        %(installroot)/usr/share/onix/packages

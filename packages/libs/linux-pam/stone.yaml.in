@@ -1,0 +1,27 @@
+name        : linux-pam
+version     : @LINUX_PAM_VERSION@
+release     : 1
+summary     : ONIX-owned Linux-PAM runtime surface
+license     : BSD-3-Clause
+homepage    : https://github.com/linux-pam/linux-pam
+upstreams   :
+    - @LINUX_PAM_PAYLOAD_URL@: @LINUX_PAM_PAYLOAD_SHA256@
+description : |
+    Linux-PAM shared-library and module surface for ONIX.
+
+    This is an intentional dynamic-musl exception. PAM's useful runtime model is
+    libpam plus loadable modules, so ONIX owns that surface as a stone instead
+    of treating it as a host leak.
+
+    Source archive: @LINUX_PAM_SOURCE_ARCHIVE@
+    Source SHA-256: @LINUX_PAM_SOURCE_SHA256@
+install     : |
+    install -dm00755 %(installroot)
+    cp -a usr %(installroot)/
+
+    chmod 00755 %(installroot)/usr
+    chmod 00755 %(installroot)/usr/lib
+    chmod 00755 %(installroot)/usr/share
+    chmod 00755 %(installroot)/usr/share/onix
+    chmod 00755 %(installroot)/usr/share/onix/packages
+    chmod 0644 %(installroot)/usr/share/onix/packages/linux-pam.md

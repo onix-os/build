@@ -27,9 +27,16 @@ REQUIRED_PACKAGES=(
   onix-branding
   onix-filesystem
   onix-busybox
+  uutils-coreutils
   onix-dropbear
   onix-systemd
   onix-bootstrap-policy
+  musl
+  linux-pam
+  libseccomp
+  libgcc-runtime
+  rootasrole
+  onix-rootasrole-policy
 )
 
 die() {
@@ -96,9 +103,16 @@ package_contract_path() {
     onix-branding) printf '%s\n' "packages/base/onix-branding/PACKAGE.md" ;;
     onix-filesystem) printf '%s\n' "packages/base/onix-filesystem/PACKAGE.md" ;;
     onix-busybox) printf '%s\n' "packages/core/onix-busybox/PACKAGE.md" ;;
+    uutils-coreutils) printf '%s\n' "packages/core/uutils-coreutils/PACKAGE.md" ;;
     onix-dropbear) printf '%s\n' "packages/services/onix-dropbear/PACKAGE.md" ;;
     onix-systemd) printf '%s\n' "packages/services/onix-systemd/PACKAGE.md" ;;
     onix-bootstrap-policy) printf '%s\n' "packages/services/onix-bootstrap-policy/PACKAGE.md" ;;
+    musl) printf '%s\n' "packages/libs/musl/PACKAGE.md" ;;
+    linux-pam) printf '%s\n' "packages/libs/linux-pam/PACKAGE.md" ;;
+    libseccomp) printf '%s\n' "packages/libs/libseccomp/PACKAGE.md" ;;
+    libgcc-runtime) printf '%s\n' "packages/libs/libgcc-runtime/PACKAGE.md" ;;
+    rootasrole) printf '%s\n' "packages/core/rootasrole/PACKAGE.md" ;;
+    onix-rootasrole-policy) printf '%s\n' "packages/services/onix-rootasrole-policy/PACKAGE.md" ;;
     *) die "unknown package contract mapping: $1" ;;
   esac
 }
@@ -106,7 +120,7 @@ package_contract_path() {
 package_source_dir() {
   case "$1" in
     onix-branding|onix-filesystem) printf '%s\n' "$BASE_SOURCE_DIR" ;;
-    onix-busybox|onix-dropbear|onix-systemd|onix-bootstrap-policy) printf '%s\n' "$RUNTIME_SOURCE_DIR" ;;
+    onix-busybox|uutils-coreutils|onix-dropbear|onix-systemd|onix-bootstrap-policy|musl|linux-pam|libseccomp|libgcc-runtime|rootasrole|onix-rootasrole-policy) printf '%s\n' "$RUNTIME_SOURCE_DIR" ;;
     *) die "unknown package source mapping: $1" ;;
   esac
 }
@@ -367,9 +381,19 @@ prove_install() {
   need_file "$WORK_ROOT/install-target/usr/lib/os-release"
   need_file "$WORK_ROOT/install-target/usr/share/onix/filesystem-layout.md"
   need_file "$WORK_ROOT/install-target/usr/bin/busybox"
+  need_file "$WORK_ROOT/install-target/usr/bin/coreutils"
+  need_file "$WORK_ROOT/install-target/usr/bin/ls"
   need_file "$WORK_ROOT/install-target/usr/sbin/dropbear"
   need_file "$WORK_ROOT/install-target/usr/lib/systemd/systemd"
   need_file "$WORK_ROOT/install-target/usr/share/onix/packages/onix-bootstrap-policy.md"
+  need_file "$WORK_ROOT/install-target/usr/bin/dosr"
+  need_file "$WORK_ROOT/install-target/usr/share/factory/etc/security/rootasrole.json"
+  need_file "$WORK_ROOT/install-target/usr/share/factory/etc/pam.d/dosr"
+
+  [[ -L "$WORK_ROOT/install-target/usr/bin/ls" ]] \
+    || die "uutils-coreutils should own /usr/bin/ls as a command link"
+  [[ "$(readlink "$WORK_ROOT/install-target/usr/bin/ls")" = "coreutils" ]] \
+    || die "/usr/bin/ls should point at coreutils"
 
   grep -q '^NAME="ONIX"$' "$WORK_ROOT/install-target/usr/lib/os-release"
   grep -q '^ID="onix"$' "$WORK_ROOT/install-target/usr/lib/os-release"

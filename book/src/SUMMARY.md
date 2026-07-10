@@ -4,6 +4,7 @@
 [Quickstart](./quickstart.md)
 [Architecture](./architecture.md)
 [Recipes](./recipes.md)
+[Stone catalog](./stones.md)
 
 # Learning phases
 
@@ -70,7 +71,7 @@
   - [424 — bring up native ONIX for inspection](./phases/424.md)
   - [425 — final Phase 4 acceptance check](./phases/425.md)
 - [Phase 5 — Rust-first musl package/repository plane](./phases/phase-5.md)
-  - [500 — Rust-first musl-only package law](./phases/500.md)
+  - [500 — Rust-first musl-only static-first package law](./phases/500.md)
   - [501 — canonical package layout and metadata contract](./phases/501.md)
   - [502 — runtime-clean stone payload audit helper](./phases/502.md)
   - [503 — copy existing recipes into canonical package layout](./phases/503.md)
@@ -79,3 +80,8 @@
   - [506 — essential package ownership collision fix](./phases/506.md)
   - [507 — canonical repo image consumption](./phases/507.md)
   - [508 — local public repository layout](./phases/508.md)
+  - [509 — first Rust essential stones](./phases/509.md)
+  - [510 — privilege shared-library surface](./phases/510.md)
+  - [511 — RootAsRole privilege stone](./phases/511.md)
+  - [512 — live RootAsRole policy stone](./phases/512.md)
+  - [513 — uutils command ownership](./phases/513.md)

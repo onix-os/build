@@ -1,16 +1,18 @@
 name        : onix-busybox
 version     : @BUSYBOX_VERSION@
-release     : 2
+release     : 3
 summary     : Static BusyBox base command set for ONIX bootstrap images
 license     : GPL-2.0-only
 homepage    : https://busybox.net/
 upstreams   :
     - @BUSYBOX_PAYLOAD_URL@: @BUSYBOX_PAYLOAD_SHA256@
 description : |
-    Musl-static BusyBox payload for early ONIX base-system proofs.
+    Musl-static BusyBox payload for ONIX bootstrap/recovery proofs.
 
     The BusyBox source is built in the Alpine/musl forge VM first. Boulder then
     packages that prepared payload into a .stone, making it moss-installable.
+    Release 3 intentionally stops owning common coreutils command names so
+    uutils-coreutils can own them.
 
     Source archive: @BUSYBOX_SOURCE_ARCHIVE@
     Source SHA-256: @BUSYBOX_SOURCE_SHA256@

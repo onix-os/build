@@ -85,6 +85,11 @@ Individual steps use three digits:
 506 = Phase 5, step 06
 507 = Phase 5, step 07
 508 = Phase 5, step 08
+509 = Phase 5, step 09
+510 = Phase 5, step 10
+511 = Phase 5, step 11
+512 = Phase 5, step 12
+513 = Phase 5, step 13
 ```
 
 Read a step number as **PhaseStep**: the first digit is the phase, the last two
@@ -134,7 +139,7 @@ make phase 421   # prepare native source-built onix-systemd plan
 make phase 422   # build/install/boot-prove native onix-systemd
 make phase 424   # boot native ONIX, prove SSH, and leave QEMU running
 make phase 425   # final Phase 4 acceptance check against the running VM
-make phase 500   # define Rust-first musl-only package/repository law
+make phase 500   # define Rust-first musl-only static-first package law
 make phase 501   # define canonical packages/ layout and metadata contract
 make phase 502   # provide runtime-clean stone payload audit helper
 make phase 503   # copy existing recipes into canonical packages/ layout
@@ -143,6 +148,11 @@ make phase 505   # assemble one canonical local ONIX package repo
 make phase 506   # fix/prove reboot and poweroff package ownership
 make phase 507   # make image assembly consume the canonical local repo
 make phase 508   # assemble local public repo layout without upload
+make phase 509   # build/audit first Rust essential stones
+make phase 510   # build/audit linux-pam + libseccomp shared-library stones
+make phase 511   # build/audit RootAsRole privilege stone
+make phase 512   # build/audit live RootAsRole policy stone
+make phase 513   # wire uutils command links instead of BusyBox links
 make up          # shortcut for the Phase 424 day-to-day bring-up
 ```
 

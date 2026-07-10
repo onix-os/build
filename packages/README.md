@@ -22,8 +22,10 @@ This means:
 - prefer serious Rust implementations whenever they exist;
 - build system binaries for musl;
 - avoid glibc runtime dependencies;
-- avoid shared runtime library dependencies by default;
-- prefer static or fully self-contained musl output;
+- try static or static-PIE musl first by default;
+- keep the shared-library surface minimal when static is not the right model;
+- allow shared libraries only when they are ONIX-owned stones with documented
+  runtime reasons;
 - reject runtime `/nix/store` dependencies;
 - install system files through moss from `.stone` packages.
 
@@ -32,12 +34,33 @@ or `pkg-config`.
 
 Nix must not own finished ONIX system packages at runtime.
 
+The policy is **not** "shared libraries are forbidden forever." The policy is:
+
+```text
+static by default; minimal managed shared surface by exception.
+```
+
+Examples that may justify shared libraries:
+
+- PAM modules and PAM consumers;
+- systemd's shared/internal libraries and NSS/PAM integration;
+- graphics, audio, desktop, and plugin frameworks;
+- OpenSSL providers and similar module systems.
+
+Forbidden even in an exception:
+
+- glibc runtime paths on the musl system plane;
+- `/nix/store` runtime paths;
+- random host `.so` files;
+- undocumented `NEEDED` entries.
+
 ## Initial layout
 
 ```text
 packages/
   base/
   core/
+  libs/
   services/
   templates/
 ```
@@ -58,15 +81,35 @@ onix-bootstrap-policy
 
 Core packages provide command-line system tools.
 
-These should be Rust-first and musl-static by default.
+These should be Rust-first and static-first by default. If a core package needs
+a shared-library model, the exception must be small, package-owned, and written
+in that package's `PACKAGE.md`.
 
 Examples:
 
 ```text
 uutils-coreutils
-sudo-rs
+rootasrole
 onix-busybox
 ```
+
+### `packages/libs/`
+
+Library packages provide the small shared surfaces that ONIX explicitly chooses
+to own.
+
+Examples:
+
+```text
+musl
+linux-pam
+libseccomp
+libgcc-runtime
+```
+
+This group exists because the static-first rule is not a static-only rule.
+Shared libraries are allowed when they are the right model, but every soname must
+be intentional, documented, and owned by an ONIX stone.
 
 ### `packages/services/`
 
@@ -77,6 +120,7 @@ Examples:
 ```text
 onix-dropbear
 onix-systemd
+onix-rootasrole-policy
 ```
 
 ## Required files per package
@@ -104,8 +148,9 @@ Is there a serious Rust implementation?
 If yes, are we using it?
 If not, why not?
 Does every executable target musl?
-Is the link model static or otherwise self-contained?
-Are there any shared runtime libraries?
+Was static/static-PIE tried first or explicitly ruled out?
+Is the link model static, static-PIE, or a documented dynamic-musl exception?
+Are there any shared runtime libraries, and which ONIX stone owns each one?
 Does the payload contain /nix/store references?
 Does any shebang point into /nix/store?
 Does any RPATH/RUNPATH point into /nix/store?
@@ -116,7 +161,8 @@ What runtime dependencies are allowed?
 No unchecked exceptions.
 
 If an exception is needed, document it in `PACKAGE.md` before accepting the
-package into the canonical package set.
+package into the canonical package set. Shared libraries are allowed only as a
+minimal managed surface, never as accidental host leakage.
 
 ## Templates
 
@@ -169,3 +215,34 @@ from:
 ```text
 https://repo.onix-os.com
 ```
+
+Phases 509–513 add the first Rust essential package contracts, shared surfaces,
+RootAsRole package build, live policy, and the first BusyBox-to-uutils ownership
+migration:
+
+```text
+packages/core/uutils-coreutils/
+packages/core/rootasrole/
+packages/services/onix-rootasrole-policy/
+packages/libs/musl/
+packages/libs/linux-pam/
+packages/libs/libseccomp/
+packages/libs/libgcc-runtime/
+```
+
+`uutils-coreutils` is the first built/audited Rust essential stone.
+`musl`, `linux-pam`, and `libseccomp` are the first package-owned
+shared-library/runtime surface stones. `libgcc-runtime` is added when
+RootAsRole proves the current Rust/musl forge toolchain emits `libgcc_s.so.1`.
+`rootasrole` is then built as the first ONIX privilege-delegation stone.
+`onix-rootasrole-policy` materializes the first live RootAsRole `/etc` policy.
+Phase 513 rebuilds `uutils-coreutils` with command-name links and reduces
+`onix-busybox` to bootstrap/recovery command ownership for overlapping names.
+
+The human-maintained stone catalog lives at:
+
+```text
+packages/STONES.md
+```
+
+Update that catalog whenever ONIX accepts a new stone.

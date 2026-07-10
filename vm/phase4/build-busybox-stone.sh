@@ -105,7 +105,7 @@ tar -cf - \
   -C "$WORK" build.env \
   -C "$(dirname "$RECIPE_TEMPLATE")" "$(basename "$RECIPE_TEMPLATE")" \
   -C "$(dirname "$BUSYBOX_SRC")" "$BUSYBOX_ARCHIVE" \
-  | "$PHASE0_DIR/ssh.sh" "$user" "rm -rf '$LAB' && mkdir -p '$LAB/src' && tar -C '$LAB' -xf - && mv '$LAB/$BUSYBOX_ARCHIVE' '$LAB/src/$BUSYBOX_ARCHIVE' && mv '$LAB/$(basename "$RECIPE_TEMPLATE")' '$LAB/stone.yaml.in'"
+  | "$PHASE0_DIR/ssh.sh" "$user" "rm -rf '$LAB' && mkdir -p '$LAB/src' && tar -C '$LAB' -xf - && mv '$LAB/$BUSYBOX_ARCHIVE' '$LAB/src/$BUSYBOX_ARCHIVE' && if [ '$(basename "$RECIPE_TEMPLATE")' != 'stone.yaml.in' ]; then mv '$LAB/$(basename "$RECIPE_TEMPLATE")' '$LAB/stone.yaml.in'; fi"
 
 "$PHASE0_DIR/ssh.sh" "$user" /bin/sh -s <<'REMOTE'
 set -eu
@@ -150,67 +150,38 @@ reboot
 BOOTSTRAP_BUSYBOX_APPLETS="
 ash
 awk
-basename
-cat
 chmod
 chown
 clear
-cp
-cut
-date
-df
 dmesg
-du
-echo
-env
-false
 find
 getty
 grep
-head
-hostname
 id
 ifconfig
 insmod
 ip
 less
-ln
-ls
 lsmod
-mkdir
 modprobe
 mount
-mv
 nc
 netstat
 nslookup
 ping
 ping6
 ps
-pwd
-rm
-rmdir
 rmmod
 route
 sed
 setsid
 sh
-sleep
-sort
 stty
-sync
-tail
-tee
-touch
-true
 tty
 udhcpc
 umount
-uname
 vi
-wc
 wget
-whoami
 cttyhack
 "
 
@@ -536,7 +507,7 @@ moss -D "$ROOT" --cache "$CACHE" -y install --to "$TARGET" onix-busybox
 test -x "$TARGET/usr/bin/busybox"
 "$TARGET/usr/bin/busybox" true
 "$TARGET/usr/bin/sh" -c 'echo installed busybox shell works'
-"$TARGET/usr/bin/uname" -s >/dev/null
+"$TARGET/usr/bin/busybox" uname -s >/dev/null
 
 echo
 echo "==> success"

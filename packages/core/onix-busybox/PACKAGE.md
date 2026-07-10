@@ -2,7 +2,8 @@
 
 ## Summary
 
-Static musl BusyBox payload used by the early ONIX base system.
+Static musl BusyBox payload used by the early ONIX base system and later as a
+bootstrap/recovery shell.
 
 ## System role
 
@@ -22,8 +23,8 @@ Static musl BusyBox payload used by the early ONIX base system.
   preferred for individual command families, but they do not replace the whole
   early BusyBox role yet.
 
-This is a documented non-Rust bootstrap package. It should shrink in importance
-as Rust-first core packages such as `uutils-coreutils` enter the system.
+This is a documented non-Rust bootstrap package. It shrinks in importance as
+Rust-first core packages such as `uutils-coreutils` enter the system.
 
 ## Source and provenance
 
@@ -68,12 +69,26 @@ None expected. The BusyBox binary is intended to be static musl.
 ## Stone ownership
 
 The finished `.stone` owns `/usr/bin/busybox` directly and owns only the
-bootstrap applet links listed in `onix-busybox.links`.
+bootstrap/recovery applet links listed in `onix-busybox.links`.
 
 It must not install a symlink into `/nix/store`.
 
 It must not own `/usr/bin/reboot` or `/usr/bin/poweroff`; those command names
 belong to `onix-systemd`.
+
+Starting in Phase 513, it must also not own common coreutils command names such
+as:
+
+```text
+/usr/bin/ls
+/usr/bin/cp
+/usr/bin/mv
+/usr/bin/rm
+/usr/bin/cat
+/usr/bin/echo
+```
+
+Those belong to `uutils-coreutils`.
 
 ## Exceptions
 

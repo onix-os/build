@@ -95,14 +95,17 @@ The repository has **two** recipe trees, and it matters which is which.
   ```text
   packages/
     base/       identity, filesystem layout, defaults, policy
-    core/       Rust-first, musl-static command-line tools
+    core/       Rust-first, static-first command-line tools
     services/   daemons, service units, service policy
     templates/  starting point for new packages
   ```
 
   The canonical tree adds a **package law** — ONIX system packages must be
-  *Rust-first, musl-only, and runtime-clean* (no glibc, no shared-library
-  surprises, and no `/nix/store` references in the finished payload) — and
+  *Rust-first, musl-only, and runtime-clean* (no glibc, no accidental
+  shared-library surprises, and no `/nix/store` references in the finished
+  payload). Static/static-PIE musl is tried first by default; a shared-library
+  surface is allowed only when it is minimal, documented, and owned by ONIX
+  stones. The canonical tree also
   requires every package to ship a `PACKAGE.md` contract alongside its
   `stone.yaml`. `PACKAGE.md` records why the package exists, why its
   implementation was chosen, and how it satisfies that law. Phase 5's steps copy

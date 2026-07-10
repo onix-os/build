@@ -86,7 +86,7 @@ Examples:
 
 ```text
 coreutils -> prefer uutils coreutils
-sudo      -> prefer sudo-rs
+sudo-class privilege -> prefer RootAsRole, with dosr as the native command
 ONIX tools -> Rust by default
 repo tooling -> Rust by default where practical
 ```
@@ -138,6 +138,8 @@ stable:
 
 ```text
 no glibc runtime in ONIX system packages
+try static/static-PIE musl first by default
+allow only a minimal ONIX-owned shared-library surface when static is not right
 ```
 
 ### Background: static vs dynamic, musl vs glibc
@@ -155,6 +157,14 @@ fully static binary asks for nothing. ONIX prefers **static or static-pie musl**
 system packages precisely because it removes the whole class of "which libc, which
 version, whose `/nix/store`" questions — a static musl binary carries its own answer.
 That is why the audit helper in step 502 reads exactly these headers.
+
+This is a default, not a religion. Some real system pieces are designed around
+shared objects: PAM, seccomp-using helpers, systemd internals, graphics stacks,
+audio stacks, and plugin frameworks. ONIX allows those only as a **minimal managed
+shared surface**: the package must try or justify the static build first, list every
+needed soname, and make sure every shared object is owned by an ONIX stone. The
+forbidden case is not "shared library exists"; the forbidden case is "random host
+library leaked into the machine."
 
 ## Build dependency versus runtime dependency
 
@@ -180,10 +190,10 @@ That is acceptable if the final `.stone` payload is clean.
 For example:
 
 ```text
-Nix cargo builds sudo-rs
-sudo-rs is installed into a .stone payload
-moss installs that .stone into /usr/bin
-the installed sudo-rs binary has no /nix/store runtime dependency
+Nix cargo helps build uutils-coreutils
+uutils-coreutils is installed into a .stone payload
+moss installs that .stone into /usr/bin/coreutils
+the installed binary has no /nix/store runtime dependency
 ```
 
 That is acceptable.
@@ -241,7 +251,7 @@ onix-dropbear
 onix-systemd
 onix-bootstrap-policy
 uutils-coreutils
-sudo-rs
+rootasrole
 ```
 
 The first six already exist in earlier phase/lab form. Phase 5 will turn the
@@ -257,6 +267,8 @@ Rust alternative considered:
 Why this implementation:
 Musl/runtime-clean status:
 Runtime dependencies:
+Static attempt/result:
+Allowed shared-library surface, if any:
 ```
 
 This makes Rust-first enforceable instead of vague.
@@ -267,7 +279,7 @@ would be a better ONIX fit.
 ## Proposed Phase 5 path
 
 ```text
-500 — Phase 5 package/repo direction and Rust-first musl-only law
+500 — Phase 5 package/repo direction and Rust-first musl-only static-first law
 501 — canonical recipe layout and package metadata contract
 502 — runtime-clean stone audit helper
 503 — copy existing package recipes into canonical layout
@@ -276,7 +288,11 @@ would be a better ONIX fit.
 506 — fix essential package ownership collisions
 507 — make the image consume only the canonical local repo
 508 — local public repository layout without upload
-509 — first Rust-first external package in the canonical repo
+509 — build/audit first Rust essential stones
+510 — build/audit PAM + seccomp shared-library surface stones
+511 — build RootAsRole against the owned shared surface
+512 — materialize live RootAsRole policy as an owned stone
+513 — move coreutils command links from BusyBox to uutils
 ```
 
 The exact list can change as we learn.
@@ -290,7 +306,7 @@ Phase 5 does not own kernel work, desktop work, or general user toolboxes.
 
 ### How the steps build on each other
 
-The nine steps are not independent chores; they are one pipeline assembled left to
+The current steps are not independent chores; they are one pipeline assembled left to
 right, each step relying on the guarantees the previous one established:
 
 ```text
@@ -300,17 +316,23 @@ right, each step relying on the guarantees the previous one established:
 503  copy recipes         -> real recipes moved into the canonical tree
 504  canonical build lane -> builders read from the canonical tree
 505  local repo           -> built stones collected into one moss repo
-506  ownership fix        -> the repo's first path collision made fatal
+506  ownership fix        -> BusyBox/systemd reboot/poweroff collision fixed
 507  image consumes repo  -> the bootable image installs from that one repo
 508  public-shaped repo   -> the same content in a publishable tree layout
+509  Rust essentials      -> first Rust core package plus RootAsRole gate
+510  shared surface       -> PAM/seccomp become ONIX-owned stones
+511  RootAsRole package   -> dosr/chsr become ONIX-owned stones
+512  RootAsRole policy    -> live /etc policy becomes package-owned
+513  uutils wiring        -> common coreutils commands point at uutils
 ```
 
 Read top to bottom, the arrow from "a rule on paper" (500) to "an image that boots
-from a publish-shaped repository" (507–508) is the entire Phase 5 deliverable.
+from a publish-shaped repository and accepts its first Rust/shared-surface packages" (507–513)
+is the current Phase 5 deliverable.
 
 ## Steps
 
-- [500 — Rust-first musl-only package law](./500.md)
+- [500 — Rust-first musl-only static-first package law](./500.md)
 - [501 — canonical package layout and metadata contract](./501.md)
 - [502 — runtime-clean stone payload audit helper](./502.md)
 - [503 — copy existing recipes into canonical package layout](./503.md)
@@ -319,3 +341,8 @@ from a publish-shaped repository" (507–508) is the entire Phase 5 deliverable.
 - [506 — essential package ownership collision fix](./506.md)
 - [507 — make the image consume the canonical local repo](./507.md)
 - [508 — local public repository layout](./508.md)
+- [509 — first Rust essential stones](./509.md)
+- [510 — privilege shared-library surface](./510.md)
+- [511 — RootAsRole privilege stone](./511.md)
+- [512 — live RootAsRole policy stone](./512.md)
+- [513 — uutils command ownership](./513.md)

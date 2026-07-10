@@ -1,0 +1,36 @@
+name        : rootasrole
+version     : "@ROOTASROLE_VERSION@"
+release     : 1
+homepage    : https://github.com/LeChatP/RootAsRole
+summary     : Role-based privilege delegation for ONIX
+description : |
+    RootAsRole is ONIX's selected sudo-class privilege delegation package.
+
+    Its user-facing command is dosr. ONIX treats dosr as the sudo-equivalent
+    command because RootAsRole's native model is RBAC roles, tasks, and Linux
+    capabilities rather than a direct sudoers clone.
+
+    This recipe template is used after ONIX owns the minimal shared-library
+    surface RootAsRole needs: linux-pam for dosr and libseccomp for chsr.
+license     :
+    - LGPL-3.0-or-later
+upstreams   :
+    - "@ROOTASROLE_PAYLOAD_URL@" : "@ROOTASROLE_PAYLOAD_SHA256@"
+builddeps   : []
+rundeps-exclude:
+    # musl owns /usr/lib/ld-musl-x86_64.so.1. ONIX images are usr-merged, so
+    # /lib/ld-musl-x86_64.so.1 resolves there at runtime. Boulder currently
+    # records musl's loader as the libc soname provider, not as this exact
+    # interpreter provider, so keep RootAsRole's dependency set satisfiable
+    # through the libc.musl-x86_64.so.1 soname dependency.
+    - '^interpreter\(/lib/ld-musl-x86_64\.so\.1\(x86_64\)\)$'
+install     : |
+    install -dm00755 %(installroot)/usr
+    cp -a usr/. %(installroot)/usr/
+
+    chmod 04755 %(installroot)/usr/bin/dosr
+    chmod 0755 %(installroot)/usr/bin/chsr
+    chmod 0644 %(installroot)/usr/share/onix/packages/rootasrole.md
+
+    find %(installroot)/usr -type d -exec chmod 00755 {} \;
+    find %(installroot)/usr -type d -exec chmod g-s {} \;

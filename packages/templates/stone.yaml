@@ -1,9 +1,9 @@
 # Copy this template into packages/<group>/<package>/stone.yaml and replace the
 # placeholder values.
 #
-# The paired PACKAGE.md must explain implementation choice, musl/static link
-# model, runtime-clean status, and runtime dependencies before the package is
-# accepted as canonical.
+# The paired PACKAGE.md must explain implementation choice, static-first build
+# attempt, musl link model, runtime-clean status, and runtime dependencies before
+# the package is accepted as canonical.
 
 name        : PACKAGE_NAME
 version     : 0.1.0
@@ -21,7 +21,9 @@ description : |
     - Rust-first when a serious Rust implementation exists.
     - musl-only for system binaries.
     - runtime-clean: no runtime /nix/store dependency.
-    - static or fully self-contained musl output by default.
+    - static or static-PIE musl output by default.
+    - minimal ONIX-owned shared-library surface only when static is not the
+      right model.
 install     : |
     install -dm00755 %(installroot)/usr
     install -dm00755 %(installroot)/usr/share
