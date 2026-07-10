@@ -28,7 +28,9 @@ jobs:
         run: make book
 
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./site
+          exclude_assets: '.github,.envrc,.gitignore,book.toml,flake.nix,flake.lock,Makefile,**/Makefile,**/*.sh,**/*.yaml,**/*.yaml.in,**/.gitkeep,recipes/**'
+          force_orphan: true
