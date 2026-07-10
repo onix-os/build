@@ -49,11 +49,11 @@ Phase 414 question:
 
 Expected state before Phase 415:
 
-  - /usr/bin/busybox is active from onix-busybox.
-  - /usr/sbin/dropbear is active from onix-dropbear.
+  - /usr/bin/busybox is active from busybox.
+  - /usr/sbin/dropbear is active from dropbear.
   - /usr/lib/systemd/systemd still points into the copied Nix systemd payload.
   - /usr/bin/systemctl still points into the copied Nix systemd payload.
-  - the next package target is onix-systemd, not another runtime shortcut.
+  - the next package target is systemd, not another runtime shortcut.
 
 EOF
 
@@ -73,12 +73,12 @@ grep -Eq '/nix/store/.+-util-linux-minimal-' "$SYSTEMD_CLOSURE" \
 grep -Eq '/nix/store/.+-musl-' "$SYSTEMD_CLOSURE" \
   || die "systemd closure does not contain musl runtime support"
 
-need_repo_stone onix-busybox
-need_repo_stone onix-dropbear
+need_repo_stone busybox
+need_repo_stone dropbear
 
 log "checking Phase 414 book page"
 need_file "$BOOK_PAGE"
-need_text 'onix-systemd' "$BOOK_PAGE"
+need_text 'systemd' "$BOOK_PAGE"
 need_text '/usr/lib/systemd/systemd' "$BOOK_PAGE"
 need_text '/usr/bin/busybox' "$BOOK_PAGE"
 need_text '/usr/sbin/dropbear' "$BOOK_PAGE"

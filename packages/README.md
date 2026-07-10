@@ -72,9 +72,9 @@ Base packages define ONIX identity, filesystem layout, defaults, and policy.
 Examples:
 
 ```text
-onix-branding
-onix-filesystem
-onix-bootstrap-policy
+branding
+filesystem
+bootstrap-policy
 ```
 
 ### `packages/core/`
@@ -90,7 +90,8 @@ Examples:
 ```text
 uutils-coreutils
 rootasrole
-onix-busybox
+busybox
+moss
 ```
 
 ### `packages/libs/`
@@ -118,9 +119,9 @@ Service packages provide daemons, service units, and service policy.
 Examples:
 
 ```text
-onix-dropbear
-onix-systemd
-onix-rootasrole-policy
+dropbear
+systemd
+rootasrole-policy
 ```
 
 ## Required files per package
@@ -189,8 +190,8 @@ artifacts/onix-repo/
 ```
 
 Phase 506 fixes the first cross-package ownership collision discovered by that
-repo proof: `onix-busybox` no longer owns `/usr/bin/reboot` or
-`/usr/bin/poweroff`; those command names belong to `onix-systemd`.
+repo proof: `busybox` no longer owns `/usr/bin/reboot` or
+`/usr/bin/poweroff`; those command names belong to `systemd`.
 
 Phase 507 makes the current image assembly consume the canonical repo through:
 
@@ -223,7 +224,8 @@ migration:
 ```text
 packages/core/uutils-coreutils/
 packages/core/rootasrole/
-packages/services/onix-rootasrole-policy/
+packages/core/moss/
+packages/services/rootasrole-policy/
 packages/libs/musl/
 packages/libs/linux-pam/
 packages/libs/libseccomp/
@@ -235,9 +237,11 @@ packages/libs/libgcc-runtime/
 shared-library/runtime surface stones. `libgcc-runtime` is added when
 RootAsRole proves the current Rust/musl forge toolchain emits `libgcc_s.so.1`.
 `rootasrole` is then built as the first ONIX privilege-delegation stone.
-`onix-rootasrole-policy` materializes the first live RootAsRole `/etc` policy.
+`rootasrole-policy` materializes the first live RootAsRole `/etc` policy.
 Phase 513 rebuilds `uutils-coreutils` with command-name links and reduces
-`onix-busybox` to bootstrap/recovery command ownership for overlapping names.
+`busybox` to bootstrap/recovery command ownership for overlapping names.
+Phase 515 packages `moss` itself so the booted system has an ONIX-owned
+package manager instead of depending only on host-side bootstrap tooling.
 
 The human-maintained stone catalog lives at:
 

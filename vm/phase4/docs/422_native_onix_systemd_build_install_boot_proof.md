@@ -1,6 +1,6 @@
-# 422 — build, install, and boot-prove native `onix-systemd`
+# 422 — build, install, and boot-prove native `systemd`
 
-Phase 422 is the point where `onix-systemd` stops being a bootstrap wrapper
+Phase 422 is the point where `systemd` stops being a bootstrap wrapper
 around a prebuilt runtime payload and becomes a native ONIX package.
 
 This is a big step, but it is still one step on purpose:
@@ -12,7 +12,7 @@ make phase 422
 That command does three things:
 
 1. builds `systemd` from source inside the musl forge VM,
-2. packages the result as a `.stone` named `onix-systemd`,
+2. packages the result as a `.stone` named `systemd`,
 3. installs it into the ONIX image and boots the image to prove PID 1 still
    works.
 
@@ -70,7 +70,7 @@ image paths such as:
 /usr/lib/systemd/systemd
 /usr/bin/systemctl
 /usr/lib/systemd/system
-/usr/share/onix/packages/onix-systemd.md
+/usr/share/onix/packages/systemd.md
 ```
 
 ## Refresher: what PID 1 is
@@ -131,7 +131,7 @@ This is important because it is a normal musl system path. It is not a special
 old bootstrap-store path.
 
 ONIX uses a merged `/usr` style layout, so `/lib` resolves through `/usr/lib`.
-That means the package installs the musl loader support under:
+That means the `musl` dependency stone installs the loader under:
 
 ```text
 /usr/lib/ld-musl-x86_64.so.1
@@ -144,6 +144,10 @@ and the booted system can execute:
 ```
 
 through the merged layout.
+
+The `systemd` stone itself must not own that loader. It declares `musl` as a
+runtime dependency; the installed target contains the loader because Moss
+installed the dependency beside systemd.
 
 ## Background: meson, ninja, and RUNPATH
 
@@ -216,7 +220,7 @@ If boot failed, we would not know whether the problem was:
 - the bootloader entry,
 - or the image materialization.
 
-So Phase 422 intentionally makes the first native `onix-systemd` package
+So Phase 422 intentionally makes the first native `systemd` package
 monolithic.
 
 The rule is:
@@ -267,12 +271,20 @@ Freezing execution
 That meant the native `systemd` binary itself started, but it did not have
 enough runtime support to finish the early PID 1 setup.
 
-So Phase 422 deliberately bundles the immediate runtime-library families needed
-for the first native boot proof. This is not the final dependency model. It is a
-bootstrap-native milestone:
+So Phase 422 deliberately bundles some immediate non-musl runtime-library
+families needed for the first native boot proof. This is not the final dependency
+model. It is a bootstrap-native milestone:
 
 ```text
-first prove the native PID 1 boot, then split libraries into cleaner stones
+first prove the native PID 1 boot, then split more libraries into cleaner stones
+```
+
+The important exception is musl itself. Once the canonical `musl` stone exists,
+there must be exactly one musl owner:
+
+```text
+musl         owns /usr/lib/ld-musl-x86_64.so.1 and libc symlinks
+systemd depends on musl
 ```
 
 This is why the boot probe matters. A package can pass static checks and still
@@ -307,14 +319,14 @@ It:
 4. builds systemd with Meson and Ninja inside the forge,
 5. installs into a temporary destination tree,
 6. creates a prepared package payload,
-7. builds `onix-systemd-*.stone` with boulder,
+7. builds `systemd-*.stone` with boulder,
 8. verifies the stone with moss,
 9. refreshes the local Phase 4 repo.
 
 The source build happens inside:
 
 ```text
-/home/mason/stone-lab/onix-systemd-native
+/home/mason/stone-lab/systemd-native
 ```
 
 inside the forge VM.
@@ -342,7 +354,7 @@ artifacts/onix-image/onix.raw
 
 and then:
 
-1. installs `onix-systemd` from the local moss repo into a scratch target,
+1. installs `systemd` from the local moss repo into a scratch target,
 2. verifies the scratch target has real native files,
 3. removes the old bootstrap systemd activation paths,
 4. copies the native package payload into the image,
@@ -392,7 +404,7 @@ At the end, the probe should print a success message similar to:
 
 ```text
 Phase 422 proved the booted ONIX image can use the native source-built
-onix-systemd package as PID 1 while bootstrap networking and authenticated SSH
+systemd package as PID 1 while bootstrap networking and authenticated SSH
 still work.
 ```
 
@@ -405,7 +417,7 @@ The live image should have:
 /usr/bin/systemctl
 /usr/bin/journalctl
 /usr/bin/udevadm
-/usr/share/onix/packages/onix-systemd.md
+/usr/share/onix/packages/systemd.md
 /usr/share/onix/bootstrap/native-systemd-stone.txt
 ```
 
@@ -431,7 +443,7 @@ make up
 
 Phase 424:
 
-1. installs the existing native `onix-systemd` stone into the image,
+1. installs the existing native `systemd` stone into the image,
 2. runs the same serial and SSH proof,
 3. leaves QEMU running after success.
 
@@ -468,7 +480,8 @@ Phase 422 does not mean the whole base OS is finished.
 Known remaining work:
 
 - split bundled helper commands into cleaner dependency stones,
-- split native runtime libraries into cleaner dependency stones,
+- split remaining non-musl native runtime libraries into cleaner dependency
+  stones,
 - replace temporary bootstrap unit activation with a real package trigger or
   preset policy,
 - continue kernel/initramfs/module ownership in Phase 3,

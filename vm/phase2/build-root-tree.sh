@@ -105,7 +105,7 @@ rm -rf "$ROOT" "$CACHE" "$TARGET"
 mkdir -p "$ROOT" "$CACHE" "$TARGET"
 moss -D "$ROOT" --cache "$CACHE" repo add onix-image "file://$REPO/stone.index" -c "ONIX Phase 201 image assembly repo"
 moss -D "$ROOT" --cache "$CACHE" repo update
-moss -D "$ROOT" --cache "$CACHE" -y install --to "$TARGET" onix-branding onix-filesystem
+moss -D "$ROOT" --cache "$CACHE" -y install --to "$TARGET" branding filesystem
 
 echo
 echo "==> materialize image-owned root-level glue"

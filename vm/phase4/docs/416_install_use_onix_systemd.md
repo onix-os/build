@@ -1,20 +1,20 @@
-# Phase 416 — install/use `onix-systemd`
+# Phase 416 — install/use `systemd`
 
 | Item | Value |
 |---|---|
 | Command | `make phase 416` |
 | Underlying script | `vm/phase4/materialize-etc.sh --systemd-stone` |
-| Requires | Phase 415 `onix-systemd` stone in the local Phase 4 repo |
+| Requires | Phase 415 `systemd` stone in the local Phase 4 repo |
 | Mutates disk/image? | Yes |
 | Boots QEMU? | No |
-| Main proof | The image consumes `onix-systemd` from the local Moss repo and materializes its runtime store paths so `/usr/lib/systemd/systemd` can execute as PID 1. |
+| Main proof | The image consumes `systemd` from the local Moss repo and materializes its runtime store paths so `/usr/lib/systemd/systemd` can execute as PID 1. |
 
 ## Why this phase exists
 
 Phase 415 built the package:
 
 ```text
-onix-systemd
+systemd
 ```
 
 But building a package is not the same as using it in the image.
@@ -22,7 +22,7 @@ But building a package is not the same as using it in the image.
 Phase 416 asks:
 
 ```text
-Can the ONIX image consume the onix-systemd stone and make its PID 1 runtime
+Can the ONIX image consume the systemd stone and make its PID 1 runtime
 paths real inside the disk image?
 ```
 
@@ -146,7 +146,7 @@ But the current systemd payload still has absolute runtime paths under:
 /nix/store
 ```
 
-Phase 415 solved that by making `onix-systemd` carry the full runtime closure
+Phase 415 solved that by making `systemd` carry the full runtime closure
 under a package-owned bootstrap area:
 
 ```text
@@ -155,7 +155,7 @@ under a package-owned bootstrap area:
 
 That path is package content.
 
-It belongs to the `onix-systemd` stone.
+It belongs to the `systemd` stone.
 
 But at boot, the runtime still expects:
 
@@ -200,7 +200,7 @@ Earlier boot phases copied important runtime closures into both places:
 
 Phase 416 keeps that rule.
 
-It materializes the `onix-systemd` bootstrap store into both:
+It materializes the `systemd` bootstrap store into both:
 
 ```text
 /nix/store
@@ -246,9 +246,9 @@ Phase 416 installs package-owned paths such as:
 /usr/bin/systemd-tmpfiles
 /usr/bin/systemd-sysusers
 /usr/bin/udevadm
-/usr/share/onix/packages/onix-systemd.md
-/usr/share/onix/packages/onix-systemd.closure
-/usr/share/onix/packages/onix-systemd.links
+/usr/share/onix/packages/systemd.md
+/usr/share/onix/packages/systemd.closure
+/usr/share/onix/packages/systemd.links
 ```
 
 Then it materializes runtime copies:
@@ -271,8 +271,8 @@ This phase must not break the already-working bootstrap stack.
 The image already has:
 
 ```text
-onix-busybox
-onix-dropbear
+busybox
+dropbear
 bootstrap network unit
 bootstrap remote-inspection unit
 bootstrap serial unit
@@ -315,7 +315,7 @@ The script:
 1. Mounts the ONIX image root.
 2. Mounts the ONIX boot partition for BLS verification.
 3. Mounts the ONIX persist partition.
-4. Uses host-side Moss to install `onix-systemd` from:
+4. Uses host-side Moss to install `systemd` from:
 
    ```text
    artifacts/onix-local-repo/stone.index
@@ -329,7 +329,7 @@ The script:
    /usr/lib/onix/bootstrap/nix/store
    /usr/lib/systemd/systemd
    /usr/bin/systemctl
-   /usr/share/onix/packages/onix-systemd.*
+   /usr/share/onix/packages/systemd.*
    ```
 
 6. Copies the package payload into the mounted image.
@@ -353,13 +353,13 @@ The script:
 
 Phase 416 proves:
 
-- the image can consume `onix-systemd` from the local Moss repo,
+- the image can consume `systemd` from the local Moss repo,
 - `/usr/lib/systemd/systemd` is now supplied by the package install shape,
 - the systemd runtime closure exists under package-owned bootstrap storage,
 - the runtime `/nix/store` paths exist in the root image,
 - the runtime `/persist/nix/store` paths exist in persistent state,
 - the BLS entry still points at `/usr/lib/systemd/systemd`,
-- `onix-busybox` and `onix-dropbear` are still active for bootstrap services,
+- `busybox` and `dropbear` are still active for bootstrap services,
 - the previous serial/network/SSH service definitions were not lost.
 
 ## What this phase does not prove
@@ -385,15 +385,15 @@ The next phase should boot the image.
 Successful output should include:
 
 ```text
-==> installing and activating onix-systemd from the local Phase 4 repo
-==> materializing onix-systemd from local moss repo into a scratch target
-stone    : onix-systemd installed under /usr/lib/systemd + /usr/bin
-runtime  : materialized onix-systemd bootstrap store into /nix/store
-runtime  : materialized onix-systemd bootstrap store into /persist/nix/store
+==> installing and activating systemd from the local Phase 4 repo
+==> materializing systemd from local moss repo into a scratch target
+stone    : systemd installed under /usr/lib/systemd + /usr/bin
+runtime  : materialized systemd bootstrap store into /nix/store
+runtime  : materialized systemd bootstrap store into /persist/nix/store
 proof    : /usr/share/onix/bootstrap/systemd-stone.txt
-==> verifying Phase 416 onix-systemd image install
+==> verifying Phase 416 systemd image install
 ==> success
-status: onix-systemd stone is installed and materialized for PID 1 runtime paths
+status: systemd stone is installed and materialized for PID 1 runtime paths
 ```
 
 The preview should show:
@@ -413,6 +413,6 @@ runtime.
 That boot proof should answer:
 
 ```text
-Can the kernel execute the onix-systemd-owned PID 1 path and reach the existing
+Can the kernel execute the systemd-owned PID 1 path and reach the existing
 bootstrap serial/network/SSH proofs again?
 ```

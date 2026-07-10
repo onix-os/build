@@ -114,20 +114,20 @@ Proposed path:
 406 — prove authenticated SSH access
 407 — audit temporary Nix-sourced system payloads
 408 — define local stone/repo contract
-409 — build `onix-busybox.stone`
-410 — install/use `onix-busybox` in the image
+409 — build `busybox.stone`
+410 — install/use `busybox` in the image
 411 — rerun shell/network/SSH proofs against stone BusyBox
-412 — build `onix-dropbear.stone`
-413 — install/use `onix-dropbear` and rerun SSH proof
+412 — build `dropbear.stone`
+413 — install/use `dropbear` and rerun SSH proof
 414 — systemd stone dependency audit
-415 — build first `onix-systemd.stone`
-416 — install `onix-systemd` into the image
-417 — boot with `onix-systemd` as PID 1
+415 — build first `systemd.stone`
+416 — install `systemd` into the image
+417 — boot with `systemd` as PID 1
 418 — move bootstrap units/defaults into stone ownership
 419 — audit booted-base ownership/debt map
 420 — prune stale old Nix BusyBox/Dropbear payloads
-421 — prepare native source-built `onix-systemd`
-422 — build/install/boot-prove native `onix-systemd`
+421 — prepare native source-built `systemd`
+422 — build/install/boot-prove native `systemd`
 424 — bring up native ONIX and leave it running for inspection
 425 — final Phase 4 acceptance check against the running VM
 ```
@@ -212,7 +212,7 @@ make phase 425
 
 to run the final Phase 4 acceptance gate. Phase 425 checks the live VM through
 SSH and through an interactive login transcript. It proves the machine is still
-using native `onix-systemd` as PID 1, Dropbear has its MOTD disabled with `-m`,
+using native `systemd` as PID 1, Dropbear has its MOTD disabled with `-m`,
 the colored ONIX login banner is printed by `/etc/profile`, and the shell
 policy exposes the `ll` alias.
 
@@ -230,19 +230,19 @@ inspection VM from Phase 424.
 - [406 — authenticated SSH proof](./406_authenticated_ssh_proof.md)
 - [407 — machine-plane ownership audit](./407_machine_plane_ownership_audit.md)
 - [408 — local stone/repo contract](./408_local_stone_repo_contract.md)
-- [409 — build `onix-busybox.stone`](./409_build_onix_busybox_stone.md)
-- [410 — install/use `onix-busybox`](./410_install_use_onix_busybox.md)
-- [411 — boot-prove `onix-busybox`](./411_boot_prove_onix_busybox.md)
-- [412 — build `onix-dropbear.stone`](./412_build_onix_dropbear_stone.md)
-- [413 — install/use `onix-dropbear`](./413_install_use_onix_dropbear.md)
+- [409 — build `busybox.stone`](./409_build_onix_busybox_stone.md)
+- [410 — install/use `busybox`](./410_install_use_onix_busybox.md)
+- [411 — boot-prove `busybox`](./411_boot_prove_onix_busybox.md)
+- [412 — build `dropbear.stone`](./412_build_onix_dropbear_stone.md)
+- [413 — install/use `dropbear`](./413_install_use_onix_dropbear.md)
 - [414 — systemd ownership audit](./414_systemd_ownership_audit.md)
-- [415 — build `onix-systemd.stone`](./415_build_onix_systemd_stone.md)
-- [416 — install/use `onix-systemd`](./416_install_use_onix_systemd.md)
-- [417 — boot-prove `onix-systemd`](./417_boot_prove_onix_systemd.md)
+- [415 — build `systemd.stone`](./415_build_onix_systemd_stone.md)
+- [416 — install/use `systemd`](./416_install_use_onix_systemd.md)
+- [417 — boot-prove `systemd`](./417_boot_prove_onix_systemd.md)
 - [418 — package/prove bootstrap policy](./418_package_prove_bootstrap_policy.md)
 - [419 — booted-base ownership audit](./419_booted_base_ownership_audit.md)
 - [420 — prune stale old Nix BusyBox/Dropbear payloads](./420_prune_stale_old_nix_busybox_dropbear_payloads.md)
-- [421 — prepare native `onix-systemd`](./421_prepare_native_onix_systemd.md)
-- [422 — native `onix-systemd` build/install/boot proof](./422_native_onix_systemd_build_install_boot_proof.md)
+- [421 — prepare native `systemd`](./421_prepare_native_onix_systemd.md)
+- [422 — native `systemd` build/install/boot proof](./422_native_onix_systemd_build_install_boot_proof.md)
 - [424 — bring up native ONIX for inspection](./424_bring_up_native_onix_for_inspection.md)
 - [425 — final Phase 4 acceptance check](./425_final_phase_4_acceptance_check.md)

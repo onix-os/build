@@ -1,14 +1,14 @@
-# Phase 415 — build `onix-systemd.stone`
+# Phase 415 — build `systemd.stone`
 
 | Item | Value |
 |---|---|
 | Command | `make phase 415` |
 | Underlying script | `vm/phase4/build-systemd-stone.sh` |
-| Recipe template | `vm/phase4/stone-recipes/onix-systemd/stone.yaml.in` |
+| Recipe template | `vm/phase4/stone-recipes/systemd/stone.yaml.in` |
 | Requires | Phase 414 systemd ownership audit |
 | Mutates disk/image? | No |
 | Boots QEMU? | No |
-| Main proof | ONIX can build a moss-installable `onix-systemd` stone for the exact systemd payload Phase 213/414 proved. |
+| Main proof | ONIX can build a moss-installable `systemd` stone for the exact systemd payload Phase 213/414 proved. |
 
 ## Why this phase exists
 
@@ -23,7 +23,7 @@ Phase 414 showed the current truth:
 So the next machine-plane package is:
 
 ```text
-onix-systemd
+systemd
 ```
 
 Phase 415 builds that package.
@@ -88,7 +88,7 @@ ONIX distinguishes two very different kinds of `.stone`, and Phase 4 uses both:
 
 - A **NATIVE stone** is built by boulder from upstream source, in the musl forge,
   with no `/nix/store` runtime dependency. This is the endgame shape for every ONIX
-  system package. Phase 422 produces the native `onix-systemd`; Phases 421–422 are
+  system package. Phase 422 produces the native `systemd`; Phases 421–422 are
   the whole point of eventually retiring the bootstrap version built here.
 
 Why not skip straight to native? Because systemd is enormous, and building it
@@ -99,7 +99,7 @@ separate steps means that if something breaks, you know which move broke it. Pha
 
 ## Important honesty: bootstrap ownership package
 
-This first `onix-systemd` package is a bootstrap ownership package.
+This first `systemd` package is a bootstrap ownership package.
 
 The payload was already built by pinned:
 
@@ -110,7 +110,7 @@ nixpkgs pkgsMusl.systemd
 Phase 415 packages that proven payload into:
 
 ```text
-onix-systemd-...stone
+systemd-...stone
 ```
 
 That means:
@@ -176,7 +176,7 @@ bootstrap area:
 /usr/lib/onix/bootstrap/nix/store/...
 ```
 
-That path is owned by the `onix-systemd` package because it lives under `/usr`.
+That path is owned by the `systemd` package because it lives under `/usr`.
 
 Then Phase 416 will materialize that bootstrap copy into the image root at:
 
@@ -207,7 +207,7 @@ That path is baked into the ELF interpreter field.
 If the image does not provide that exact path, the kernel can find the systemd
 file but cannot execute it.
 
-So the first `onix-systemd` stone owns the bytes under:
+So the first `systemd` stone owns the bytes under:
 
 ```text
 /usr/lib/onix/bootstrap/nix/store
@@ -269,7 +269,7 @@ soname(libfoo.so.1(x86_64))
 
 as a runtime dependency.
 
-For this bootstrap `onix-systemd` stone, though, the dependency graph is already
+For this bootstrap `systemd` stone, though, the dependency graph is already
 bundled inside the package under:
 
 ```text
@@ -360,9 +360,9 @@ The stone installs package notes under:
 The important files are:
 
 ```text
-/usr/share/onix/packages/onix-systemd.md
-/usr/share/onix/packages/onix-systemd.closure
-/usr/share/onix/packages/onix-systemd.links
+/usr/share/onix/packages/systemd.md
+/usr/share/onix/packages/systemd.closure
+/usr/share/onix/packages/systemd.links
 ```
 
 They record:
@@ -419,7 +419,7 @@ does this:
 7. Uses `boulder` to build:
 
    ```text
-   onix-systemd-...stone
+   systemd-...stone
    ```
 
 8. Uses `moss inspect --check` to validate the stone.
@@ -481,7 +481,7 @@ Successful output should include:
 
 ```text
 ==> success
-onix-systemd stone: artifacts/onix-stones/onix-systemd-...
+systemd stone: artifacts/onix-stones/systemd-...
 local repo index  : artifacts/onix-local-repo/stone.index
 
 Next:
@@ -491,14 +491,14 @@ Next:
 After that, the local Phase 4 repo should contain at least:
 
 ```text
-onix-busybox
-onix-dropbear
-onix-systemd
+busybox
+dropbear
+systemd
 ```
 
 ## Next step
 
-Phase 416 should install/use `onix-systemd` in the ONIX image.
+Phase 416 should install/use `systemd` in the ONIX image.
 
 That means the image should consume the package payload from:
 

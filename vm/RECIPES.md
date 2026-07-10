@@ -18,10 +18,10 @@ compiled artifact — a declarative description of a package, not the package
 itself.
 
 A minimal recipe is mostly identity plus an `install` script. Here is the shape,
-drawn from `onix-branding`'s real recipe:
+drawn from `branding`'s real recipe:
 
 ```yaml
-name        : onix-branding
+name        : branding
 version     : 0.1.0
 release     : 1
 summary     : ONIX identity and default login text
@@ -48,7 +48,7 @@ The key ideas:
   root-level state.
 - Recipes that build from source add an `upstreams` list (a source URL plus its
   SHA-256) and `setup`/`build` steps before `install`; identity-only packages
-  like `onix-branding` just synthesize files inline.
+  like `branding` just synthesize files inline.
 
 ### The setgid gotcha
 
@@ -123,11 +123,11 @@ strict contract, on their way to a published repository.
 Current Phase 1 packages:
 
 ```text
-onix-branding     identity metadata; Moss generates os-release from it
-onix-filesystem   filesystem layout policy and default templates
+branding     identity metadata; Moss generates os-release from it
+filesystem   filesystem layout policy and default templates
 ```
 
-### `onix-branding`
+### `branding`
 
 This is ONIX's identity package. Its `install` script writes
 `/usr/lib/os-info.json` — a structured description of the distro (id `onix`, name
@@ -140,7 +140,7 @@ identity: an `/etc/issue` template, the ANSI-colored ONIX logo under
 `os-release` from this one package, ONIX's identity lives in a single auditable
 place instead of being hand-edited into the running system.
 
-### `onix-filesystem`
+### `filesystem`
 
 This package encodes ONIX's **filesystem layout policy** as shipped defaults. It
 writes `/usr/share/onix/filesystem-layout.md` documenting the ownership boundary

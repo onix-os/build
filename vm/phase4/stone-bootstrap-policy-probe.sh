@@ -2,7 +2,7 @@
 # vm/phase4/stone-bootstrap-policy-probe.sh — Phase 418 live policy proof.
 #
 # Phase 418 packages the bootstrap helper scripts, proof notes, and bootstrap
-# unit source files as onix-bootstrap-policy. This probe boots the image and
+# unit source files as bootstrap-policy. This probe boots the image and
 # proves those package-owned policy files are present and active while systemd
 # and SSH still work.
 set -euo pipefail
@@ -53,13 +53,13 @@ fi
 
 bootstrap_policy_serial_command() {
   cat <<'EOF'
-/usr/bin/busybox sh -c 'set -eu; pid1="$(cat /proc/1/comm)"; test "$pid1" = systemd; test -f /usr/share/onix/packages/onix-bootstrap-policy.md; test -x /usr/lib/onix/bootstrap-network-proof; test -f /usr/lib/onix/systemd/system/onix-bootstrap-network.service; echo "ONIX_BOOTSTRAP_POLICY_SERIAL_OK pid1=$pid1 package=present units=active source=present"'
+/usr/bin/busybox sh -c 'set -eu; pid1="$(cat /proc/1/comm)"; test "$pid1" = systemd; test -f /usr/share/onix/packages/bootstrap-policy.md; test -x /usr/lib/onix/bootstrap-network-proof; test -f /usr/lib/onix/systemd/system/onix-bootstrap-network.service; echo "ONIX_BOOTSTRAP_POLICY_SERIAL_OK pid1=$pid1 package=present units=active source=present"'
 EOF
 }
 
 bootstrap_policy_remote_command() {
   cat <<'EOF'
-/usr/bin/busybox sh -c 'set -eu; bb=/usr/bin/busybox; pid1="$("$bb" cat /proc/1/comm)"; test "$pid1" = systemd; unit_dir="$("$bb" readlink /usr/lib/systemd/system)"; test -f /usr/share/onix/packages/onix-bootstrap-policy.md; test -f /usr/share/onix/bootstrap/bootstrap-policy.txt; test -x /usr/lib/onix/bootstrap-remote-inspection-proof; test -f /usr/lib/onix/systemd/system/onix-bootstrap-remote-inspection.service; test -f "$unit_dir/onix-bootstrap-remote-inspection.service"; /bin/grep -q "ONIX Phase 418 bootstrap policy package" /usr/share/onix/bootstrap/bootstrap-policy.txt; /bin/grep -q "ExecStart=/bin/nc -lk -p 6649" "$unit_dir/onix-bootstrap-remote-inspection.service"; printf "ONIX_BOOTSTRAP_POLICY_SSH_OK user=%s uid=%s pid1=%s package=present units=active\n" "$("$bb" id -un)" "$("$bb" id -u)" "$pid1"'
+/usr/bin/busybox sh -c 'set -eu; bb=/usr/bin/busybox; pid1="$("$bb" cat /proc/1/comm)"; test "$pid1" = systemd; unit_dir=/usr/lib/systemd/system; test -f /usr/share/onix/packages/bootstrap-policy.md; test -f /usr/share/onix/bootstrap/bootstrap-policy.txt; test -x /usr/lib/onix/bootstrap-remote-inspection-proof; test -f /usr/lib/onix/systemd/system/onix-bootstrap-remote-inspection.service; test -f "$unit_dir/onix-bootstrap-remote-inspection.service"; /bin/grep -q "ONIX Phase 418 bootstrap policy package" /usr/share/onix/bootstrap/bootstrap-policy.txt; /bin/grep -q "ExecStart=/bin/nc -lk -p 6649" "$unit_dir/onix-bootstrap-remote-inspection.service"; printf "ONIX_BOOTSTRAP_POLICY_SSH_OK user=%s uid=%s pid1=%s package=present units=active\n" "$("$bb" id -un)" "$("$bb" id -u)" "$pid1"'
 EOF
 }
 
@@ -77,8 +77,8 @@ fi
   || die "missing ONIX image: artifacts/onix-image/onix.raw (run make phase 2 first)"
 [[ -f "$ONIX_ROOT/artifacts/onix-local-repo/stone.index" ]] \
   || die "missing local Phase 4 repo index: artifacts/onix-local-repo/stone.index"
-compgen -G "$ONIX_ROOT/artifacts/onix-local-repo/onix-bootstrap-policy-*.stone" >/dev/null \
-  || die "missing onix-bootstrap-policy stone in artifacts/onix-local-repo (run make phase 418)"
+compgen -G "$ONIX_ROOT/artifacts/onix-local-repo/bootstrap-policy-*.stone" >/dev/null \
+  || die "missing bootstrap-policy stone in artifacts/onix-local-repo (run make phase 418)"
 
 log "Phase 418 bootstrap policy live proof"
 log "goal      : boot with package-owned bootstrap scripts/unit sources active"
@@ -102,7 +102,7 @@ ONIX_SSH_SUCCESS_MESSAGE="Phase 418 proved package-owned bootstrap policy files 
 cat <<EOF
 
 ==> success
-Phase 418 proved the booted ONIX image can use onix-bootstrap-policy as the
+Phase 418 proved the booted ONIX image can use bootstrap-policy as the
 package-owned source for bootstrap scripts and unit sources.
 
 Evidence logs:

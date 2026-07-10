@@ -1,14 +1,14 @@
-# Phase 421 — prepare native `onix-systemd`
+# Phase 421 — prepare native `systemd`
 
 | Item | Value |
 |---|---|
 | Command | `make phase 421` |
 | Underlying script | `vm/phase4/native-systemd-prep.sh` |
-| Recipe draft | `vm/phase4/stone-recipes/onix-systemd-native/stone.yaml.in` |
+| Recipe draft | `vm/phase4/stone-recipes/systemd-native/stone.yaml.in` |
 | Generated artifact | `artifacts/onix-native-systemd-plan/` |
 | Mutates disk/image? | No |
 | Boots QEMU? | No |
-| Main proof | ONIX has a concrete, compressed contract for replacing the Nix-wrapped `onix-systemd` with a source-built native stone in Phase 422. |
+| Main proof | ONIX has a concrete, compressed contract for replacing the Nix-wrapped `systemd` with a source-built native stone in Phase 422. |
 
 ## Why this phase exists
 
@@ -30,7 +30,7 @@ The current package is useful, but it is transitional.
 Current truth:
 
 ```text
-onix-systemd.stone exists
+systemd.stone exists
 ```
 
 But:
@@ -45,7 +45,7 @@ So ownership is only half solved.
 Phase 421 prepares the next move:
 
 ```text
-Phase 422 will build and boot-prove a source-built native onix-systemd stone.
+Phase 422 will build and boot-prove a source-built native systemd stone.
 ```
 
 ## Why this is a prep phase, not the build phase
@@ -102,7 +102,7 @@ Instead, the compressed plan is:
 
 ```text
 421 — prepare native systemd package contract
-422 — build/install/boot-prove native onix-systemd
+422 — build/install/boot-prove native systemd
 ```
 
 Internally, Phase 422 may bundle several runtime pieces at first.
@@ -179,24 +179,28 @@ than through a borrowed `/nix/store` path.
 The final clean distro shape is probably:
 
 ```text
-onix-musl
-onix-libxcrypt
-onix-acl
-onix-attr
-onix-kmod
-onix-util-linux
-onix-systemd
+musl
+libxcrypt
+acl
+attr
+kmod
+util-linux
+systemd
 ```
 
 But building all of that as separate stones before boot-proving native systemd
 would slow down the learning flow.
 
-So the first native `onix-systemd` may be a bootstrap-native bundle.
+Originally that meant the first native `systemd` could be a broad
+bootstrap-native bundle. After the Phase 5 musl package exists, the rule is
+tighter: `systemd` depends on `musl` and does **not** bundle the musl
+loader/libc family.
 
 That means:
 
 ```text
-onix-systemd carries systemd plus the immediate runtime pieces it needs
+musl         carries /usr/lib/ld-musl-x86_64.so.1 and libc symlinks
+systemd carries systemd plus temporary non-musl runtime pieces it needs
 ```
 
 Then later we can split the bundle into cleaner dependency stones.
@@ -233,7 +237,7 @@ current-wrapper.txt
 source-policy.txt
 current-systemd-closure-buckets.tsv
 phase422-build-contract.txt
-onix-systemd-native.stone.yaml.in
+systemd-native.stone.yaml.in
 README.md
 ```
 
@@ -243,7 +247,7 @@ The tracked source of truth is:
 
 ```text
 vm/phase4/native-systemd-prep.sh
-vm/phase4/stone-recipes/onix-systemd-native/stone.yaml.in
+vm/phase4/stone-recipes/systemd-native/stone.yaml.in
 vm/phase4/docs/421_prepare_native_onix_systemd.md
 ```
 
@@ -331,7 +335,7 @@ gcc runtime libraries
 Phase 421 classifies them into compressed buckets:
 
 ```text
-native-onix-systemd-core
+native-systemd-core
 phase422-runtime-bundle
 phase422-helper-bundle
 phase422-library-bundle
@@ -356,13 +360,13 @@ split later.
 Phase 421 adds:
 
 ```text
-vm/phase4/stone-recipes/onix-systemd-native/stone.yaml.in
+vm/phase4/stone-recipes/systemd-native/stone.yaml.in
 ```
 
 The package name inside that draft is still:
 
 ```text
-onix-systemd
+systemd
 ```
 
 That is intentional.
@@ -370,7 +374,7 @@ That is intentional.
 We do **not** want a permanent second package like:
 
 ```text
-onix-systemd-native
+systemd-native
 ```
 
 The final package should replace the bootstrap wrapper.
@@ -378,7 +382,7 @@ The final package should replace the bootstrap wrapper.
 So the native draft keeps the canonical name:
 
 ```text
-onix-systemd
+systemd
 ```
 
 but moves the implementation from:
@@ -397,7 +401,7 @@ prepared source-built payload
 
 Phase 422 should prove:
 
-- `onix-systemd.stone` is built from source,
+- `systemd.stone` is built from source,
 - the image installs the native package,
 - `/usr/lib/systemd/systemd` does not point into the old bootstrap store,
 - no active systemd binary needs `/nix/store` as its interpreter,
@@ -423,7 +427,7 @@ Phase 421 does not:
 - install a new systemd,
 - mutate the disk image,
 - boot QEMU,
-- remove the current bootstrap `onix-systemd`,
+- remove the current bootstrap `systemd`,
 - remove the current systemd `/nix/store` closure.
 
 It prepares the contract for doing that safely in Phase 422.

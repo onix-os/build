@@ -32,7 +32,7 @@ usage: canonical-essential-builds.sh [--check|--rebuild]
 --rebuild  explicitly run the existing builders with canonical recipe defaults
 
 The default make target uses --check. Full rebuilds can be expensive,
-especially native onix-systemd.
+especially native systemd.
 EOF
 }
 
@@ -73,66 +73,66 @@ check_builder_defaults() {
 
   expect_line \
     "vm/phase1/build-branding-stone.sh" \
-    'RECIPE_DIR="${ONIX_BRANDING_RECIPE_DIR:-$ONIX_ROOT/packages/base/onix-branding}"'
+    'RECIPE_DIR="${ONIX_BRANDING_RECIPE_DIR:-$ONIX_ROOT/packages/base/branding}"'
   expect_line \
     "vm/phase1/build-filesystem-stone.sh" \
-    'RECIPE_DIR="${ONIX_FILESYSTEM_RECIPE_DIR:-$ONIX_ROOT/packages/base/onix-filesystem}"'
+    'RECIPE_DIR="${ONIX_FILESYSTEM_RECIPE_DIR:-$ONIX_ROOT/packages/base/filesystem}"'
   expect_line \
     "vm/phase4/build-busybox-stone.sh" \
-    'RECIPE_TEMPLATE="${ONIX_BUSYBOX_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/core/onix-busybox/stone.yaml.in}"'
+    'RECIPE_TEMPLATE="${ONIX_BUSYBOX_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/core/busybox/stone.yaml.in}"'
   expect_line \
     "vm/phase4/build-dropbear-stone.sh" \
-    'RECIPE_TEMPLATE="${ONIX_DROPBEAR_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/services/onix-dropbear/stone.yaml.in}"'
+    'RECIPE_TEMPLATE="${ONIX_DROPBEAR_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/services/dropbear/stone.yaml.in}"'
   expect_line \
     "vm/phase4/build-bootstrap-policy-stone.sh" \
-    'RECIPE_TEMPLATE="${ONIX_BOOTSTRAP_POLICY_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/services/onix-bootstrap-policy/stone.yaml.in}"'
+    'RECIPE_TEMPLATE="${ONIX_BOOTSTRAP_POLICY_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/services/bootstrap-policy/stone.yaml.in}"'
   expect_line \
     "vm/phase4/build-native-systemd-stone.sh" \
-    'RECIPE_TEMPLATE="${ONIX_SYSTEMD_NATIVE_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/services/onix-systemd/stone.yaml.in}"'
+    'RECIPE_TEMPLATE="${ONIX_SYSTEMD_NATIVE_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/services/systemd/stone.yaml.in}"'
   expect_line \
     "vm/phase4/native-systemd-prep.sh" \
-    'NATIVE_RECIPE_DRAFT="${ONIX_NATIVE_SYSTEMD_RECIPE_DRAFT:-$ONIX_ROOT/packages/services/onix-systemd/stone.yaml.in}"'
+    'NATIVE_RECIPE_DRAFT="${ONIX_NATIVE_SYSTEMD_RECIPE_DRAFT:-$ONIX_ROOT/packages/services/systemd/stone.yaml.in}"'
 }
 
 check_canonical_inputs() {
   log "recipes   : verifying canonical package recipe inputs"
 
-  require_file "packages/base/onix-branding/stone.yaml"
-  require_file "packages/base/onix-branding/PACKAGE.md"
-  require_file "packages/base/onix-filesystem/stone.yaml"
-  require_file "packages/base/onix-filesystem/PACKAGE.md"
-  require_file "packages/core/onix-busybox/stone.yaml.in"
-  require_file "packages/core/onix-busybox/PACKAGE.md"
-  require_file "packages/services/onix-dropbear/stone.yaml.in"
-  require_file "packages/services/onix-dropbear/PACKAGE.md"
-  require_file "packages/services/onix-systemd/stone.yaml.in"
-  require_file "packages/services/onix-systemd/PACKAGE.md"
-  require_file "packages/services/onix-bootstrap-policy/stone.yaml.in"
-  require_file "packages/services/onix-bootstrap-policy/PACKAGE.md"
+  require_file "packages/base/branding/stone.yaml"
+  require_file "packages/base/branding/PACKAGE.md"
+  require_file "packages/base/filesystem/stone.yaml"
+  require_file "packages/base/filesystem/PACKAGE.md"
+  require_file "packages/core/busybox/stone.yaml.in"
+  require_file "packages/core/busybox/PACKAGE.md"
+  require_file "packages/services/dropbear/stone.yaml.in"
+  require_file "packages/services/dropbear/PACKAGE.md"
+  require_file "packages/services/systemd/stone.yaml.in"
+  require_file "packages/services/systemd/PACKAGE.md"
+  require_file "packages/services/bootstrap-policy/stone.yaml.in"
+  require_file "packages/services/bootstrap-policy/PACKAGE.md"
 }
 
 check_old_paths_still_exist() {
   log "safety    : verifying old paths still exist for compatibility"
 
-  require_file "recipes/onix-branding/stone.yaml"
-  require_file "recipes/onix-filesystem/stone.yaml"
-  require_file "vm/phase4/stone-recipes/onix-busybox/stone.yaml.in"
-  require_file "vm/phase4/stone-recipes/onix-dropbear/stone.yaml.in"
-  require_file "vm/phase4/stone-recipes/onix-systemd-native/stone.yaml.in"
-  require_file "vm/phase4/stone-recipes/onix-bootstrap-policy/stone.yaml.in"
+  require_file "recipes/branding/stone.yaml"
+  require_file "recipes/filesystem/stone.yaml"
+  require_file "vm/phase4/stone-recipes/busybox/stone.yaml.in"
+  require_file "vm/phase4/stone-recipes/dropbear/stone.yaml.in"
+  require_file "vm/phase4/stone-recipes/systemd-native/stone.yaml.in"
+  require_file "vm/phase4/stone-recipes/bootstrap-policy/stone.yaml.in"
 }
 
 check_existing_artifacts() {
   log "artifacts : verifying essential package artifacts exist"
 
-  require_glob "artifacts/onix-publish/unstable/x86_64/onix-branding-*.stone"
-  require_glob "artifacts/onix-publish/unstable/x86_64/onix-filesystem-*.stone"
+  require_glob "artifacts/onix-publish/unstable/x86_64/branding-*.stone"
+  require_glob "artifacts/onix-publish/unstable/x86_64/filesystem-*.stone"
   require_file "artifacts/onix-publish/unstable/x86_64/stone.index"
 
-  require_glob "artifacts/onix-local-repo/onix-busybox-*.stone"
-  require_glob "artifacts/onix-local-repo/onix-dropbear-*.stone"
-  require_glob "artifacts/onix-local-repo/onix-systemd-*.stone"
-  require_glob "artifacts/onix-local-repo/onix-bootstrap-policy-*.stone"
+  require_glob "artifacts/onix-local-repo/busybox-*.stone"
+  require_glob "artifacts/onix-local-repo/dropbear-*.stone"
+  require_glob "artifacts/onix-local-repo/systemd-*.stone"
+  require_glob "artifacts/onix-local-repo/bootstrap-policy-*.stone"
   require_file "artifacts/onix-local-repo/stone.index"
 }
 
@@ -142,12 +142,12 @@ check_moss_integrity() {
 
   local stone
   for stone in \
-    "$(first_glob 'artifacts/onix-publish/unstable/x86_64/onix-branding-*.stone')" \
-    "$(first_glob 'artifacts/onix-publish/unstable/x86_64/onix-filesystem-*.stone')" \
-    "$(first_glob 'artifacts/onix-local-repo/onix-busybox-*.stone')" \
-    "$(first_glob 'artifacts/onix-local-repo/onix-dropbear-*.stone')" \
-    "$(first_glob 'artifacts/onix-local-repo/onix-systemd-*.stone')" \
-    "$(first_glob 'artifacts/onix-local-repo/onix-bootstrap-policy-*.stone')"; do
+    "$(first_glob 'artifacts/onix-publish/unstable/x86_64/branding-*.stone')" \
+    "$(first_glob 'artifacts/onix-publish/unstable/x86_64/filesystem-*.stone')" \
+    "$(first_glob 'artifacts/onix-local-repo/busybox-*.stone')" \
+    "$(first_glob 'artifacts/onix-local-repo/dropbear-*.stone')" \
+    "$(first_glob 'artifacts/onix-local-repo/systemd-*.stone')" \
+    "$(first_glob 'artifacts/onix-local-repo/bootstrap-policy-*.stone')"; do
     [[ -f "$stone" ]] || die "missing stone selected for check"
     "$HOST_MOSS" inspect --check "$stone" >/dev/null
     log "stone     : ${stone#$ONIX_ROOT/}"

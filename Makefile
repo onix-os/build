@@ -11,7 +11,7 @@ PHASE5 := vm/phase5
 PHASE_ARG := $(word 2,$(MAKECMDGOALS))
 ATTACHED ?= 0
 
-.PHONY: help phases phase 0 1 2 3 4 5 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 300 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 424 425 500 501 502 503 504 505 506 507 508 509 510 511 512 513 list \
+.PHONY: help phases phase 0 1 2 3 4 5 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 300 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 424 425 500 501 502 503 504 505 506 507 508 509 510 511 512 513 514 515 list \
 	doctor kvm stop cleanup up book book-serve
 
 help: ## show top-level help and phase map
@@ -35,6 +35,8 @@ help: ## show top-level help and phase map
 	@echo "  make phase 424       boot native ONIX and leave it running for inspection"
 	@echo "  make phase 425       final Phase 4 acceptance check against that running VM"
 	@echo "  make phase 5         run current Phase 5 package/repository gates"
+	@echo "  make phase 514       install, boot, and prove Phase 5 runtime ownership"
+	@echo "  make phase 515       package moss and prove in-VM repo consumption"
 	@echo "  ATTACHED=1 make phase 212   run visual/interactive when a phase supports it"
 	@echo
 	@$(MAKE) --no-print-directory phases
@@ -66,13 +68,13 @@ phase: ## run a learning phase alias, e.g. `make phase 002`
 	  2|200|201|202|203|204|205|206|207|208|209|210|211|212|213|214) $(MAKE) --no-print-directory -C $(PHASE2) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
 	  3|300) $(MAKE) --no-print-directory -C $(PHASE3) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
 	  4|400|401|402|403|404|405|406|407|408|409|410|411|412|413|414|415|416|417|418|419|420|421|422|424|425) $(MAKE) --no-print-directory -C $(PHASE4) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
-	  5|500|501|502|503|504|505|506|507|508|509|510|511|512|513) $(MAKE) --no-print-directory -C $(PHASE5) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
+	  5|500|501|502|503|504|505|506|507|508|509|510|511|512|513|514|515) $(MAKE) --no-print-directory -C $(PHASE5) phase "$(PHASE_ARG)" ATTACHED="$(ATTACHED)" ;; \
 	  *) echo "unknown phase: $(PHASE_ARG)" >&2; $(MAKE) --no-print-directory phases; exit 2 ;; \
 	esac
 
 # Absorb the second goal in commands like `make phase 002`, otherwise Make
 # would try to build a separate target named `002` after `phase` completes.
-0 1 2 3 4 5 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 300 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 424 425 500 501 502 503 504 505 506 507 508 509 510 511 512 513 list:
+0 1 2 3 4 5 000 001 002 003 004 005 006 100 101 102 103 104 105 106 107 108 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 300 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 424 425 500 501 502 503 504 505 506 507 508 509 510 511 512 513 514 515 list:
 	@:
 
 doctor: ## common health check; not a phase step
@@ -107,7 +109,42 @@ up: ## boot native ONIX, prove SSH, and leave QEMU running
 	@$(MAKE) --no-print-directory -C $(PHASE4) native-systemd-up
 
 book: ## build the mdBook documentation
-	@mdbook build
+	@set -e; \
+	hidden="$${ONIX_MDBOOK_HIDE_DIR:-../.onix-mdbook-hidden.$$$$}"; \
+	if ! mkdir -p "$$hidden" 2>/dev/null; then \
+	  echo "error: cannot create mdBook hide dir: $$hidden" >&2; \
+	  echo "       set ONIX_MDBOOK_HIDE_DIR to a writable directory on the same filesystem as the repo" >&2; \
+	  exit 1; \
+	fi; \
+	hidden_abs=$$(cd "$$hidden" && pwd -P); \
+	repo_abs=$$(pwd -P); \
+	case "$$hidden_abs/" in "$$repo_abs"/*) \
+	  echo "error: ONIX_MDBOOK_HIDE_DIR must be outside the repository" >&2; \
+	  echo "       mdBook src='.' would scan hidden artifacts if it lived under the repo" >&2; \
+	  rm -rf "$$hidden"; \
+	  exit 1 ;; \
+	esac; \
+	repo_dev=$$(stat -c '%d' .); \
+	hidden_dev=$$(stat -c '%d' "$$hidden"); \
+	if [ "$$repo_dev" != "$$hidden_dev" ]; then \
+	  echo "error: ONIX_MDBOOK_HIDE_DIR must be on the same filesystem as the repo" >&2; \
+	  echo "       cross-filesystem mv can copy root-owned image artifacts and fail halfway" >&2; \
+	  rm -rf "$$hidden"; \
+	  exit 1; \
+	fi; \
+	restore() { \
+	  status=$$?; \
+	  if [ -e "$$hidden/artifacts" ] || [ -L "$$hidden/artifacts" ]; then rm -rf artifacts; mv "$$hidden/artifacts" artifacts; fi; \
+	  if [ -e "$$hidden/vm/state" ] || [ -L "$$hidden/vm/state" ]; then mkdir -p vm; rm -rf vm/state; mv "$$hidden/vm/state" vm/state; fi; \
+	  if [ -e "$$hidden/vm/downloads" ] || [ -L "$$hidden/vm/downloads" ]; then mkdir -p vm; rm -rf vm/downloads; mv "$$hidden/vm/downloads" vm/downloads; fi; \
+	  rm -rf "$$hidden"; \
+	  exit $$status; \
+	}; \
+	trap restore EXIT INT TERM; \
+	if [ -e artifacts ] || [ -L artifacts ]; then mv artifacts "$$hidden/artifacts"; fi; \
+	if [ -e vm/state ] || [ -L vm/state ]; then mkdir -p "$$hidden/vm"; mv vm/state "$$hidden/vm/state"; fi; \
+	if [ -e vm/downloads ] || [ -L vm/downloads ]; then mkdir -p "$$hidden/vm"; mv vm/downloads "$$hidden/vm/downloads"; fi; \
+	mdbook build
 
 book-serve: ## serve the mdBook documentation locally
 	@mdbook serve -n 127.0.0.1

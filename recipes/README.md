@@ -10,8 +10,8 @@ Phase 1 starts real ONIX-owned packages here.
 Current Phase 1 packages:
 
 ```text
-onix-branding     identity metadata; Moss generates os-release from it
-onix-filesystem   filesystem layout policy and default templates
+branding     identity metadata; Moss generates os-release from it
+filesystem   filesystem layout policy and default templates
 ```
 
 Build them through the learning flow:

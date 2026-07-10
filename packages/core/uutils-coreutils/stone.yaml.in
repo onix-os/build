@@ -11,7 +11,7 @@ description : |
 
     Phase 509 installs the uutils multicall binary at /usr/bin/coreutils.
     Phase 513 can rebuild the same source with command-name links after
-    onix-busybox command ownership is reduced.
+    busybox command ownership is reduced.
 
     Source archive: @UUTILS_SOURCE_ARCHIVE@
     Source SHA-256: @UUTILS_SOURCE_SHA256@

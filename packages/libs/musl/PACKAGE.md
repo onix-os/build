@@ -28,9 +28,9 @@ the repo also needs an ONIX-owned provider for musl's own runtime soname.
 ## Source and provenance
 
 - Upstream: `https://musl.libc.org/`
-- Source archive or repository: pinned through the repo's `nixpkgs_2` input
-- Pinned version: read by `make phase 510`
-- Source hash: generated and checked by `make phase 510`
+- Source archive or repository: official musl release tarball
+- Pinned version: `1.2.6` by default in `make phase 510`
+- Source hash: fixed in `vm/phase5/build-privilege-shared-surface.sh`
 - Patch set: none
 
 ## Build model
@@ -51,6 +51,17 @@ Expected first surface:
 /usr/lib/libc.so -> ld-musl-x86_64.so.1
 /usr/lib/libc.musl-x86_64.so.1 -> ld-musl-x86_64.so.1
 ```
+
+The runtime provider must export the syscall wrapper symbols expected by the
+current ONIX forge build environment. Phase 510 explicitly checks for:
+
+```text
+renameat2
+```
+
+This matters because native `systemd` is built in the Alpine/musl forge.
+If ONIX packages an older musl than the forge used to link systemd, PID 1 can
+fail at boot with a dynamic-loader error such as `renameat2: symbol not found`.
 
 ONIX image roots are usr-merged, so `/lib/ld-musl-x86_64.so.1` resolves through
 `/lib -> /usr/lib` in a booted image. The stone owns the file under `/usr/lib`

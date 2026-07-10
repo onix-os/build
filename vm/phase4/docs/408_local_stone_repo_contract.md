@@ -151,15 +151,15 @@ The current local plan is:
 
 ```text
 408 — define local stone/repo contract
-409 — build `onix-busybox.stone`
-410 — install/use `onix-busybox` in the image
+409 — build `busybox.stone`
+410 — install/use `busybox` in the image
 411 — rerun shell/network/SSH proofs against stone BusyBox
-412 — build `onix-dropbear.stone`
-413 — install/use `onix-dropbear` and rerun SSH proof
+412 — build `dropbear.stone`
+413 — install/use `dropbear` and rerun SSH proof
 414 — systemd stone dependency audit
-415 — build first `onix-systemd.stone`
-416 — install `onix-systemd` into the image
-417 — boot with `onix-systemd` as PID 1
+415 — build first `systemd.stone`
+416 — install `systemd` into the image
+417 — boot with `systemd` as PID 1
 418 — move bootstrap units/defaults into stone ownership
 419 — audit no Nix-sourced systemd/busybox/dropbear payload remains
 ```
@@ -219,7 +219,7 @@ artifacts/onix-stones
 artifacts/onix-local-repo
 vm/phase4/stone-recipes
 5xx = real stone factory
-409 — build onix-busybox.stone
+409 — build busybox.stone
 414 — systemd stone dependency audit
 ```
 
@@ -247,5 +247,5 @@ It only makes the next steps precise.
 The next real build phase should be:
 
 ```text
-409 — build onix-busybox.stone
+409 — build busybox.stone
 ```

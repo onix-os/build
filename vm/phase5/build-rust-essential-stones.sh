@@ -145,12 +145,12 @@ create_source_archive() {
 
 host_stone_for() {
   local package="$1"
-  find "$STONE_DIR" -maxdepth 1 -name "$package-*.stone" ! -name '*dbginfo*' | sort | tail -n 1
+  find "$STONE_DIR" -maxdepth 1 -name "$package-[0-9]*.stone" ! -name '*dbginfo*' | sort | tail -n 1
 }
 
 local_stone_for() {
   local package="$1"
-  find "$LOCAL_REPO_DIR" -maxdepth 1 -name "$package-*.stone" ! -name '*dbginfo*' | sort | tail -n 1
+  find "$LOCAL_REPO_DIR" -maxdepth 1 -name "$package-[0-9]*.stone" ! -name '*dbginfo*' | sort | tail -n 1
 }
 
 copy_template_to_work() {
@@ -530,7 +530,7 @@ EOF_PENDING
         cat > "$payload_root/usr/share/onix/packages/uutils-coreutils.pending-links" <<'EOF_PENDING'
 Phase 509 installs only /usr/bin/coreutils.
 
-The command-name links are intentionally deferred because onix-busybox currently
+The command-name links are intentionally deferred because busybox currently
 owns the bootstrap command paths under /usr/bin.
 EOF_PENDING
     fi

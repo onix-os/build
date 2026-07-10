@@ -134,7 +134,7 @@ Unit rescue.target not found.
 The final ONIX shape should be:
 
 ```text
-onix-systemd.stone
+systemd.stone
 ```
 
 That package should be built and owned by ONIX.
@@ -156,7 +156,7 @@ That means:
 - it must come from the pinned `flake.lock`
 - it is copied into the image intentionally and visibly
 - it is documented as a temporary probe layer
-- it does **not** replace the future `onix-systemd` stone
+- it does **not** replace the future `systemd` stone
 
 The override disables features that are not needed for the first PID 1 handoff:
 

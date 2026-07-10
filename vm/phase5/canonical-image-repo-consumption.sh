@@ -20,12 +20,20 @@ IMAGE_RAW="${ONIX_IMAGE_RAW:-$ONIX_ROOT/artifacts/onix-image/onix.raw}"
 MODE="check"
 
 REQUIRED_PACKAGES=(
-  onix-branding
-  onix-filesystem
-  onix-busybox
-  onix-dropbear
-  onix-systemd
-  onix-bootstrap-policy
+  branding
+  filesystem
+  busybox
+  uutils-coreutils
+  dropbear
+  systemd
+  bootstrap-policy
+  musl
+  linux-pam
+  libseccomp
+  libgcc-runtime
+  rootasrole
+  rootasrole-policy
+  moss
 )
 
 die() {
@@ -88,7 +96,19 @@ need_host_moss() {
 
 select_one_stone() {
   local package="$1"
-  local matches=("$CANONICAL_REPO_DIR/$package"-*.stone)
+  local stone
+  local name
+  local matches=()
+
+  while IFS= read -r stone; do
+    name="$("$HOST_MOSS" inspect "$stone" 2>/dev/null |
+      awk -F: '$1 ~ /^Name[[:space:]]*$/ { gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2; exit }')"
+    if [[ "$name" == "$package" ]]; then
+      matches+=("$stone")
+    fi
+  done < <(find "$CANONICAL_REPO_DIR" -maxdepth 1 -type f -name '*.stone' \
+    ! -name '*dbginfo*' ! -name '*devel*' | sort)
+
   [[ "${#matches[@]}" -eq 1 ]] \
     || die "expected exactly one $package stone in $(rel "$CANONICAL_REPO_DIR"), found ${#matches[@]}"
   printf '%s\n' "${matches[0]}"
@@ -173,9 +193,22 @@ prove_canonical_install() {
   need_file "$WORK_ROOT/install-target/usr/lib/os-release"
   need_file "$WORK_ROOT/install-target/usr/share/onix/filesystem-layout.md"
   need_file "$WORK_ROOT/install-target/usr/bin/busybox"
+  need_file "$WORK_ROOT/install-target/usr/bin/coreutils"
+  need_file "$WORK_ROOT/install-target/usr/bin/moss"
   need_file "$WORK_ROOT/install-target/usr/sbin/dropbear"
   need_file "$WORK_ROOT/install-target/usr/lib/systemd/systemd"
-  need_file "$WORK_ROOT/install-target/usr/share/onix/packages/onix-bootstrap-policy.md"
+  need_file "$WORK_ROOT/install-target/usr/lib/ld-musl-x86_64.so.1"
+  need_file "$WORK_ROOT/install-target/usr/lib/libseccomp.so.2"
+  need_file "$WORK_ROOT/install-target/usr/bin/dosr"
+  need_file "$WORK_ROOT/install-target/usr/bin/chsr"
+  need_file "$WORK_ROOT/install-target/usr/share/defaults/pam.d/sr"
+  need_file "$WORK_ROOT/install-target/usr/share/defaults/pam.d/dosr"
+  need_file "$WORK_ROOT/install-target/usr/share/factory/etc/pam.d/sr"
+  need_file "$WORK_ROOT/install-target/usr/share/factory/etc/security/rootasrole.json"
+  need_file "$WORK_ROOT/install-target/usr/share/onix/packages/bootstrap-policy.md"
+  need_file "$WORK_ROOT/install-target/usr/share/onix/packages/rootasrole.md"
+  need_file "$WORK_ROOT/install-target/usr/share/onix/packages/rootasrole-policy.md"
+  need_file "$WORK_ROOT/install-target/usr/share/onix/packages/moss.md"
 
   log "proof     : canonical install target OK"
 }
@@ -226,7 +259,7 @@ run_apply() {
   ONIX_NATIVE_SYSTEMD_LIVE_PROOF_LABEL="Phase 507 canonical image repo live proof" \
   ONIX_NATIVE_SYSTEMD_SSH_PROOF_LABEL="Phase 507 canonical image repo SSH proof" \
   ONIX_NATIVE_SYSTEMD_SUCCESS_MESSAGE="Phase 507 proved the image boots after consuming the canonical local repo." \
-  ONIX_NATIVE_SYSTEMD_SUCCESS_DETAILS="Phase 507 proved the canonical local repo can install the essential package set, then re-materialized native onix-systemd from that repo and proved native systemd plus SSH still work." \
+  ONIX_NATIVE_SYSTEMD_SUCCESS_DETAILS="Phase 507 proved the canonical local repo can install the essential package set, then re-materialized native systemd from that repo and proved native systemd plus SSH still work." \
     "$PHASE4_DIR/native-systemd-probe.sh"
 
   cat <<EOF

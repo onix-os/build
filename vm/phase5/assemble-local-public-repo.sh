@@ -25,12 +25,20 @@ CANONICAL_REPO_DIR="${ONIX_CANONICAL_REPO_SOURCE_DIR:-$CANONICAL_REPO_ROOT/$CHAN
 MODE="assemble"
 
 REQUIRED_PACKAGES=(
-  onix-branding
-  onix-filesystem
-  onix-busybox
-  onix-dropbear
-  onix-systemd
-  onix-bootstrap-policy
+  branding
+  filesystem
+  busybox
+  uutils-coreutils
+  dropbear
+  systemd
+  bootstrap-policy
+  musl
+  linux-pam
+  libseccomp
+  libgcc-runtime
+  rootasrole
+  rootasrole-policy
+  moss
 )
 
 die() {
@@ -95,7 +103,18 @@ need_host_moss() {
 
 select_one_stone() {
   local package="$1"
-  local matches=("$CANONICAL_REPO_DIR/$package"-*.stone)
+  local stone
+  local name
+  local matches=()
+
+  while IFS= read -r stone; do
+    name="$("$HOST_MOSS" inspect "$stone" 2>/dev/null |
+      awk -F: '$1 ~ /^Name[[:space:]]*$/ { gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2; exit }')"
+    if [[ "$name" == "$package" ]]; then
+      matches+=("$stone")
+    fi
+  done < <(find "$CANONICAL_REPO_DIR" -maxdepth 1 -type f -name '*.stone' \
+    ! -name '*dbginfo*' ! -name '*devel*' | sort)
 
   [[ "${#matches[@]}" -eq 1 ]] \
     || die "expected exactly one $package stone in $(rel "$CANONICAL_REPO_DIR"), found ${#matches[@]}"
@@ -459,9 +478,24 @@ prove_one_repo() {
 
   need_file "$work/install-target/usr/lib/os-release"
   need_file "$work/install-target/usr/bin/busybox"
+  need_file "$work/install-target/usr/bin/coreutils"
+  need_file "$work/install-target/usr/bin/moss"
   need_file "$work/install-target/usr/sbin/dropbear"
   need_file "$work/install-target/usr/lib/systemd/systemd"
-  need_file "$work/install-target/usr/share/onix/packages/onix-bootstrap-policy.md"
+  need_file "$work/install-target/usr/lib/ld-musl-x86_64.so.1"
+  need_file "$work/install-target/usr/lib/libseccomp.so.2"
+  need_file "$work/install-target/usr/bin/dosr"
+  need_file "$work/install-target/usr/bin/chsr"
+  need_file "$work/install-target/usr/share/defaults/pam.d/sr"
+  need_file "$work/install-target/usr/share/defaults/pam.d/dosr"
+  need_file "$work/install-target/usr/share/defaults/rootasrole/rootasrole.json"
+  need_file "$work/install-target/usr/share/factory/etc/pam.d/sr"
+  need_file "$work/install-target/usr/share/factory/etc/pam.d/dosr"
+  need_file "$work/install-target/usr/share/factory/etc/security/rootasrole.json"
+  need_file "$work/install-target/usr/share/onix/packages/bootstrap-policy.md"
+  need_file "$work/install-target/usr/share/onix/packages/rootasrole.md"
+  need_file "$work/install-target/usr/share/onix/packages/rootasrole-policy.md"
+  need_file "$work/install-target/usr/share/onix/packages/moss.md"
 
   log "proof     : $proof_name install target OK"
 }

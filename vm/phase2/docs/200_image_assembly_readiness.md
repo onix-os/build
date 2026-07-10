@@ -31,7 +31,7 @@ It verifies:
 
 - Phase 1 exported repo artifact exists at `artifacts/onix-publish/`
 - `SHA256SUMS` validates through the Phase 1 verifier
-- `onix-branding` and `onix-filesystem` stones exist
+- `branding` and `filesystem` stones exist
 - no forbidden brand spelling exists in tracked project areas
 - host/dev-shell has the tools needed for image assembly
 
@@ -51,11 +51,11 @@ repo, not a loose folder of files.
 > repo exactly the way a real installer would.
 
 **Exactly one branding + one filesystem stone.** The script counts
-`onix-branding-*.stone` and `onix-filesystem-*.stone` and insists on *exactly
+`branding-*.stone` and `filesystem-*.stone` and insists on *exactly
 one* of each. Two would mean an old build was never cleaned up, and image
 assembly could silently pick the wrong one. These two packages are the entire
-payload of the first image: `onix-branding` ships the identity
-(`/usr/lib/os-release`, the logo), and `onix-filesystem` ships the default
+payload of the first image: `branding` ships the identity
+(`/usr/lib/os-release`, the logo), and `filesystem` ships the default
 `/etc` templates and the fstab that describes the disk layout.
 
 **No forbidden brand spelling.** ONIX branding is always `ONIX` or `onix`, never

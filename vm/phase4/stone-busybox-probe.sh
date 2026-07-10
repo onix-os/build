@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# vm/phase4/stone-busybox-probe.sh — Phase 411 live onix-busybox proof.
+# vm/phase4/stone-busybox-probe.sh — Phase 411 live busybox proof.
 #
 # Phase 410 proved the disk image points /usr/bin and /bin compatibility paths
-# at the onix-busybox stone payload. Phase 411 boots the image and proves the
+# at the busybox stone payload. Phase 411 boots the image and proves the
 # existing serial, network, remote-inspection, and SSH behaviors still work with
 # that command path.
 set -euo pipefail
@@ -89,7 +89,7 @@ log "window    : ${WAIT_SECONDS}s per probe"
 
 kill_all >/dev/null 2>&1 || true
 
-log "probe 1/4: serial shell uses onix-busybox"
+log "probe 1/4: serial shell uses busybox"
 ONIX_SERIAL_CONSOLE_PROBE_NAME=p411ser \
 ONIX_SERIAL_BOOT_LOG="$STATE_DIR/phase411.serial-boot.log" \
 ONIX_SERIAL_CONSOLE_LOG="$STATE_DIR/phase411.serial-shell.log" \
@@ -100,7 +100,7 @@ ONIX_SERIAL_COMMAND_MARKER='ONIX_STONE_BUSYBOX_SERIAL_OK uid=0 .*busybox=/usr/bi
 ONIX_SERIAL_SUCCESS_MESSAGE="Phase 411 proved the serial bootstrap shell can execute the stone BusyBox." \
   "$SCRIPT_DIR/serial-console-probe.sh" "${probe_args[@]}"
 
-log "probe 2/4: network scripts use onix-busybox commands"
+log "probe 2/4: network scripts use busybox commands"
 ONIX_NETWORK_PROBE_NAME=p411net \
 ONIX_NETWORK_BOOT_LOG="$STATE_DIR/phase411.network-boot.log" \
 ONIX_NETWORK_SERIAL_LOG="$STATE_DIR/phase411.network-serial.log" \
@@ -111,7 +111,7 @@ ONIX_NETWORK_COMMAND_MARKER='ONIX_STONE_BUSYBOX_NETWORK_OK uid=0 .*busybox=/usr/
 ONIX_NETWORK_SUCCESS_MESSAGE="Phase 411 proved bootstrap networking still works with stone BusyBox commands." \
   "$SCRIPT_DIR/network-probe.sh" "${probe_args[@]}"
 
-log "probe 3/4: remote inspection listener uses onix-busybox nc/netstat"
+log "probe 3/4: remote inspection listener uses busybox nc/netstat"
 ONIX_REMOTE_INSPECTION_PROBE_NAME=p411rem \
 ONIX_REMOTE_INSPECTION_BOOT_LOG="$STATE_DIR/phase411.remote-boot.log" \
 ONIX_REMOTE_INSPECTION_SERIAL_LOG="$STATE_DIR/phase411.remote-serial.log" \
@@ -123,7 +123,7 @@ ONIX_REMOTE_INSPECTION_READY_MARKER='ONIX_STONE_BUSYBOX_REMOTE_OK uid=0 .*busybo
 ONIX_REMOTE_INSPECTION_SUCCESS_MESSAGE="Phase 411 proved remote inspection still works with stone BusyBox nc/netstat." \
   "$SCRIPT_DIR/remote-inspection-probe.sh" "${probe_args[@]}"
 
-log "probe 4/4: SSH session uses onix-busybox commands"
+log "probe 4/4: SSH session uses busybox commands"
 ONIX_SSH_PROBE_NAME=p411ssh \
 ONIX_SSH_BOOT_LOG="$STATE_DIR/phase411.ssh-boot.log" \
 ONIX_SSH_SERIAL_LOG="$STATE_DIR/phase411.ssh-serial.log" \
@@ -140,7 +140,7 @@ ONIX_SSH_SUCCESS_MESSAGE="Phase 411 proved authenticated SSH still works and exe
 cat <<EOF
 
 ==> success
-Phase 411 proved the booted ONIX image can use onix-busybox for:
+Phase 411 proved the booted ONIX image can use busybox for:
 
   - serial bootstrap shell
   - bootstrap QEMU user networking

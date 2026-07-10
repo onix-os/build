@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# vm/phase4/build-native-systemd-stone.sh — Phase 422 native onix-systemd.
+# vm/phase4/build-native-systemd-stone.sh — Phase 422 native systemd.
 #
 # This is the first real native systemd step for ONIX:
 #
@@ -23,10 +23,10 @@ LOCAL_REPO_DIR="${ONIX_LOCAL_REPO_DIR:-$ONIX_ROOT/artifacts/onix-local-repo}"
 STONE_WORK_DIR="${ONIX_STONE_WORK_DIR:-$ONIX_ROOT/artifacts/onix-stone-work}"
 PLAN_DIR="${ONIX_NATIVE_SYSTEMD_PLAN_DIR:-$ONIX_ROOT/artifacts/onix-native-systemd-plan}"
 SOURCE_POLICY="${ONIX_NATIVE_SYSTEMD_SOURCE_POLICY:-$PLAN_DIR/source-policy.txt}"
-RECIPE_TEMPLATE="${ONIX_SYSTEMD_NATIVE_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/services/onix-systemd/stone.yaml.in}"
+RECIPE_TEMPLATE="${ONIX_SYSTEMD_NATIVE_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/services/systemd/stone.yaml.in}"
 HOST_MOSS="${ONIX_HOST_MOSS:-$ONIX_ROOT/artifacts/host-tools/bin/moss}"
 
-LAB="/home/$user/stone-lab/onix-systemd-native"
+LAB="/home/$user/stone-lab/systemd-native"
 
 need_cmd awk
 need_cmd grep
@@ -38,6 +38,8 @@ need_cmd tar
 [[ -f "$RECIPE_TEMPLATE" ]] || die "missing recipe template: ${RECIPE_TEMPLATE#$ONIX_ROOT/}"
 [[ -x "$HOST_MOSS" ]] || die "missing host moss: ${HOST_MOSS#$ONIX_ROOT/} (run: make phase 202)"
 [[ -f "$SOURCE_POLICY" ]] || die "missing Phase 421 source policy: ${SOURCE_POLICY#$ONIX_ROOT/} (run: make phase 421)"
+MUSL_STONE="$(find "$LOCAL_REPO_DIR" -maxdepth 1 -name 'musl-*.stone' ! -name '*dbginfo*' ! -name '*devel*' | sort | tail -n 1)"
+[[ -f "$MUSL_STONE" ]] || die "missing musl stone in ${LOCAL_REPO_DIR#$ONIX_ROOT/} (run: make phase 510)"
 
 safe_artifact_path() {
   local path="$1"
@@ -84,7 +86,7 @@ SYSTEMD_UPSTREAM_REV="${ONIX_SYSTEMD_NATIVE_UPSTREAM_REV:-$(policy_inline_value 
 [[ -f "$SYSTEMD_SRC/meson.build" ]] || die "systemd source path is missing meson.build: $SYSTEMD_SRC"
 [[ -n "$SYSTEMD_UPSTREAM_REV" ]] || SYSTEMD_UPSTREAM_REV="v$SYSTEMD_VERSION"
 
-WORK="$STONE_WORK_DIR/onix-systemd-native"
+WORK="$STONE_WORK_DIR/systemd-native"
 BUILD_ENV="$WORK/build.env"
 SOURCE_BASENAME="systemd-$SYSTEMD_VERSION-source.tar"
 SOURCE_TAR="$WORK/$SOURCE_BASENAME"
@@ -92,7 +94,7 @@ SOURCE_ARCHIVE="$SOURCE_TAR.gz"
 
 cleanup_work_dir() {
   case "$WORK" in
-    "$ONIX_ROOT"/artifacts/onix-stone-work/onix-systemd-native) ;;
+    "$ONIX_ROOT"/artifacts/onix-stone-work/systemd-native) ;;
     *) die "refusing unsafe work cleanup path: $WORK" ;;
   esac
 
@@ -106,7 +108,7 @@ mkdir -p "$STONE_DIR" "$LOCAL_REPO_DIR" "$STONE_WORK_DIR"
 cleanup_work_dir
 mkdir -p "$WORK"
 
-log "Phase 422 native source-built onix-systemd stone"
+log "Phase 422 native source-built systemd stone"
 cat <<EOF
 source      : $SYSTEMD_SRC
 version     : $SYSTEMD_VERSION
@@ -133,6 +135,7 @@ SYSTEMD_VERSION='$SYSTEMD_VERSION'
 SYSTEMD_UPSTREAM_REV='$SYSTEMD_UPSTREAM_REV'
 SYSTEMD_SOURCE_ARCHIVE='$(basename "$SOURCE_ARCHIVE")'
 SYSTEMD_SOURCE_SHA256='$SYSTEMD_SOURCE_SHA256'
+MUSL_DEP_STONE='$(basename "$MUSL_STONE")'
 EOF
 
 log "ensuring native systemd build dependencies in the forge"
@@ -143,8 +146,9 @@ log "copying source archive + recipe template into the forge"
 RECIPE_BASENAME="$(basename "$RECIPE_TEMPLATE")"
 tar -cf - \
   -C "$WORK" build.env "$(basename "$SOURCE_ARCHIVE")" \
+  -C "$(dirname "$MUSL_STONE")" "$(basename "$MUSL_STONE")" \
   -C "$(dirname "$RECIPE_TEMPLATE")" "$RECIPE_BASENAME" \
-  | "$PHASE0_DIR/ssh.sh" "$user" "if [ -d '$LAB' ]; then chmod -R u+rwX '$LAB' 2>/dev/null || true; rm -rf '$LAB'; fi && mkdir -p '$LAB/src' && tar -C '$LAB' -xf - && mv '$LAB/$(basename "$SOURCE_ARCHIVE")' '$LAB/src/$(basename "$SOURCE_ARCHIVE")' && if [ '$RECIPE_BASENAME' != 'stone.yaml.in' ]; then mv '$LAB/$RECIPE_BASENAME' '$LAB/stone.yaml.in'; fi"
+  | "$PHASE0_DIR/ssh.sh" "$user" "if [ -d '$LAB' ]; then chmod -R u+rwX '$LAB' 2>/dev/null || true; rm -rf '$LAB'; fi && mkdir -p '$LAB/src' '$LAB/deps' && tar -C '$LAB' -xf - && mv '$LAB/$(basename "$SOURCE_ARCHIVE")' '$LAB/src/$(basename "$SOURCE_ARCHIVE")' && mv '$LAB/$(basename "$MUSL_STONE")' '$LAB/deps/$(basename "$MUSL_STONE")' && if [ '$RECIPE_BASENAME' != 'stone.yaml.in' ]; then mv '$LAB/$RECIPE_BASENAME' '$LAB/stone.yaml.in'; fi"
 
 "$PHASE0_DIR/ssh.sh" "$user" /bin/sh -s <<'REMOTE'
 set -eu
@@ -176,7 +180,7 @@ need_tool readelf
 need_tool file
 need_tool ldd
 
-LAB="$HOME/stone-lab/onix-systemd-native"
+LAB="$HOME/stone-lab/systemd-native"
 BUILD_SRC="$LAB/source"
 BUILD_DIR="$LAB/build"
 DEST="$LAB/dest"
@@ -201,6 +205,11 @@ if [ "$SOURCE_HASH" != "$SYSTEMD_SOURCE_SHA256" ]; then
     echo "error: systemd source checksum mismatch" >&2
     echo "expected: $SYSTEMD_SOURCE_SHA256" >&2
     echo "actual  : $SOURCE_HASH" >&2
+    exit 1
+fi
+MUSL_STONE="$LAB/deps/$MUSL_DEP_STONE"
+if [ ! -f "$MUSL_STONE" ]; then
+    echo "error: missing musl dependency stone: $MUSL_STONE" >&2
     exit 1
 fi
 
@@ -316,7 +325,7 @@ fi
 readelf -d "$SYSTEMD_BIN" | grep -q 'RUNPATH.*\[/usr/lib/systemd\]' \
     || { echo "error: native systemd is missing /usr/lib/systemd RUNPATH" >&2; exit 1; }
 
-PAYLOAD_NAME="onix-systemd-native-payload-$SYSTEMD_VERSION"
+PAYLOAD_NAME="systemd-native-payload-$SYSTEMD_VERSION"
 PAYLOAD_ROOT="$LAB/src/$PAYLOAD_NAME"
 PAYLOAD_ARCHIVE="$LAB/src/$PAYLOAD_NAME.tar.gz"
 
@@ -331,6 +340,11 @@ copy_one_lib() {
     src="$1"
     [ -e "$src" ] || return 0
     base="$(basename "$src")"
+    case "$base" in
+        ld-musl-*.so.1|libc.so|libc.musl-*.so.1)
+            return 0
+            ;;
+    esac
     cp -a "$src" "$PAYLOAD_ROOT/usr/lib/$base"
     if [ -L "$src" ]; then
         target="$(readlink "$src")"
@@ -362,7 +376,7 @@ install_runtime_library_family() {
         matched=1
         copy_one_lib "$lib"
         copy_elf_closure "$lib"
-        printf '%s -> /usr/lib/%s\n' "$lib" "$(basename "$lib")" >> "$PAYLOAD_ROOT/usr/share/onix/packages/onix-systemd.helpers"
+        printf '%s -> /usr/lib/%s\n' "$lib" "$(basename "$lib")" >> "$PAYLOAD_ROOT/usr/share/onix/packages/systemd.helpers"
     done
     if [ "$matched" -eq 0 ]; then
         echo "warn: runtime library family not found in forge: $pattern" >&2
@@ -394,16 +408,16 @@ install_helper_command() {
     fi
     install -m 00755 "$src" "$PAYLOAD_ROOT/$dest_dir/$name"
     copy_elf_closure "$src"
-    printf '%s -> /%s/%s\n' "$src" "$dest_dir" "$name" >> "$PAYLOAD_ROOT/usr/share/onix/packages/onix-systemd.helpers"
+    printf '%s -> /%s/%s\n' "$src" "$dest_dir" "$name" >> "$PAYLOAD_ROOT/usr/share/onix/packages/systemd.helpers"
 }
 
 # Bootstrap-native helper/library manifest. Runtime-library families and helper
 # commands append to this file while we assemble the monolithic Phase 422 stone.
-: > "$PAYLOAD_ROOT/usr/share/onix/packages/onix-systemd.helpers"
+: > "$PAYLOAD_ROOT/usr/share/onix/packages/systemd.helpers"
 
 # The interpreter path is /lib/ld-musl-x86_64.so.1. ONIX uses merged-/usr, so
-# installing it under /usr/lib makes /lib/ld-musl-x86_64.so.1 resolve.
-copy_one_lib /lib/ld-musl-x86_64.so.1
+# /lib resolves to /usr/lib. The musl stone owns that loader/libc family;
+# systemd depends on musl instead of bundling a private copy.
 
 # systemd uses some libraries through dynamic loading instead of normal ELF
 # NEEDED entries. If these are absent, PID 1 may start but freeze while mounting
@@ -435,17 +449,17 @@ echo "This account is currently not available." >&2
 exit 1
 EOF_NOLOGIN
 chmod 00755 "$PAYLOAD_ROOT/usr/sbin/nologin"
-printf 'ONIX generated nologin script -> /usr/sbin/nologin\n' >> "$PAYLOAD_ROOT/usr/share/onix/packages/onix-systemd.helpers"
+printf 'ONIX generated nologin script -> /usr/sbin/nologin\n' >> "$PAYLOAD_ROOT/usr/share/onix/packages/systemd.helpers"
 
 find "$PAYLOAD_ROOT/usr/bin" "$PAYLOAD_ROOT/usr/sbin" "$PAYLOAD_ROOT/usr/lib/systemd" \
     -type f -perm -0100 -exec readelf -d {} \; 2>/dev/null |
     sed -n 's/.*Shared library: \[\(.*\)\]/\1/p' |
-    sort -u > "$PAYLOAD_ROOT/usr/share/onix/packages/onix-systemd.needed"
+    sort -u > "$PAYLOAD_ROOT/usr/share/onix/packages/systemd.needed"
 
-cat > "$PAYLOAD_ROOT/usr/share/onix/packages/onix-systemd.md" <<EOF_DOC
-# onix-systemd
+cat > "$PAYLOAD_ROOT/usr/share/onix/packages/systemd.md" <<EOF_DOC
+# systemd
 
-\`onix-systemd\` is the Phase 422 native systemd userspace package.
+\`systemd\` is the Phase 422 native systemd userspace package.
 
 Source identity:
 
@@ -477,21 +491,21 @@ Installed native payload:
 /usr/bin/systemd-tmpfiles
 /usr/bin/systemd-sysusers
 /usr/bin/udevadm
-/usr/lib/ld-musl-x86_64.so.1
 \`\`\`
 
 Bootstrap-native policy:
 
 - this package is source-built in the forge,
 - it does not install symlinks into the old bootstrap store,
-- it may temporarily bundle immediate musl runtime/helper files,
-- later phases may split those bundled helpers into smaller dependency stones.
+- it depends on the ONIX musl stone for the loader/libc,
+- it may temporarily bundle immediate non-musl runtime/helper files,
+- later phases may split those bundled non-musl helpers into smaller dependency stones.
 EOF_DOC
 
 chmod 0644 \
-    "$PAYLOAD_ROOT/usr/share/onix/packages/onix-systemd.md" \
-    "$PAYLOAD_ROOT/usr/share/onix/packages/onix-systemd.helpers" \
-    "$PAYLOAD_ROOT/usr/share/onix/packages/onix-systemd.needed"
+    "$PAYLOAD_ROOT/usr/share/onix/packages/systemd.md" \
+    "$PAYLOAD_ROOT/usr/share/onix/packages/systemd.helpers" \
+    "$PAYLOAD_ROOT/usr/share/onix/packages/systemd.needed"
 
 if grep -R -I -F '/nix/store' "$PAYLOAD_ROOT/usr/share/onix" >/dev/null 2>&1; then
     echo "error: native package notes must not mention /nix/store" >&2
@@ -520,7 +534,9 @@ test -f "$PAYLOAD_ROOT/usr/lib/systemd/system/multi-user.target"
 test -x "$PAYLOAD_ROOT/usr/bin/systemctl"
 test -x "$PAYLOAD_ROOT/usr/bin/journalctl"
 test -x "$PAYLOAD_ROOT/usr/bin/udevadm"
-test -e "$PAYLOAD_ROOT/usr/lib/ld-musl-x86_64.so.1"
+test ! -e "$PAYLOAD_ROOT/usr/lib/ld-musl-x86_64.so.1"
+test ! -e "$PAYLOAD_ROOT/usr/lib/libc.so"
+test ! -e "$PAYLOAD_ROOT/usr/lib/libc.musl-x86_64.so.1"
 
 LD_LIBRARY_PATH="$PAYLOAD_ROOT/usr/lib:$PAYLOAD_ROOT/usr/lib/systemd" \
     "$PAYLOAD_ROOT/usr/bin/systemctl" --version | tee "$LAB/systemctl.version"
@@ -539,7 +555,7 @@ echo "==> recipe"
 sed -n '1,260p' "$LAB/stone.yaml"
 
 echo
-echo "==> building native onix-systemd stone"
+echo "==> building native systemd stone"
 rm -rf "$OUT"
 mkdir -p "$OUT"
 (
@@ -547,9 +563,9 @@ mkdir -p "$OUT"
     boulder build -y --normal-priority -o "$OUT" stone.yaml
 )
 
-STONE="$(find "$OUT" -maxdepth 1 -name 'onix-systemd-*.stone' ! -name '*dbginfo*' | sort | head -n 1)"
+STONE="$(find "$OUT" -maxdepth 1 -name 'systemd-*.stone' ! -name '*dbginfo*' | sort | head -n 1)"
 if [ ! -f "$STONE" ]; then
-    echo "error: boulder did not produce an onix-systemd .stone under $OUT" >&2
+    echo "error: boulder did not produce an systemd .stone under $OUT" >&2
     exit 1
 fi
 printf '%s\n' "$STONE" > "$LAB/stone.path"
@@ -581,7 +597,9 @@ test -f "$PAYLOAD/usr/lib/systemd/system/multi-user.target"
 test -x "$PAYLOAD/usr/bin/systemctl"
 test -x "$PAYLOAD/usr/bin/journalctl"
 test -x "$PAYLOAD/usr/bin/udevadm"
-test -e "$PAYLOAD/usr/lib/ld-musl-x86_64.so.1"
+test ! -e "$PAYLOAD/usr/lib/ld-musl-x86_64.so.1"
+test ! -e "$PAYLOAD/usr/lib/libc.so"
+test ! -e "$PAYLOAD/usr/lib/libc.musl-x86_64.so.1"
 interp="$(readelf -l "$PAYLOAD/usr/lib/systemd/systemd" | sed -n 's/.*Requesting program interpreter: \(.*\)]/\1/p' | head -n1)"
 test "$interp" = "/lib/ld-musl-x86_64.so.1"
 readelf -d "$PAYLOAD/usr/lib/systemd/systemd" | grep -q 'RUNPATH.*\[/usr/lib/systemd\]'
@@ -607,15 +625,17 @@ echo "==> index local repo and install into disposable target"
 rm -rf "$REPO" "$ROOT" "$CACHE" "$TARGET"
 mkdir -p "$REPO" "$ROOT" "$CACHE" "$TARGET"
 cp "$STONE" "$REPO/"
+cp "$MUSL_STONE" "$REPO/"
 moss index "$REPO"
-moss -D "$ROOT" --cache "$CACHE" repo add local "file://$REPO/stone.index" -c "local native onix-systemd repo"
+moss -D "$ROOT" --cache "$CACHE" repo add local "file://$REPO/stone.index" -c "local native systemd repo"
 moss -D "$ROOT" --cache "$CACHE" repo update
-moss -D "$ROOT" --cache "$CACHE" -y install --to "$TARGET" onix-systemd
+moss -D "$ROOT" --cache "$CACHE" -y install --to "$TARGET" systemd
 
 test -x "$TARGET/usr/lib/systemd/systemd"
 test ! -L "$TARGET/usr/lib/systemd/systemd"
 test -x "$TARGET/usr/bin/systemctl"
 test -e "$TARGET/usr/lib/ld-musl-x86_64.so.1"
+test -e "$TARGET/usr/share/onix/packages/musl.md"
 find "$TARGET" -type l | while read -r link; do
     target="$(readlink "$link")"
     case "$target" in
@@ -634,26 +654,26 @@ echo "root  : $ROOT"
 echo "target: $TARGET"
 REMOTE
 
-log "copying built native onix-systemd stone back to host artifacts"
-rm -f "$STONE_DIR"/onix-systemd-*.stone "$STONE_DIR"/onix-systemd-dbginfo-*.stone
+log "copying built native systemd stone back to host artifacts"
+rm -f "$STONE_DIR"/systemd-*.stone "$STONE_DIR"/systemd-dbginfo-*.stone
 "$PHASE0_DIR/ssh.sh" "$user" "stone=\$(cat '$LAB/stone.path') && cd \"\$(dirname \"\$stone\")\" && tar -cf - \"\$(basename \"\$stone\")\"" \
   | tar -C "$STONE_DIR" -xf -
 
-HOST_STONE="$(find "$STONE_DIR" -maxdepth 1 -name 'onix-systemd-*.stone' ! -name '*dbginfo*' | sort | tail -n 1)"
-[[ -f "$HOST_STONE" ]] || die "failed to copy native onix-systemd stone into ${STONE_DIR#$ONIX_ROOT/}"
+HOST_STONE="$(find "$STONE_DIR" -maxdepth 1 -name 'systemd-*.stone' ! -name '*dbginfo*' | sort | tail -n 1)"
+[[ -f "$HOST_STONE" ]] || die "failed to copy native systemd stone into ${STONE_DIR#$ONIX_ROOT/}"
 
 log "host moss integrity check"
 "$HOST_MOSS" inspect --check "$HOST_STONE"
 
 log "refreshing local Phase 4 moss repo"
-rm -f "$LOCAL_REPO_DIR"/onix-systemd-*.stone "$LOCAL_REPO_DIR"/onix-systemd-dbginfo-*.stone
+rm -f "$LOCAL_REPO_DIR"/systemd-*.stone "$LOCAL_REPO_DIR"/systemd-dbginfo-*.stone
 cp "$HOST_STONE" "$LOCAL_REPO_DIR/"
 "$HOST_MOSS" index "$LOCAL_REPO_DIR"
 
 cat <<EOF
 
 ==> success
-native onix-systemd stone: ${HOST_STONE#$ONIX_ROOT/}
+native systemd stone: ${HOST_STONE#$ONIX_ROOT/}
 local repo index          : ${LOCAL_REPO_DIR#$ONIX_ROOT/}/stone.index
 
 Next:

@@ -39,10 +39,10 @@ need_file "$REPO_ROOT/repo.json"
 need_file "$REPO_DIR/stone.index"
 need_file "$REPO_DIR/SHA256SUMS"
 
-branding_count="$(find "$REPO_DIR" -maxdepth 1 -type f -name 'onix-branding-*.stone' | wc -l)"
-filesystem_count="$(find "$REPO_DIR" -maxdepth 1 -type f -name 'onix-filesystem-*.stone' | wc -l)"
-[[ "$branding_count" -eq 1 ]] || die "expected exactly one onix-branding stone, found $branding_count"
-[[ "$filesystem_count" -eq 1 ]] || die "expected exactly one onix-filesystem stone, found $filesystem_count"
+branding_count="$(find "$REPO_DIR" -maxdepth 1 -type f -name 'branding-*.stone' | wc -l)"
+filesystem_count="$(find "$REPO_DIR" -maxdepth 1 -type f -name 'filesystem-*.stone' | wc -l)"
+[[ "$branding_count" -eq 1 ]] || die "expected exactly one branding stone, found $branding_count"
+[[ "$filesystem_count" -eq 1 ]] || die "expected exactly one filesystem stone, found $filesystem_count"
 
 echo
 echo "==> metadata contract"

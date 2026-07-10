@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# vm/phase4/stone-dropbear-probe.sh — Phase 413 live onix-dropbear proof.
+# vm/phase4/stone-dropbear-probe.sh — Phase 413 live dropbear proof.
 #
-# Phase 412 built onix-dropbear as a real .stone. Phase 413 installs that
+# Phase 412 built dropbear as a real .stone. Phase 413 installs that
 # package into the image and proves that authenticated SSH still works with the
 # service started from /usr/sbin/dropbear instead of a copied Nix payload.
 set -euo pipefail
@@ -58,7 +58,7 @@ EOF
 
 stone_dropbear_remote_command() {
   cat <<'EOF'
-/usr/bin/busybox sh -c 'set -eu; test -x /usr/sbin/dropbear; test -x /usr/bin/dropbearkey; test -f /usr/share/onix/packages/onix-dropbear.md; printf "ONIX_STONE_DROPBEAR_SSH_OK user=%s uid=%s dropbear=/usr/sbin/dropbear key=/usr/bin/dropbearkey package=present\n" "$(/usr/bin/busybox id -un)" "$(/usr/bin/busybox id -u)"'
+/usr/bin/busybox sh -c 'set -eu; test -x /usr/sbin/dropbear; test -x /usr/bin/dropbearkey; test -f /usr/share/onix/packages/dropbear.md; printf "ONIX_STONE_DROPBEAR_SSH_OK user=%s uid=%s dropbear=/usr/sbin/dropbear key=/usr/bin/dropbearkey package=present\n" "$(/usr/bin/busybox id -un)" "$(/usr/bin/busybox id -u)"'
 EOF
 }
 
@@ -91,13 +91,13 @@ ONIX_SSH_SERIAL_COMMAND="/usr/lib/onix/bootstrap-network-proof && /usr/lib/onix/
 ONIX_SSH_READY_MARKER='ONIX_STONE_DROPBEAR_SERIAL_OK dropbear=/usr/sbin/dropbear key=/usr/bin/dropbearkey' \
 ONIX_SSH_MARKER='ONIX_STONE_DROPBEAR_SSH_OK user=onix uid=1000 dropbear=/usr/sbin/dropbear key=/usr/bin/dropbearkey package=present' \
 ONIX_SSH_REMOTE_COMMAND="$(stone_dropbear_remote_command)" \
-ONIX_SSH_SUCCESS_MESSAGE="Phase 413 proved authenticated SSH starts from onix-dropbear." \
+ONIX_SSH_SUCCESS_MESSAGE="Phase 413 proved authenticated SSH starts from dropbear." \
   "$SCRIPT_DIR/ssh-probe.sh" "${probe_args[@]}"
 
 cat <<EOF
 
 ==> success
-Phase 413 proved the booted ONIX image can use onix-dropbear for
+Phase 413 proved the booted ONIX image can use dropbear for
 authenticated SSH.
 
 Evidence logs:

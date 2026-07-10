@@ -1,21 +1,21 @@
-# Phase 410 — install/use `onix-busybox` in the image
+# Phase 410 — install/use `busybox` in the image
 
 | Item | Value |
 |---|---|
 | Command | `make phase 410` |
 | Underlying make target/script | `vm/phase4/materialize-etc.sh --busybox-stone` |
 | Reads package repo | `artifacts/onix-local-repo/stone.index` |
-| Installs package payload from | `onix-busybox` |
+| Installs package payload from | `busybox` |
 | Mutates disk/image? | Yes, `artifacts/onix-image/onix.raw` |
 | Boots QEMU? | No |
-| Main proof | The boot image now uses the locally built `onix-busybox` stone for `/usr/bin/busybox` and the `/bin` compatibility command links. |
+| Main proof | The boot image now uses the locally built `busybox` stone for `/usr/bin/busybox` and the `/bin` compatibility command links. |
 
 ## Why this phase exists
 
 Phase 409 built the first replacement system package:
 
 ```text
-artifacts/onix-stones/onix-busybox-...stone
+artifacts/onix-stones/busybox-...stone
 artifacts/onix-local-repo/stone.index
 ```
 
@@ -30,7 +30,7 @@ Phase 410 is the handoff:
 local moss repo
       |
       v
-onix-busybox stone
+busybox stone
       |
       v
 image /usr/bin/busybox
@@ -133,15 +133,15 @@ programs.
 
 ## Why the stone owns `/usr/bin`, not `/bin`
 
-The `onix-busybox` stone owns:
+The `busybox` stone owns:
 
 ```text
 /usr/bin/busybox
 /usr/bin/sh
 /usr/bin/ifconfig
 /usr/bin/nc
-/usr/share/onix/packages/onix-busybox.applets
-/usr/share/onix/packages/onix-busybox.md
+/usr/share/onix/packages/busybox.applets
+/usr/share/onix/packages/busybox.md
 ```
 
 It does not own `/bin`.
@@ -207,7 +207,7 @@ its output shows either `/bin -> usr/bin` or a list of explicit `/bin` links.
 ### Background: installing into a scratch target with `moss --to`
 
 moss can install a package into *any* directory, not just the live system, via its
-`install --to <dir>` option. Phase 410 uses this to materialize `onix-busybox`
+`install --to <dir>` option. Phase 410 uses this to materialize `busybox`
 into a throwaway target directory first, verify the payload there, and only then
 copy the verified files into the image. That keeps moss from writing its own
 package-manager state into an image that is not yet fully moss-managed — a cleaner
@@ -231,7 +231,7 @@ phase.
 So this phase does a safer two-step flow:
 
 ```text
-1. Use host moss to install onix-busybox into a disposable scratch target.
+1. Use host moss to install busybox into a disposable scratch target.
 2. Copy only the verified package payload from that scratch target into the image.
 ```
 
@@ -244,7 +244,7 @@ artifacts/onix-phase4-work/busybox-install-target
 That means Phase 410 still proves:
 
 ```text
-moss can consume the local repo and materialize onix-busybox
+moss can consume the local repo and materialize busybox
 ```
 
 but it avoids pretending the whole image is already a final moss-managed system.
@@ -284,7 +284,7 @@ The script:
    ```
 
 7. Adds the local repo to a disposable moss root.
-8. Installs `onix-busybox` into a scratch target.
+8. Installs `busybox` into a scratch target.
 9. Verifies the scratch install:
 
    - `/usr/bin/busybox` exists and runs,
@@ -318,8 +318,8 @@ After this phase, the image should contain:
 /usr/bin/busybox
 /usr/bin/sh -> busybox
 /usr/bin/nc -> busybox
-/usr/share/onix/packages/onix-busybox.applets
-/usr/share/onix/packages/onix-busybox.md
+/usr/share/onix/packages/busybox.applets
+/usr/share/onix/packages/busybox.md
 /usr/share/onix/bootstrap/busybox-stone.txt
 ```
 
@@ -360,7 +360,7 @@ remote inspection, and SSH paths still work.
 So the truth after Phase 410 is:
 
 ```text
-active command path = onix-busybox stone
+active command path = busybox stone
 old Nix closure     = may still be present on disk
 ```
 
@@ -372,14 +372,14 @@ payloads.
 You should see the script say that it is installing from the local repo:
 
 ```text
-==> installing and activating onix-busybox from the local Phase 4 repo
-==> materializing onix-busybox from local moss repo into a scratch target
+==> installing and activating busybox from the local Phase 4 repo
+==> materializing busybox from local moss repo into a scratch target
 ```
 
 Then it should copy the package payload and create compatibility links:
 
 ```text
-stone    : onix-busybox installed under /usr/bin
+stone    : busybox installed under /usr/bin
 compat  : /bin -> usr/bin; applets resolve through /usr/bin
 ```
 
@@ -390,7 +390,7 @@ The important success status is:
 
 ```text
 ==> success
-status: onix-busybox stone is installed and active for /bin compatibility links
+status: busybox stone is installed and active for /bin compatibility links
 ```
 
 ## How to inspect it manually

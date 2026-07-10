@@ -92,8 +92,8 @@ the exact point where the forge used to be required.
 The root tree receives package-owned files from:
 
 ```text
-onix-branding
-onix-filesystem
+branding
+filesystem
 ```
 
 Important package-owned files include:
@@ -132,7 +132,7 @@ packages own /usr
 image assembly owns root-level machine glue
 ```
 
-That is why `onix-branding` and `onix-filesystem` ship defaults under
+That is why `branding` and `filesystem` ship defaults under
 `/usr/share/defaults/etc/` instead of directly owning live `/etc`.
 
 #### What image assembly materializes
@@ -184,7 +184,7 @@ Phase 201 proves:
 
 - the host-exported repo artifact is usable as an image input
 - the forge can install from that copied artifact by repo index
-- `onix-branding` and `onix-filesystem` compose into one root tree
+- `branding` and `filesystem` compose into one root tree
 - image-owned `/etc` materialization is separated from package payload
 - the result can be exported back to the host as a clean artifact
 

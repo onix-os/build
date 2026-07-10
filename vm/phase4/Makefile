@@ -21,20 +21,20 @@ phases: ## list the learning-phase aliases
 	@printf "  \033[36mmake phase 406\033[0m  prove authenticated SSH access\n"
 	@printf "  \033[36mmake phase 407\033[0m  audit temporary Nix-sourced system payloads\n"
 	@printf "  \033[36mmake phase 408\033[0m  define local stone/repo contract\n"
-	@printf "  \033[36mmake phase 409\033[0m  build source-based onix-busybox stone\n"
-	@printf "  \033[36mmake phase 410\033[0m  install/use onix-busybox in the image\n"
-	@printf "  \033[36mmake phase 411\033[0m  boot-prove shell/network/SSH with onix-busybox\n"
-	@printf "  \033[36mmake phase 412\033[0m  build source-based onix-dropbear stone\n"
-	@printf "  \033[36mmake phase 413\033[0m  install/use onix-dropbear and prove SSH\n"
+	@printf "  \033[36mmake phase 409\033[0m  build source-based busybox stone\n"
+	@printf "  \033[36mmake phase 410\033[0m  install/use busybox in the image\n"
+	@printf "  \033[36mmake phase 411\033[0m  boot-prove shell/network/SSH with busybox\n"
+	@printf "  \033[36mmake phase 412\033[0m  build source-based dropbear stone\n"
+	@printf "  \033[36mmake phase 413\033[0m  install/use dropbear and prove SSH\n"
 	@printf "  \033[36mmake phase 414\033[0m  audit systemd ownership before packaging\n"
-	@printf "  \033[36mmake phase 415\033[0m  build bootstrap onix-systemd stone\n"
-	@printf "  \033[36mmake phase 416\033[0m  install/use onix-systemd in the image\n"
-	@printf "  \033[36mmake phase 417\033[0m  boot-prove onix-systemd as PID 1 runtime\n"
+	@printf "  \033[36mmake phase 415\033[0m  build bootstrap systemd stone\n"
+	@printf "  \033[36mmake phase 416\033[0m  install/use systemd in the image\n"
+	@printf "  \033[36mmake phase 417\033[0m  boot-prove systemd as PID 1 runtime\n"
 	@printf "  \033[36mmake phase 418\033[0m  package/prove bootstrap policy ownership\n"
 	@printf "  \033[36mmake phase 419\033[0m  audit booted-base ownership/debt map\n"
 	@printf "  \033[36mmake phase 420\033[0m  prune stale old Nix BusyBox/Dropbear payloads\n"
-	@printf "  \033[36mmake phase 421\033[0m  prepare native source-built onix-systemd plan\n"
-	@printf "  \033[36mmake phase 422\033[0m  build/install/boot-prove native onix-systemd\n"
+	@printf "  \033[36mmake phase 421\033[0m  prepare native source-built systemd plan\n"
+	@printf "  \033[36mmake phase 422\033[0m  build/install/boot-prove native systemd\n"
 	@printf "  \033[36mmake phase 424\033[0m  boot native ONIX, prove SSH, and leave QEMU running\n"
 	@printf "  \033[36mmake phase 425\033[0m  final Phase 4 acceptance check against the running VM\n"
 
@@ -106,11 +106,11 @@ check: ## host-side validation for Phase 4 docs/routing
 	@bash -n stone-dropbear-probe.sh
 	@bash -n stone-systemd-probe.sh
 	@bash -n systemd-ownership-audit.sh
-	@test -f stone-recipes/onix-busybox/stone.yaml.in
-	@test -f stone-recipes/onix-bootstrap-policy/stone.yaml.in
-	@test -f stone-recipes/onix-dropbear/stone.yaml.in
-	@test -f stone-recipes/onix-systemd/stone.yaml.in
-	@test -f stone-recipes/onix-systemd-native/stone.yaml.in
+	@test -f stone-recipes/busybox/stone.yaml.in
+	@test -f stone-recipes/bootstrap-policy/stone.yaml.in
+	@test -f stone-recipes/dropbear/stone.yaml.in
+	@test -f stone-recipes/systemd/stone.yaml.in
+	@test -f stone-recipes/systemd-native/stone.yaml.in
 	@echo "phase4   : check OK"
 
 stop: ## stop Phase 4 QEMU probes and detach stale image mounts; keep generated image
@@ -170,39 +170,38 @@ ownership-audit: ## audit temporary Nix-sourced system payloads
 local-stone-contract: ## define local Phase 4 stone/repo contract
 	./local-stone-contract.sh
 
-busybox-stone: ## build source-based onix-busybox stone
+busybox-stone: ## build source-based busybox stone
 	./build-busybox-stone.sh
 
-install-busybox-stone: ## install/use onix-busybox in the image
+install-busybox-stone: ## install/use busybox in the image
 	./materialize-etc.sh --busybox-stone
 
-stone-busybox-proof: ## boot-prove shell/network/SSH with onix-busybox
+stone-busybox-proof: ## boot-prove shell/network/SSH with busybox
 	./materialize-etc.sh --busybox-stone
 	./stone-busybox-probe.sh
 
-dropbear-stone: ## build source-based onix-dropbear stone
+dropbear-stone: ## build source-based dropbear stone
 	./build-dropbear-stone.sh
 
-install-dropbear-stone: ## install/use onix-dropbear and prove SSH
+install-dropbear-stone: ## install/use dropbear and prove SSH
 	./materialize-etc.sh --dropbear-stone
 	./stone-dropbear-probe.sh
 
 systemd-ownership-audit: ## audit systemd ownership before packaging
 	./systemd-ownership-audit.sh
 
-systemd-stone: ## build bootstrap onix-systemd stone
+systemd-stone: ## build bootstrap systemd stone
 	./build-systemd-stone.sh
 
-install-systemd-stone: ## install/use onix-systemd in the image
+install-systemd-stone: ## install/use systemd in the image
 	./materialize-etc.sh --systemd-stone
 
-stone-systemd-proof: ## boot-prove onix-systemd as PID 1 runtime
+stone-systemd-proof: ## boot-prove systemd as PID 1 runtime
 	./materialize-etc.sh --systemd-stone
 	./stone-systemd-probe.sh
 
 bootstrap-policy-stone: ## package/prove bootstrap policy ownership
 	./build-bootstrap-policy-stone.sh
-	./materialize-etc.sh --systemd-stone
 	./materialize-etc.sh --bootstrap-policy-stone
 	./stone-bootstrap-policy-probe.sh
 
@@ -216,28 +215,28 @@ booted-base-ownership-audit: ## audit booted-base ownership/debt map
 prune-stale-bootstrap-nix: ## prune stale old Nix BusyBox/Dropbear payloads
 	./prune-stale-bootstrap-nix.sh
 
-native-systemd-prep: ## prepare native source-built onix-systemd plan
+native-systemd-prep: ## prepare native source-built systemd plan
 	./native-systemd-prep.sh
 
-native-systemd-stone: ## build/install/boot-prove native onix-systemd
+native-systemd-stone: ## build/install/boot-prove native systemd
 	./native-systemd-probe.sh --kill
 	./build-native-systemd-stone.sh
 	./materialize-etc.sh --native-systemd-stone
 	./native-systemd-probe.sh
 
-native-systemd-proof: ## install/boot-prove existing native onix-systemd stone
+native-systemd-proof: ## install/boot-prove existing native systemd stone
 	./native-systemd-probe.sh --kill
 	./materialize-etc.sh --native-systemd-stone
 	./native-systemd-probe.sh
 
-native-systemd-up: ## install/boot-prove existing native onix-systemd stone and leave VM running
+native-systemd-up: ## install/boot-prove existing native systemd stone and leave VM running
 	./native-systemd-probe.sh --kill
 	./materialize-etc.sh --native-systemd-stone
 	ONIX_NATIVE_SYSTEMD_CONTEXT="Phase 424" \
 	ONIX_NATIVE_SYSTEMD_LIVE_PROOF_LABEL="Phase 424 native ONIX bring-up" \
 	ONIX_NATIVE_SYSTEMD_SSH_PROOF_LABEL="Phase 424 native ONIX SSH proof" \
 	ONIX_NATIVE_SYSTEMD_SUCCESS_MESSAGE="Phase 424 brought up the native ONIX VM and left it running." \
-	ONIX_NATIVE_SYSTEMD_SUCCESS_DETAILS="Phase 424 brought up the native ONIX VM with source-built onix-systemd as PID 1 while bootstrap networking and authenticated SSH still work." \
+	ONIX_NATIVE_SYSTEMD_SUCCESS_DETAILS="Phase 424 brought up the native ONIX VM with source-built systemd as PID 1 while bootstrap networking and authenticated SSH still work." \
 	./native-systemd-probe.sh --keep-running
 	@echo
 	@echo "Connect from the host with:"

@@ -161,7 +161,7 @@ It also checks that:
 - the systemd provenance notes do not refer to `/nix/store`.
 
 That matters because Phase 4 moved from a bootstrap systemd payload to a native
-source-built `onix-systemd` stone.
+source-built `systemd` stone.
 
 The important idea is:
 

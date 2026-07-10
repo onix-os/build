@@ -85,7 +85,7 @@ from every build, export, verify, and preview step in Phase 1.
 ## Where Phase 1 leaves us
 
 With step 108 green, the Phase 1 gate is met: the `onix` repo carries a
-self-consistent base stone set (`onix-branding` + `onix-filesystem`), moss can
+self-consistent base stone set (`branding` + `filesystem`), moss can
 install it by name into a fresh root, and that repo has been shaped, exported,
 verified, and rehearsed for publication — without a single unsafe side effect.
 What is deliberately still missing is a *running* system: nothing here boots.

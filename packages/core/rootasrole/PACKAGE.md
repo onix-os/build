@@ -132,9 +132,15 @@ Expected installed files once accepted:
 /usr/bin/dosr
 /usr/bin/chsr
 /usr/share/defaults/rootasrole/
+/usr/share/defaults/pam.d/sr
 /usr/share/defaults/pam.d/dosr
 /usr/share/onix/packages/rootasrole.md
 ```
+
+The user-facing command is `dosr`, but RootAsRole's PAM transaction uses service
+name `sr`. ONIX policy packages therefore materialize `/etc/pam.d/sr` for
+runtime and keep `/etc/pam.d/dosr` as the obvious companion for humans reading
+the system.
 
 ONIX may later add:
 

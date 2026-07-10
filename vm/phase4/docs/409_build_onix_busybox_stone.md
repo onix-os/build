@@ -1,10 +1,10 @@
-# Phase 409 — build `onix-busybox.stone`
+# Phase 409 — build `busybox.stone`
 
 | Item | Value |
 |---|---|
 | Command | `make phase 409` |
 | Underlying make target/script | `vm/phase4/build-busybox-stone.sh` |
-| Recipe template | `vm/phase4/stone-recipes/onix-busybox/stone.yaml.in` |
+| Recipe template | `vm/phase4/stone-recipes/busybox/stone.yaml.in` |
 | Mutates disk/image? | No |
 | Boots QEMU? | No |
 | Main proof | ONIX can build BusyBox from source into a local `.stone`, verify it with moss, and add it to the local Phase 4 moss repo. |
@@ -152,7 +152,7 @@ create a small prepared payload tarball
 boulder packages that payload into a .stone
         |
         v
-onix-busybox-...stone
+busybox-...stone
         |
         v
 moss local repo
@@ -193,7 +193,7 @@ does this:
 8. Generates a concrete `stone.yaml` from:
 
    ```text
-   vm/phase4/stone-recipes/onix-busybox/stone.yaml.in
+   vm/phase4/stone-recipes/busybox/stone.yaml.in
    ```
 
 9. Runs `boulder build` inside the forge VM to package the prepared payload.
@@ -266,8 +266,8 @@ The installed package contains:
 /usr/bin/ping
 /usr/bin/route
 /usr/bin/uname
-/usr/share/onix/packages/onix-busybox.applets
-/usr/share/onix/packages/onix-busybox.md
+/usr/share/onix/packages/busybox.applets
+/usr/share/onix/packages/busybox.md
 ```
 
 Why `/usr/bin` and not `/bin` inside the stone?
@@ -340,15 +340,15 @@ The important success lines are:
 
 ```text
 ==> success
-stone : /home/mason/stone-lab/onix-busybox/out/onix-busybox-...
-repo  : /home/mason/stone-lab/onix-busybox/repo/stone.index
+stone : /home/mason/stone-lab/busybox/out/busybox-...
+repo  : /home/mason/stone-lab/busybox/repo/stone.index
 ```
 
 Then the host copies the stone back and refreshes the local repo:
 
 ```text
 ==> success
-onix-busybox stone: artifacts/onix-stones/onix-busybox-...
+busybox stone: artifacts/onix-stones/busybox-...
 local repo index   : artifacts/onix-local-repo/stone.index
 ```
 
@@ -362,7 +362,7 @@ Phase 409 proves:
 - the BusyBox binary is static or static-PIE and built in the musl forge,
 - the required applet symlinks exist,
 - the package installs into a disposable moss target,
-- the host has a local repo containing `onix-busybox`.
+- the host has a local repo containing `busybox`.
 
 That is the first local replacement package for Phase 4.
 
@@ -415,7 +415,7 @@ ls -lh artifacts/onix-local-repo/
 You can inspect the package with host Moss:
 
 ```sh
-artifacts/host-tools/bin/moss inspect artifacts/onix-stones/onix-busybox-*.stone
+artifacts/host-tools/bin/moss inspect artifacts/onix-stones/busybox-*.stone
 ```
 
 You can check the local repo index exists:

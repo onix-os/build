@@ -20,10 +20,10 @@ Those were good learning artifacts.
 They proved different things:
 
 - `artifacts/onix-publish/` proved the first publish-style repository layout for
-  `onix-branding` and `onix-filesystem`;
-- `artifacts/onix-local-repo/` proved the Phase 4 booted-base packages such as
-  `onix-busybox`, `onix-dropbear`, `onix-systemd`, and
-  `onix-bootstrap-policy`.
+  `branding` and `filesystem`;
+- `artifacts/onix-local-repo/` proved the Phase 4 and Phase 5 booted-base
+  packages such as `busybox`, `dropbear`, `systemd`,
+  `bootstrap-policy`, `uutils-coreutils`, `rootasrole`, and `moss`.
 
 But a real distribution image should not be assembled from two separate
 historical artifact roots.
@@ -63,7 +63,7 @@ into a scratch directory:
 
 ```text
 moss repo add onix-image file://.../stone.index
-moss install --to scratch-root onix-busybox
+moss install --to scratch-root busybox
 ```
 
 Then the image assembly script copies the installed package payload into the
@@ -205,12 +205,20 @@ artifacts/onix-repo/unstable/x86_64/MANIFEST.tsv
 It also verifies exactly one stone for each current essential package:
 
 ```text
-onix-branding
-onix-filesystem
-onix-busybox
-onix-dropbear
-onix-systemd
-onix-bootstrap-policy
+branding
+filesystem
+busybox
+uutils-coreutils
+dropbear
+systemd
+bootstrap-policy
+musl
+linux-pam
+libseccomp
+libgcc-runtime
+rootasrole
+rootasrole-policy
+moss
 ```
 
 Each stone is checked with:
@@ -271,29 +279,37 @@ So Phase 507 uses two layers of proof:
 
 ```text
 scratch Moss install proof  -> all current essential packages
-image materialization proof -> current native onix-systemd package path
+image materialization proof -> current native systemd package path
 ```
 
 The image materialization step consumes the canonical repo for:
 
 ```text
-onix-systemd
+systemd
 ```
 
 The scratch install proof already proved the full essential package set:
 
 ```text
-onix-branding
-onix-filesystem
-onix-busybox
-onix-dropbear
-onix-systemd
-onix-bootstrap-policy
+branding
+filesystem
+busybox
+uutils-coreutils
+dropbear
+systemd
+bootstrap-policy
+musl
+linux-pam
+libseccomp
+libgcc-runtime
+rootasrole
+rootasrole-policy
+moss
 ```
 
 Then the phase boots the image and proves:
 
-- native `onix-systemd` is PID 1;
+- native `systemd` is PID 1;
 - the system still brings up bootstrap networking;
 - SSH still works;
 - the proof path did not fall back to the old split repo.

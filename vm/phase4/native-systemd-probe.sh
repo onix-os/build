@@ -2,7 +2,7 @@
 # vm/phase4/native-systemd-probe.sh — Phase 422 live native systemd proof.
 #
 # Boots the image and proves that the active PID 1 runtime is the native
-# source-built onix-systemd package, not the older bootstrap /nix/store copy.
+# source-built systemd package, not the older bootstrap /nix/store copy.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
@@ -21,9 +21,9 @@ KEEP_RUNNING=0
 PROBE_CONTEXT="${ONIX_NATIVE_SYSTEMD_CONTEXT:-Phase 422}"
 LIVE_PROOF_LABEL="${ONIX_NATIVE_SYSTEMD_LIVE_PROOF_LABEL:-$PROBE_CONTEXT native systemd live proof}"
 SSH_PROOF_LABEL="${ONIX_NATIVE_SYSTEMD_SSH_PROOF_LABEL:-$PROBE_CONTEXT native systemd proof}"
-SUCCESS_MESSAGE="${ONIX_NATIVE_SYSTEMD_SUCCESS_MESSAGE:-$PROBE_CONTEXT proved the image boots with native source-built onix-systemd as PID 1.}"
+SUCCESS_MESSAGE="${ONIX_NATIVE_SYSTEMD_SUCCESS_MESSAGE:-$PROBE_CONTEXT proved the image boots with native source-built systemd as PID 1.}"
 SUCCESS_DETAILS="${ONIX_NATIVE_SYSTEMD_SUCCESS_DETAILS:-$PROBE_CONTEXT proved the booted ONIX image can use the native source-built
-onix-systemd package as PID 1 while bootstrap networking and authenticated SSH
+systemd package as PID 1 while bootstrap networking and authenticated SSH
 still work.}"
 
 die() {
@@ -69,7 +69,7 @@ fi
 
 native_systemd_serial_command() {
   cat <<'EOF'
-/usr/bin/busybox sh -c 'set -eu; bb=/usr/bin/busybox; test -x /usr/lib/systemd/systemd; if [ -L /usr/lib/systemd/systemd ]; then echo "bad-systemd-symlink=$($bb readlink /usr/lib/systemd/systemd)"; exit 1; fi; test -f /usr/lib/systemd/system/multi-user.target; test -x /usr/bin/systemctl; test -x /usr/bin/journalctl; test -x /usr/bin/udevadm; test -e /usr/lib/ld-musl-x86_64.so.1; test -f /usr/share/onix/bootstrap/native-systemd-stone.txt; test -f /usr/share/onix/packages/onix-systemd.md; if $bb grep -R -F /nix/store /usr/share/onix/packages/onix-systemd.md /usr/share/onix/bootstrap/native-systemd-stone.txt >/dev/null 2>&1; then echo "bad-native-systemd-note-mentions-nix-store"; exit 1; fi; pid1="$($bb cat /proc/1/comm)"; test "$pid1" = systemd; version="$(/usr/bin/systemctl --version | "$bb" head -n1)"; printf "ONIX_NATIVE_SYSTEMD_SERIAL_OK pid1=%s systemd=native version=%s\n" "$pid1" "$version"'
+/usr/bin/busybox sh -c 'set -eu; bb=/usr/bin/busybox; test -x /usr/lib/systemd/systemd; if [ -L /usr/lib/systemd/systemd ]; then echo "bad-systemd-symlink=$($bb readlink /usr/lib/systemd/systemd)"; exit 1; fi; test -f /usr/lib/systemd/system/multi-user.target; test -x /usr/bin/systemctl; test -x /usr/bin/journalctl; test -x /usr/bin/udevadm; test -e /usr/lib/ld-musl-x86_64.so.1; test -f /usr/share/onix/bootstrap/native-systemd-stone.txt; test -f /usr/share/onix/packages/systemd.md; if $bb grep -R -F /nix/store /usr/share/onix/packages/systemd.md /usr/share/onix/bootstrap/native-systemd-stone.txt >/dev/null 2>&1; then echo "bad-native-systemd-note-mentions-nix-store"; exit 1; fi; pid1="$($bb cat /proc/1/comm)"; test "$pid1" = systemd; version="$(/usr/bin/systemctl --version | "$bb" head -n1)"; printf "ONIX_NATIVE_SYSTEMD_SERIAL_OK pid1=%s systemd=native version=%s\n" "$pid1" "$version"'
 EOF
 }
 
@@ -93,11 +93,11 @@ fi
   || die "missing ONIX image: artifacts/onix-image/onix.raw (run make phase 2 first)"
 [[ -f "$IMAGE_REPO_DIR/stone.index" ]] \
   || die "missing ONIX image package repo index: ${IMAGE_REPO_DIR#$ONIX_ROOT/}/stone.index"
-compgen -G "$IMAGE_REPO_DIR/onix-systemd-*.stone" >/dev/null \
-  || die "missing onix-systemd stone in ${IMAGE_REPO_DIR#$ONIX_ROOT/} (run make phase 505)"
+compgen -G "$IMAGE_REPO_DIR/systemd-*.stone" >/dev/null \
+  || die "missing systemd stone in ${IMAGE_REPO_DIR#$ONIX_ROOT/} (run make phase 505)"
 
 log "$LIVE_PROOF_LABEL"
-log "goal      : boot with source-built onix-systemd as PID 1"
+log "goal      : boot with source-built systemd as PID 1"
 log "window    : ${WAIT_SECONDS}s"
 
 kill_probe >/dev/null 2>&1 || true

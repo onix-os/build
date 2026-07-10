@@ -24,6 +24,10 @@ user="$BUILD_USER"
 MODE="apply"
 FORCE_REBUILD="${ONIX_PHASE510_REBUILD:-0}"
 
+DEFAULT_MUSL_VERSION="${ONIX_MUSL_VERSION:-1.2.6}"
+DEFAULT_MUSL_SOURCE_URL="${ONIX_MUSL_SOURCE_URL:-https://musl.libc.org/releases/musl-$DEFAULT_MUSL_VERSION.tar.gz}"
+DEFAULT_MUSL_SOURCE_SHA256="${ONIX_MUSL_SOURCE_SHA256:-d585fd3b613c66151fc3249e8ed44f77020cb5e6c1e635a616d3f9f82460512a}"
+
 STONE_DIR="${ONIX_STONE_DIR:-$ONIX_ROOT/artifacts/onix-stones}"
 LOCAL_REPO_DIR="${ONIX_LOCAL_REPO_DIR:-$ONIX_ROOT/artifacts/onix-local-repo}"
 STONE_WORK_DIR="${ONIX_STONE_WORK_DIR:-$ONIX_ROOT/artifacts/onix-stone-work}"
@@ -102,6 +106,37 @@ realize_source() {
   nix eval --raw "github:NixOS/nixpkgs/${rev}#${attr}.src.outPath"
 }
 
+realize_musl_source() {
+  local override="$1"
+  local source_dir archive actual_sha
+
+  if [[ -n "$override" ]]; then
+    printf '%s\n' "$override"
+    return
+  fi
+
+  source_dir="$WORK/sources"
+  archive="$source_dir/musl-$DEFAULT_MUSL_VERSION.tar.gz"
+  mkdir -p "$source_dir"
+
+  if [[ -f "$archive" ]]; then
+    actual_sha="$(sha256sum "$archive" | awk '{print $1}')"
+    if [[ "$actual_sha" != "$DEFAULT_MUSL_SOURCE_SHA256" ]]; then
+      rm -f "$archive"
+    fi
+  fi
+
+  if [[ ! -f "$archive" ]]; then
+    curl -L --fail --retry 3 -o "$archive" "$DEFAULT_MUSL_SOURCE_URL"
+  fi
+
+  actual_sha="$(sha256sum "$archive" | awk '{print $1}')"
+  [[ "$actual_sha" == "$DEFAULT_MUSL_SOURCE_SHA256" ]] \
+    || die "musl source checksum mismatch for $archive: expected $DEFAULT_MUSL_SOURCE_SHA256, got $actual_sha"
+
+  printf '%s\n' "$archive"
+}
+
 meson_project_version() {
   local meson_file="$1"
   sed -n "s/.*version:[[:space:]]*'\\([^']*\\)'.*/\\1/p" "$meson_file" | head -n 1
@@ -129,12 +164,19 @@ archive_dir_source() {
 
 host_stone_for() {
   local package="$1"
-  find "$STONE_DIR" -maxdepth 1 -name "$package-*.stone" ! -name '*dbginfo*' | sort | tail -n 1
+  find "$STONE_DIR" -maxdepth 1 -name "$package-[0-9]*.stone" ! -name '*dbginfo*' | sort | tail -n 1
+}
+
+elf_has_symbol() {
+  local elf="$1"
+  local symbol="$2"
+  readelf -Ws "$elf" |
+    awk -v symbol="$symbol" '$8 == symbol { found=1 } END { exit found ? 0 : 1 }'
 }
 
 local_stone_for() {
   local package="$1"
-  find "$LOCAL_REPO_DIR" -maxdepth 1 -name "$package-*.stone" ! -name '*dbginfo*' | sort | tail -n 1
+  find "$LOCAL_REPO_DIR" -maxdepth 1 -name "$package-[0-9]*.stone" ! -name '*dbginfo*' | sort | tail -n 1
 }
 
 check_source_files() {
@@ -165,6 +207,7 @@ phase510_packages_for_proof() {
 prove_host_install_and_audit() {
   [[ -x "$HOST_MOSS" ]] || die "missing host moss: ${HOST_MOSS#$ONIX_ROOT/} (run: make phase 202)"
   [[ -x "$AUDIT_SCRIPT" ]] || die "missing payload audit helper: ${AUDIT_SCRIPT#$ONIX_ROOT/}"
+  command -v readelf >/dev/null 2>&1 || die "missing required command: readelf"
 
   local root="$PROOF_DIR/moss-root"
   local cache="$PROOF_DIR/moss-cache"
@@ -207,6 +250,8 @@ prove_host_install_and_audit() {
   fi
 
   [[ -e "$target/usr/lib/ld-musl-x86_64.so.1" ]] || die "missing installed musl loader"
+  elf_has_symbol "$target/usr/lib/ld-musl-x86_64.so.1" renameat2 \
+    || die "installed musl loader is missing renameat2; rebuild Phase 510 musl"
   [[ -e "$target/usr/lib/libpam.so.0" ]] || die "missing installed libpam.so.0"
   [[ -e "$target/usr/lib/libseccomp.so.2" ]] || die "missing installed libseccomp.so.2"
   [[ -f "$target/usr/share/onix/packages/musl.md" ]] || die "missing musl package note"
@@ -240,6 +285,7 @@ run_check() {
 run_apply() {
   need_cmd awk
   need_cmd cp
+  need_cmd curl
   need_cmd gzip
   need_cmd nix
   need_cmd sed
@@ -277,7 +323,7 @@ run_apply() {
   log "local repo: ${LOCAL_REPO_DIR#$ONIX_ROOT/}"
 
   local musl_src pam_src seccomp_src musl_version pam_version seccomp_version
-  musl_src="$(realize_source musl "${ONIX_MUSL_SRC:-}")"
+  musl_src="$(realize_musl_source "${ONIX_MUSL_SRC:-}")"
   pam_src="$(realize_source linux-pam "${ONIX_LINUX_PAM_SRC:-}")"
   seccomp_src="$(realize_source libseccomp "${ONIX_LIBSECCOMP_SRC:-}")"
 
@@ -410,12 +456,23 @@ check_shared_object() {
     fi
 }
 
+elf_has_symbol() {
+    elf="$1"
+    symbol="$2"
+    readelf -Ws "$elf" |
+        awk -v symbol="$symbol" '$8 == symbol { found=1 } END { exit found ? 0 : 1 }'
+}
+
 check_musl_soname() {
     so="$1"
     check_shared_object "$so"
     if ! readelf -d "$so" 2>/dev/null | grep -q 'Library soname: \[libc.musl-x86_64.so.1\]'; then
         echo "error: $so does not provide libc.musl-x86_64.so.1" >&2
         readelf -d "$so" >&2 || true
+        exit 1
+    fi
+    if ! elf_has_symbol "$so" renameat2; then
+        echo "error: $so does not export renameat2" >&2
         exit 1
     fi
 }
@@ -472,7 +529,7 @@ cut_stone() {
         boulder build -y --normal-priority -o "$out" "$recipe"
     )
 
-    stone="$(find "$out" -maxdepth 1 -name "$package-*.stone" ! -name '*dbginfo*' | sort | head -n 1)"
+    stone="$(find "$out" -maxdepth 1 -name "$package-[0-9]*.stone" ! -name '*dbginfo*' | sort | head -n 1)"
     test -f "$stone"
     printf '%s\n' "$stone" > "$LAB/$package.stone.path"
     moss inspect --check "$stone"
@@ -561,6 +618,12 @@ Installed runtime provider:
 
 \`\`\`text
 /usr/lib/ld-musl-x86_64.so.1
+\`\`\`
+
+Required ABI proof:
+
+\`\`\`text
+exports renameat2
 \`\`\`
 EOF_DOC
 
@@ -776,6 +839,7 @@ moss -D "$ROOT" --cache "$CACHE" repo update
 moss -D "$ROOT" --cache "$CACHE" -y install --to "$TARGET" musl linux-pam libseccomp
 
 test -e "$TARGET/usr/lib/ld-musl-x86_64.so.1"
+elf_has_symbol "$TARGET/usr/lib/ld-musl-x86_64.so.1" renameat2
 test -e "$TARGET/usr/lib/libpam.so.0"
 test -e "$TARGET/usr/lib/libseccomp.so.2"
 

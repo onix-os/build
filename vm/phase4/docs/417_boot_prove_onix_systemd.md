@@ -1,4 +1,4 @@
-# Phase 417 — boot-prove `onix-systemd`
+# Phase 417 — boot-prove `systemd`
 
 | Item | Value |
 |---|---|
@@ -7,7 +7,7 @@
 | Requires | Phase 416 image layout |
 | Mutates disk/image? | Yes, it reapplies the Phase 416 materialization first |
 | Boots QEMU? | Yes |
-| Main proof | The booted image reaches systemd userspace with PID 1 running from the `onix-systemd` materialized runtime payload, and authenticated SSH still works. |
+| Main proof | The booted image reaches systemd userspace with PID 1 running from the `systemd` materialized runtime payload, and authenticated SSH still works. |
 
 ## Why this phase exists
 
@@ -97,7 +97,7 @@ Kernel panic - not syncing: Attempted to kill init
 Those messages mean the handoff from initramfs to real userspace failed.
 
 Phase 417 specifically checks that this does not happen after switching systemd
-ownership to the `onix-systemd` stone.
+ownership to the `systemd` stone.
 
 ## Why Phase 417 still starts with Phase 416
 
@@ -203,7 +203,7 @@ The command also checks:
 /usr/lib/systemd/systemd
 /usr/lib/onix/bootstrap/nix/store/...
 /usr/share/onix/bootstrap/systemd-stone.txt
-/usr/share/onix/packages/onix-systemd.md
+/usr/share/onix/packages/systemd.md
 ```
 
 This proves the booted guest can see both:
@@ -242,7 +242,7 @@ Inside the SSH command, it verifies:
 /usr/bin/systemctl exists
 /usr/bin/journalctl exists
 /usr/bin/udevadm exists
-/usr/share/onix/packages/onix-systemd.closure exists
+/usr/share/onix/packages/systemd.closure exists
 ```
 
 It also runs:
@@ -272,7 +272,7 @@ Phase 417 proves:
 - `systemctl --version` runs inside the guest,
 - host-to-guest public-key SSH still works.
 
-That is the first real runtime proof that `onix-systemd` is usable as the
+That is the first real runtime proof that `systemd` is usable as the
 current systemd ownership boundary.
 
 ## What Phase 417 does not prove
@@ -346,7 +346,7 @@ ONIX_STONE_SYSTEMD_SERIAL_OK pid1=systemd ...
 ==> running host-side proof
 ONIX_STONE_SYSTEMD_SSH_OK user=onix uid=1000 pid1=systemd ...
 ==> success
-Phase 417 proved the image boots with onix-systemd materialized as the PID 1 runtime payload.
+Phase 417 proved the image boots with systemd materialized as the PID 1 runtime payload.
 ```
 
 Evidence logs are written under:

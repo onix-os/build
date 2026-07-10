@@ -1,6 +1,6 @@
 name        : rootasrole
 version     : "@ROOTASROLE_VERSION@"
-release     : 1
+release     : 2
 homepage    : https://github.com/LeChatP/RootAsRole
 summary     : Role-based privilege delegation for ONIX
 description : |
@@ -30,6 +30,8 @@ install     : |
 
     chmod 04755 %(installroot)/usr/bin/dosr
     chmod 0755 %(installroot)/usr/bin/chsr
+    chmod 0644 %(installroot)/usr/share/defaults/pam.d/sr
+    chmod 0644 %(installroot)/usr/share/defaults/pam.d/dosr
     chmod 0644 %(installroot)/usr/share/onix/packages/rootasrole.md
 
     find %(installroot)/usr -type d -exec chmod 00755 {} \;

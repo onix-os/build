@@ -17,8 +17,8 @@ help: ## show Phase 1 help
 phases: ## list the learning-phase aliases
 	@printf "  \033[36mmake phase 1\033[0m    run all Phase 1 steps: 100..108\n"
 	@printf "  \033[36mmake phase 100\033[0m  verify Phase 1 forge readiness\n"
-	@printf "  \033[36mmake phase 101\033[0m  build/check/install first real ONIX stone: onix-branding\n"
-	@printf "  \033[36mmake phase 102\033[0m  build/check/install onix-filesystem with onix-branding\n"
+	@printf "  \033[36mmake phase 101\033[0m  build/check/install first real ONIX stone: branding\n"
+	@printf "  \033[36mmake phase 102\033[0m  build/check/install filesystem with branding\n"
 	@printf "  \033[36mmake phase 103\033[0m  assemble first named local ONIX repo and install from it\n"
 	@printf "  \033[36mmake phase 104\033[0m  prepare publishable ONIX repo layout and verify it\n"
 	@printf "  \033[36mmake phase 105\033[0m  export publishable ONIX repo from forge to host artifacts\n"
@@ -80,10 +80,10 @@ check: ## host-side syntax validation only
 ready: ## verify the running forge has boulder+moss available
 	$(PHASE0)/ssh.sh $(BUILD_USER) 'export PATH="$$HOME/.local/bin:$$PATH"; command -v moss; moss --version; command -v boulder; boulder --version'
 
-branding: ## build/check/install onix-branding in the running forge
+branding: ## build/check/install branding in the running forge
 	./build-branding-stone.sh
 
-filesystem: branding ## build/check/install onix-filesystem composed with branding
+filesystem: branding ## build/check/install filesystem composed with branding
 	./build-filesystem-stone.sh
 
 filesystem-only:

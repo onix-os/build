@@ -16,10 +16,10 @@ user="${1:-$BUILD_USER}"
 STONE_DIR="${ONIX_STONE_DIR:-$ONIX_ROOT/artifacts/onix-stones}"
 LOCAL_REPO_DIR="${ONIX_LOCAL_REPO_DIR:-$ONIX_ROOT/artifacts/onix-local-repo}"
 STONE_WORK_DIR="${ONIX_STONE_WORK_DIR:-$ONIX_ROOT/artifacts/onix-stone-work}"
-RECIPE_TEMPLATE="${ONIX_BUSYBOX_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/core/onix-busybox/stone.yaml.in}"
+RECIPE_TEMPLATE="${ONIX_BUSYBOX_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/core/busybox/stone.yaml.in}"
 HOST_MOSS="${ONIX_HOST_MOSS:-$ONIX_ROOT/artifacts/host-tools/bin/moss}"
 
-LAB="/home/$user/stone-lab/onix-busybox"
+LAB="/home/$user/stone-lab/busybox"
 
 need_cmd nix
 need_cmd awk
@@ -74,7 +74,7 @@ BUSYBOX_VERSION="$(printf '%s\n' "$BUSYBOX_ARCHIVE" | sed -E 's/^.*busybox-([0-9
 [[ "$BUSYBOX_VERSION" != "$BUSYBOX_ARCHIVE" ]] || die "could not infer BusyBox version from $BUSYBOX_ARCHIVE"
 
 BUSYBOX_SHA256="$(sha256sum "$BUSYBOX_SRC" | awk '{print $1}')"
-WORK="$STONE_WORK_DIR/onix-busybox"
+WORK="$STONE_WORK_DIR/busybox"
 BUILD_ENV="$WORK/build.env"
 
 log "Phase 409 source-built BusyBox stone"
@@ -132,7 +132,7 @@ need_tool awk
 need_tool install
 need_tool file
 
-LAB="$HOME/stone-lab/onix-busybox"
+LAB="$HOME/stone-lab/busybox"
 BUILD_SRC="$LAB/source-build"
 PAYLOAD_ROOT="$LAB/payload-root"
 OUT="$LAB/out"
@@ -336,7 +336,7 @@ grep -Eqi 'statically linked|static-pie linked' "$LAB/busybox.file"
 "$BUSYBOX_BIN" true
 "$BUSYBOX_BIN" sh -c 'echo musl-static busybox shell works'
 
-PAYLOAD_NAME="onix-busybox-payload-$BUSYBOX_VERSION"
+PAYLOAD_NAME="busybox-payload-$BUSYBOX_VERSION"
 PAYLOAD_SRC="$LAB/src/$PAYLOAD_NAME"
 PAYLOAD_ARCHIVE="$LAB/src/$PAYLOAD_NAME.tar.gz"
 
@@ -358,18 +358,18 @@ for applet in $SYSTEMD_OWNED_BUSYBOX_APPLETS; do
         exit 1
     }
     if [ -e "$PAYLOAD_SRC/usr/bin/$applet" ]; then
-        echo "error: onix-busybox must not own /usr/bin/$applet" >&2
+        echo "error: busybox must not own /usr/bin/$applet" >&2
         exit 1
     fi
 done
 
-"$BUSYBOX_BIN" --list > "$PAYLOAD_SRC/usr/share/onix/packages/onix-busybox.applets"
-printf '%s\n' $BOOTSTRAP_BUSYBOX_APPLETS > "$PAYLOAD_SRC/usr/share/onix/packages/onix-busybox.links"
-printf '%s\n' $SYSTEMD_OWNED_BUSYBOX_APPLETS > "$PAYLOAD_SRC/usr/share/onix/packages/onix-busybox.systemd-owned"
-cat > "$PAYLOAD_SRC/usr/share/onix/packages/onix-busybox.md" <<EOF_DOC
-# onix-busybox
+"$BUSYBOX_BIN" --list > "$PAYLOAD_SRC/usr/share/onix/packages/busybox.applets"
+printf '%s\n' $BOOTSTRAP_BUSYBOX_APPLETS > "$PAYLOAD_SRC/usr/share/onix/packages/busybox.links"
+printf '%s\n' $SYSTEMD_OWNED_BUSYBOX_APPLETS > "$PAYLOAD_SRC/usr/share/onix/packages/busybox.systemd-owned"
+cat > "$PAYLOAD_SRC/usr/share/onix/packages/busybox.md" <<EOF_DOC
+# busybox
 
-\`onix-busybox\` is the first local machine-plane replacement stone in Phase 4.
+\`busybox\` is the first local machine-plane replacement stone in Phase 4.
 
 Source archive:
 
@@ -402,10 +402,10 @@ $SYSTEMD_OWNED_BUSYBOX_APPLETS
 EOF_DOC
 
 chmod 0644 \
-    "$PAYLOAD_SRC/usr/share/onix/packages/onix-busybox.applets" \
-    "$PAYLOAD_SRC/usr/share/onix/packages/onix-busybox.links" \
-    "$PAYLOAD_SRC/usr/share/onix/packages/onix-busybox.systemd-owned" \
-    "$PAYLOAD_SRC/usr/share/onix/packages/onix-busybox.md"
+    "$PAYLOAD_SRC/usr/share/onix/packages/busybox.applets" \
+    "$PAYLOAD_SRC/usr/share/onix/packages/busybox.links" \
+    "$PAYLOAD_SRC/usr/share/onix/packages/busybox.systemd-owned" \
+    "$PAYLOAD_SRC/usr/share/onix/packages/busybox.md"
 chmod g-s \
     "$PAYLOAD_SRC/usr" \
     "$PAYLOAD_SRC/usr/bin" \
@@ -429,7 +429,7 @@ echo "==> recipe"
 sed -n '1,260p' "$LAB/stone.yaml"
 
 echo
-echo "==> building onix-busybox stone"
+echo "==> building busybox stone"
 rm -rf "$OUT"
 mkdir -p "$OUT"
 (
@@ -480,19 +480,19 @@ done
 
 for applet in $SYSTEMD_OWNED_BUSYBOX_APPLETS; do
     if [ -e "$PAYLOAD/usr/bin/$applet" ]; then
-        echo "error: onix-busybox must not own /usr/bin/$applet" >&2
+        echo "error: busybox must not own /usr/bin/$applet" >&2
         exit 1
     fi
 done
 
-test -f "$PAYLOAD/usr/share/onix/packages/onix-busybox.applets"
-test -f "$PAYLOAD/usr/share/onix/packages/onix-busybox.links"
-test -f "$PAYLOAD/usr/share/onix/packages/onix-busybox.systemd-owned"
-grep -qx 'sh' "$PAYLOAD/usr/share/onix/packages/onix-busybox.applets"
-grep -qx 'nc' "$PAYLOAD/usr/share/onix/packages/onix-busybox.applets"
-grep -qx 'ifconfig' "$PAYLOAD/usr/share/onix/packages/onix-busybox.applets"
-grep -qx 'reboot' "$PAYLOAD/usr/share/onix/packages/onix-busybox.systemd-owned"
-grep -qx 'poweroff' "$PAYLOAD/usr/share/onix/packages/onix-busybox.systemd-owned"
+test -f "$PAYLOAD/usr/share/onix/packages/busybox.applets"
+test -f "$PAYLOAD/usr/share/onix/packages/busybox.links"
+test -f "$PAYLOAD/usr/share/onix/packages/busybox.systemd-owned"
+grep -qx 'sh' "$PAYLOAD/usr/share/onix/packages/busybox.applets"
+grep -qx 'nc' "$PAYLOAD/usr/share/onix/packages/busybox.applets"
+grep -qx 'ifconfig' "$PAYLOAD/usr/share/onix/packages/busybox.applets"
+grep -qx 'reboot' "$PAYLOAD/usr/share/onix/packages/busybox.systemd-owned"
+grep -qx 'poweroff' "$PAYLOAD/usr/share/onix/packages/busybox.systemd-owned"
 
 echo
 echo "==> index local repo and install into disposable target"
@@ -502,7 +502,7 @@ cp "$STONE" "$REPO/"
 moss index "$REPO"
 moss -D "$ROOT" --cache "$CACHE" repo add local "file://$REPO/stone.index" -c "local onix busybox repo"
 moss -D "$ROOT" --cache "$CACHE" repo update
-moss -D "$ROOT" --cache "$CACHE" -y install --to "$TARGET" onix-busybox
+moss -D "$ROOT" --cache "$CACHE" -y install --to "$TARGET" busybox
 
 test -x "$TARGET/usr/bin/busybox"
 "$TARGET/usr/bin/busybox" true
@@ -518,25 +518,25 @@ echo "target: $TARGET"
 REMOTE
 
 log "copying built stone back to host artifacts"
-rm -f "$STONE_DIR"/onix-busybox-*.stone "$STONE_DIR"/onix-busybox-dbginfo-*.stone
+rm -f "$STONE_DIR"/busybox-*.stone "$STONE_DIR"/busybox-dbginfo-*.stone
 "$PHASE0_DIR/ssh.sh" "$user" "stone=\$(cat '$LAB/stone.path') && cd \"\$(dirname \"\$stone\")\" && tar -cf - \"\$(basename \"\$stone\")\"" \
   | tar -C "$STONE_DIR" -xf -
 
-HOST_STONE="$(find "$STONE_DIR" -maxdepth 1 -name 'onix-busybox-*.stone' ! -name '*dbginfo*' | sort | tail -n 1)"
-[[ -f "$HOST_STONE" ]] || die "failed to copy onix-busybox stone into ${STONE_DIR#$ONIX_ROOT/}"
+HOST_STONE="$(find "$STONE_DIR" -maxdepth 1 -name 'busybox-*.stone' ! -name '*dbginfo*' | sort | tail -n 1)"
+[[ -f "$HOST_STONE" ]] || die "failed to copy busybox stone into ${STONE_DIR#$ONIX_ROOT/}"
 
 log "host moss integrity check"
 "$HOST_MOSS" inspect --check "$HOST_STONE"
 
 log "refreshing local Phase 4 moss repo"
-rm -f "$LOCAL_REPO_DIR"/onix-busybox-*.stone "$LOCAL_REPO_DIR"/onix-busybox-dbginfo-*.stone
+rm -f "$LOCAL_REPO_DIR"/busybox-*.stone "$LOCAL_REPO_DIR"/busybox-dbginfo-*.stone
 cp "$HOST_STONE" "$LOCAL_REPO_DIR/"
 "$HOST_MOSS" index "$LOCAL_REPO_DIR"
 
 cat <<EOF
 
 ==> success
-onix-busybox stone: ${HOST_STONE#$ONIX_ROOT/}
+busybox stone: ${HOST_STONE#$ONIX_ROOT/}
 local repo index   : ${LOCAL_REPO_DIR#$ONIX_ROOT/}/stone.index
 
 Next:

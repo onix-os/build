@@ -95,8 +95,8 @@ artifacts/onix-publish/README.txt
 artifacts/onix-publish/repo.json
 artifacts/onix-publish/unstable/x86_64/SHA256SUMS
 artifacts/onix-publish/unstable/x86_64/stone.index
-artifacts/onix-publish/unstable/x86_64/onix-branding-*.stone
-artifacts/onix-publish/unstable/x86_64/onix-filesystem-*.stone
+artifacts/onix-publish/unstable/x86_64/branding-*.stone
+artifacts/onix-publish/unstable/x86_64/filesystem-*.stone
 ```
 
 The future public Moss index URL is:

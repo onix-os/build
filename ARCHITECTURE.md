@@ -30,7 +30,7 @@ Locked in up front so every later artifact is consistent.
 | C library | **musl** | Non-negotiable; the whole base is musl. Nix apps bring their own glibc (see §3) |
 | Magic number | `6649` | "ONIX" on a phone keypad — nixbld GID, VM MAC suffix, port offsets |
 | Git org | `onix-os` | Repos: `image`, `recipes` (musl `.stone` recipes), `nix-integration`, `docs` |
-| Package namespace | `onix-*` | All custom .stone packages: `onix-base`, `onix-nix-integration`, `onix-cli`, `onix-branding`, `onix-desktop` |
+| Package namespace | `onix-*` | All custom .stone packages: `onix-base`, `onix-nix-integration`, `onix-cli`, `branding`, `onix-desktop` |
 | Moss repo | `onix` | `moss repo add onix <url>` — the **only** repo; there is no upstream repo beneath it |
 | Upstream tooling | `os-tools` | `github.com/AerynOS/os-tools` — moss + boulder, pinned. The one external dependency |
 | CLI wrapper | `onix` | Thin wrapper over moss + nix (see §6). `onix update`, `onix rollback`, `onix status` |
@@ -38,7 +38,7 @@ Locked in up front so every later artifact is consistent.
 | Volume labels | `ONIX-ESP`, `ONIX-BOOT`, `onix-root`, `ONIX-PERSIST` | |
 | Forge | Alpine musl VM, hostname `quarry` | Throwaway bootstrap host — builds moss+boulder and the first stones. |
 
-**/usr/lib/os-release** (shipped by `onix-branding`):
+**/usr/lib/os-release** (shipped by `branding`):
 
 ```ini
 NAME="ONIX"
@@ -127,7 +127,7 @@ No AerynOS recipe is musl — a musl base is a **genuine bootstrap**, and that i
 
 Assemble a bootable image from the musl base stones (an `onix-os/image` repo):
 
-- moss-install `onix-base` + `onix-branding` (os-release above) into a fresh root: kernel, initrd tooling, init, udev, dbus, a network stack, busybox/coreutils, filesystem tools (xfsprogs, dosfstools), moss itself.
+- moss-install `onix-base` + `branding` (os-release above) into a fresh root: kernel, initrd tooling, init, udev, dbus, a network stack, busybox/coreutils, filesystem tools (xfsprogs, dosfstools), moss itself.
 - Keep a QEMU/OVMF smoke-test — that's CI from day one (the `vm/` harness generalizes to boot the built image).
 - Every image build records: `os-tools` commit, `onix` repo commit, resulting fstx ID. That triple is the reproducible build pin for a rolling personal distro.
 
@@ -322,7 +322,7 @@ Ships as `onix-cli` from the `onix` repo. Start as ~200 lines of shell; rewrite 
 |---|---|---|
 | **From-scratch musl bootstrap is a large effort** | **High — this is the whole project now** | Phase gates; Alpine forge does the heavy lifting for the toolchain; keep the base *tiny* — Nix covers the long tail so the base recipe set stays small |
 | **No musl `.stone` recipes exist upstream** | High | Author/port them, using Alpine `APKBUILD`s as the musl-patch reference; ruthless minimalism on the base set |
-| **systemd-on-musl maintenance** | High / structural | ONIX keeps the systemd-on-musl path while it remains feasible; package it intentionally as `onix-systemd` and test PID 1, udev, tmpfiles, sysusers, and service startup in QEMU. §2.4 |
+| **systemd-on-musl maintenance** | High / structural | ONIX keeps the systemd-on-musl path while it remains feasible; package it intentionally as `systemd` and test PID 1, udev, tmpfiles, sysusers, and service startup in QEMU. §2.4 |
 | moss/boulder are alpha & glibc-tested | Medium | They're open Rust you can read/patch; pin `os-tools`; fix any glibc assumptions and upstream them |
 | glibc skew: musl base Mesa vs glibc Nix apps | Medium, intermittent | Nix apps are self-contained so most run; concentrate the fix at the `/run/opengl-driver` seam — possibly a glibc Mesa variant for the Nix world (§3.3) |
 | Branding drift | Medium during early development | Keep public names as ONIX or onix only; grep tracked docs/scripts before commits |

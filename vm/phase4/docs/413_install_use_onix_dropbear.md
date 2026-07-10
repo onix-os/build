@@ -1,13 +1,13 @@
-# Phase 413 — install/use `onix-dropbear`
+# Phase 413 — install/use `dropbear`
 
 | Item | Value |
 |---|---|
 | Command | `make phase 413` |
 | Underlying make target/scripts | `vm/phase4/materialize-etc.sh --dropbear-stone`, then `vm/phase4/stone-dropbear-probe.sh` |
-| Requires | Phase 410 `onix-busybox` installed in the image, Phase 412 `onix-dropbear` present in the local Phase 4 moss repo |
+| Requires | Phase 410 `busybox` installed in the image, Phase 412 `dropbear` present in the local Phase 4 moss repo |
 | Mutates disk/image? | Yes |
 | Boots QEMU? | Yes |
-| Main proof | The booted image accepts SSH while the systemd service starts `/usr/sbin/dropbear` from the `onix-dropbear` stone. |
+| Main proof | The booted image accepts SSH while the systemd service starts `/usr/sbin/dropbear` from the `dropbear` stone. |
 
 ## Why this phase exists
 
@@ -16,7 +16,7 @@ Phase 406 made SSH work.
 Phase 412 built a real ONIX package:
 
 ```text
-onix-dropbear-...stone
+dropbear-...stone
 ```
 
 Phase 413 connects those two facts.
@@ -35,7 +35,7 @@ systemd service
   starts /usr/sbin/dropbear
 
 /usr/sbin/dropbear
-  comes from onix-dropbear.stone
+  comes from dropbear.stone
 ```
 
 That is the important learning point.
@@ -69,7 +69,7 @@ Phase 413 makes that true for the active SSH path.
 
 ## What gets installed
 
-The phase installs the `onix-dropbear` package from:
+The phase installs the `dropbear` package from:
 
 ```text
 artifacts/onix-local-repo/stone.index
@@ -94,7 +94,7 @@ The package payload copied into the image is:
 ```text
 /usr/sbin/dropbear
 /usr/bin/dropbearkey
-/usr/share/onix/packages/onix-dropbear.md
+/usr/share/onix/packages/dropbear.md
 ```
 
 The image keeps its normal filesystem meaning:
@@ -228,7 +228,7 @@ There are two separate questions:
 Phase 413 answers the first question:
 
 ```text
-SSH executes /usr/sbin/dropbear from onix-dropbear.
+SSH executes /usr/sbin/dropbear from dropbear.
 ```
 
 A later audit phase answers the second question:
@@ -255,7 +255,7 @@ It verifies:
 - `/usr/bin/dropbearkey` exists and is executable,
 - both binaries are static for this bootstrap phase,
 - `dropbearkey` can generate an Ed25519 key,
-- `/usr/share/onix/packages/onix-dropbear.md` exists,
+- `/usr/share/onix/packages/dropbear.md` exists,
 - the `onix` SSH user exists,
 - `/persist/home/onix/.ssh/authorized_keys` exists,
 - `/etc/dropbear/dropbear_ed25519_host_key` exists,
@@ -328,14 +328,14 @@ Run:
 make phase 413
 ```
 
-You should see the materializer install `onix-dropbear`, then QEMU boot and the
+You should see the materializer install `dropbear`, then QEMU boot and the
 SSH probe succeed.
 
 At the end, the important lines are:
 
 ```text
 ==> success
-Phase 413 proved the booted ONIX image can use onix-dropbear for
+Phase 413 proved the booted ONIX image can use dropbear for
 authenticated SSH.
 ```
 

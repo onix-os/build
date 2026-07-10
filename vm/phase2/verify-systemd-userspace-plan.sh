@@ -36,7 +36,7 @@ for text in \
   "/usr/lib/systemd/systemd" \
   "systemd.unit=multi-user.target" \
   "/usr/lib/systemd/system/multi-user.target" \
-  "onix-systemd" \
+  "systemd" \
   "musl" \
   "do not copy host systemd" \
   "do not copy Nix systemd" \

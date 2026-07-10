@@ -1,4 +1,4 @@
-# Phase 102 — build `onix-filesystem`
+# Phase 102 — build `filesystem`
 
 ## At a glance
 
@@ -8,13 +8,13 @@
 | Run command | `make phase 102` |
 | Underlying make target/script | `vm/phase1/build-filesystem-stone.sh` |
 | Runs on | guest over SSH |
-| Main proof/artifact | Builds onix-filesystem and proves it composes with onix-branding. |
+| Main proof/artifact | Builds filesystem and proves it composes with branding. |
 
 
 Builds the recipe at:
 
 ```text
-recipes/onix-filesystem/stone.yaml
+recipes/filesystem/stone.yaml
 ```
 
 This package does **not** own live `/etc`, `/var`, `/run`, `/dev`, `/proc`, or
@@ -30,17 +30,17 @@ This package does **not** own live `/etc`, `/var`, `/run`, `/dev`, `/proc`, or
 
 ## Why a "filesystem" package that owns no live filesystem
 
-The name is a little counterintuitive at first: `onix-filesystem` is the package
+The name is a little counterintuitive at first: `filesystem` is the package
 that documents and templates ONIX's filesystem *policy*, but it deliberately
 touches none of the live, mutable, runtime directories. `/etc`, `/var`, `/run`,
 `/dev`, `/proc`, and `/sys` are all **machine state**, not package payload — they
 are created and populated at image-assembly or boot time, not shipped inside a
-`.stone`. What `onix-filesystem` ships is the *authoritative description* of how
+`.stone`. What `filesystem` ships is the *authoritative description* of how
 those directories are meant to be laid out and owned, plus ready-to-materialize
 default templates. It is policy-as-a-package.
 
 This is the second half of the `/usr/share/defaults/etc` idea introduced in step
-101. `onix-branding` shipped default *identity* text there; `onix-filesystem`
+101. `branding` shipped default *identity* text there; `filesystem`
 ships default *layout and shell* text there. Neither writes to live `/etc`.
 
 ## What the payload actually contains
@@ -122,15 +122,15 @@ has to be printed somewhere else — and `onix-login.sh` is that place. It:
 - respects an `ONIX_LOGIN_BANNER=0` opt-out,
 - guards against printing twice per session with `ONIX_LOGIN_BANNER_SHOWN`,
 - prefers `/usr/share/onix/branding/logo.ansi` (the colored asset from
-  `onix-branding`), falling back to `/etc/motd`.
+  `branding`), falling back to `/etc/motd`.
 
 That last point is the quiet payoff: `onix-login.sh` reads the very logo asset
-`onix-branding` shipped. The two packages are designed to interlock — which is
+`branding` shipped. The two packages are designed to interlock — which is
 exactly what step 102 sets out to prove.
 
 ## Proving composition
 
-The Phase 102 test installs both `onix-branding` and `onix-filesystem` into the
+The Phase 102 test installs both `branding` and `filesystem` into the
 same disposable target root, so we prove the first two real ONIX stones compose.
 
 "Compose" here means something specific: two independently-built stones install
@@ -139,12 +139,12 @@ consistent. The script indexes both stones into a small local repo, then runs a
 single moss transaction:
 
 ```sh
-moss ... install --to <target> onix-branding onix-filesystem
+moss ... install --to <target> branding filesystem
 ```
 
 and afterward asserts files from *both* packages are present in the one target —
-`onix-branding`'s generated `os-release` (`ID="onix"`) alongside
-`onix-filesystem`'s `fstab` and `profile.d` scripts. Because both packages write
+`branding`'s generated `os-release` (`ID="onix"`) alongside
+`filesystem`'s `fstab` and `profile.d` scripts. Because both packages write
 only under `/usr` and into disjoint subtrees (`/usr/lib` and
 `/usr/share/onix/branding` vs `/usr/share/onix/filesystem-layout.md` and the
 `profile.d` scripts), they slot together cleanly. This is the miniature version
@@ -154,7 +154,7 @@ of what image assembly will do with the full base set.
 
 It **proves**: the filesystem-policy recipe builds a valid `.stone`; its payload
 carries the layout doc, `fstab`, and login-shell scripts; and it installs
-alongside `onix-branding` into one root with no conflict. That two-package
+alongside `branding` into one root with no conflict. That two-package
 install is the first evidence of a real, if tiny, ONIX base *set* rather than a
 lone package.
 

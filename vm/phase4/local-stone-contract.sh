@@ -97,15 +97,15 @@ Phase split:
 
 Planned local replacement path:
 
-  409  build onix-busybox.stone
-  410  install/use onix-busybox in the image
+  409  build busybox.stone
+  410  install/use busybox in the image
   411  rerun shell/network/SSH proofs against stone BusyBox
-  412  build onix-dropbear.stone
-  413  install/use onix-dropbear and rerun SSH proof
+  412  build dropbear.stone
+  413  install/use dropbear and rerun SSH proof
   414  audit systemd stone dependencies
-  415  build first onix-systemd.stone
-  416  install onix-systemd into the image
-  417  boot with onix-systemd as PID 1
+  415  build first systemd.stone
+  416  install systemd into the image
+  417  boot with systemd as PID 1
   418  move bootstrap units/defaults into stone ownership
   419  audit that systemd/busybox/dropbear are no longer Nix-sourced
 
@@ -116,7 +116,7 @@ need_doc_text 'artifacts/onix-stones' "vm/phase4/docs/408_local_stone_repo_contr
 need_doc_text 'artifacts/onix-local-repo' "vm/phase4/docs/408_local_stone_repo_contract.md"
 need_doc_text 'vm/phase4/stone-recipes' "vm/phase4/docs/408_local_stone_repo_contract.md"
 need_doc_text '5xx = real stone factory' "vm/phase4/docs/408_local_stone_repo_contract.md"
-need_doc_text '409 — build `onix-busybox.stone`' "vm/phase4/docs/408_local_stone_repo_contract.md"
+need_doc_text '409 — build `busybox.stone`' "vm/phase4/docs/408_local_stone_repo_contract.md"
 need_doc_text '414 — systemd stone dependency audit' "vm/phase4/docs/408_local_stone_repo_contract.md"
 
 echo

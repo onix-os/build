@@ -12,7 +12,7 @@ Phase 509 built a Rust `uutils-coreutils` stone, but it only installed:
 /usr/bin/coreutils
 ```
 
-That was deliberate. At the time, `onix-busybox` still owned command names like:
+That was deliberate. At the time, `busybox` still owned command names like:
 
 ```text
 /usr/bin/ls
@@ -89,11 +89,11 @@ ownership: Moss needs exactly one package to own each path.
 Phase 513 rebuilds two stones:
 
 ```text
-onix-busybox
+busybox
 uutils-coreutils
 ```
 
-`onix-busybox` release 3 keeps:
+`busybox` release 3 keeps:
 
 ```text
 /usr/bin/busybox
@@ -135,7 +135,7 @@ Examples from that generated manifest:
 The phase installs both packages into a scratch Moss target:
 
 ```text
-onix-busybox
+busybox
 uutils-coreutils
 ```
 

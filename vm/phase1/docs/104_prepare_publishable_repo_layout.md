@@ -35,8 +35,8 @@ It creates:
   unstable/x86_64/
     stone.index
     SHA256SUMS
-    onix-branding-*.stone
-    onix-filesystem-*.stone
+    branding-*.stone
+    filesystem-*.stone
 ```
 
 The `unstable/x86_64/` path is not decoration — it is the URL path a client will
@@ -86,7 +86,7 @@ the channel, architecture, the local test index, and the future public index.
 
 This phase does **not** upload anything. It only proves the publish-style
 layout works by adding the local `stone.index` as repo `onix-unstable` and
-installing `onix-branding` + `onix-filesystem` from it.
+installing `branding` + `filesystem` from it.
 
 That final proof is the important one: the script registers the freshly-built
 publishable tree as a moss repo named `onix-unstable` over a `file://` URL,

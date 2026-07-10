@@ -16,10 +16,10 @@ Phase 4 has moved quickly.
 We now have several real stones:
 
 ```text
-onix-busybox
-onix-dropbear
-onix-systemd
-onix-bootstrap-policy
+busybox
+dropbear
+systemd
+bootstrap-policy
 ```
 
 And the image can boot with:
@@ -175,7 +175,7 @@ some other deliberate activation mechanism.
 
 ### Nix-built debt
 
-The first `onix-systemd` package is a bootstrap ownership stone.
+The first `systemd` package is a bootstrap ownership stone.
 
 It owns the systemd payload as package content, but the payload came from:
 

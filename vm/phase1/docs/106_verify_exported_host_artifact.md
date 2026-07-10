@@ -33,8 +33,8 @@ It verifies:
 - homepage is `https://onix-os.com`
 - source is `https://github.com/onix-os`
 - future repo hint is `https://repo.onix-os.com/unstable/x86_64/stone.index`
-- exactly one `onix-branding` stone exists
-- exactly one `onix-filesystem` stone exists
+- exactly one `branding` stone exists
+- exactly one `filesystem` stone exists
 - `SHA256SUMS` validates
 - no Moss test state (`.moss`, `moss-root`, `moss-cache`, `install-target`) leaked into the artifact
 - `artifacts/` is gitignored
@@ -50,8 +50,8 @@ knowing what each one is really guarding against:
   source, and `repo_url_hint`. This catches branding drift (the project rule is
   the name is only ever `ONIX` or `onix`) and guarantees the public-facing URLs
   are correct *before* they are ever advertised.
-- **Cardinality** — *exactly one* `onix-branding-*.stone` and *exactly one*
-  `onix-filesystem-*.stone`. This is subtle and important: an old build left
+- **Cardinality** — *exactly one* `branding-*.stone` and *exactly one*
+  `filesystem-*.stone`. This is subtle and important: an old build left
   behind next to a new one would put two versions of the same package in the
   repo, and a client could resolve the wrong one. "Exactly one" keeps the channel
   unambiguous.

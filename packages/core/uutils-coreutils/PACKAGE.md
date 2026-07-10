@@ -6,7 +6,7 @@ Rust implementation of the classic coreutils command family.
 
 Phase 509 packages the multicall `coreutils` binary first. Phase 513 rebuilds
 the package with command-name links for every applet reported by
-`/usr/bin/coreutils --list` after `onix-busybox` stops owning those overlapping
+`/usr/bin/coreutils --list` after `busybox` stops owning those overlapping
 paths.
 
 ## System role
@@ -139,14 +139,14 @@ Phase 509 intentionally does not install command-name links yet.
 Reason:
 
 ```text
-onix-busybox currently owns the bootstrap command paths.
+busybox currently owns the bootstrap command paths.
 ```
 
 Moving `/usr/bin/ls`, `/usr/bin/cp`, and related command ownership from BusyBox
 to uutils must be a later explicit package-ownership migration, not an
 accidental collision.
 
-Phase 513 is that explicit migration. It rebuilds `onix-busybox` with the
+Phase 513 is that explicit migration. It rebuilds `busybox` with the
 overlapping command links removed, then rebuilds `uutils-coreutils` with all
 compiled applet links enabled and proves both packages install together without
 path collisions.

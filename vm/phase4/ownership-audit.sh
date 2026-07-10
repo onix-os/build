@@ -36,18 +36,18 @@ allowed only as proofs. They must not become the final package story.
 Temporary payload                         Final machine-plane owner
 ---------------------------------------------------------------------------
 Alpine virt kernel/initramfs/modules      onix-kernel + onix-initramfs stones
-pkgsMusl.systemd                          onix-systemd stone
-pkgsMusl.busybox                          onix-busybox / onix-base stone
-pkgsMusl.dropbear                         onix-dropbear / onix-ssh stone
+pkgsMusl.systemd                          systemd stone
+pkgsMusl.busybox                          busybox / onix-base stone
+pkgsMusl.dropbear                         dropbear / onix-ssh stone
 Nix-store util-linux nologin              onix-util-linux or onix-base stone
 
 EOF
 
 log "checking architecture/book wording"
 need_doc_text 'Nix-sourced system payloads are bootstrap-only' "vm/phase4/docs/407_machine_plane_ownership_audit.md"
-need_doc_text 'onix-systemd' "vm/phase4/docs/407_machine_plane_ownership_audit.md"
-need_doc_text 'onix-busybox' "vm/phase4/docs/407_machine_plane_ownership_audit.md"
-need_doc_text 'onix-dropbear' "vm/phase4/docs/407_machine_plane_ownership_audit.md"
+need_doc_text 'systemd' "vm/phase4/docs/407_machine_plane_ownership_audit.md"
+need_doc_text 'busybox' "vm/phase4/docs/407_machine_plane_ownership_audit.md"
+need_doc_text 'dropbear' "vm/phase4/docs/407_machine_plane_ownership_audit.md"
 need_doc_text 'onix-kernel' "vm/phase4/docs/407_machine_plane_ownership_audit.md"
 need_doc_text 'Nix controls the toolbox' "ARCHITECTURE.md"
 need_doc_text 'Nix-sourced system payloads are bootstrap-only' "ARCHITECTURE.md"

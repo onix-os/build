@@ -17,8 +17,8 @@ and starts becoming the source of truth for builds.
 Earlier phases used recipes from older learning locations:
 
 ```text
-recipes/onix-branding/
-recipes/onix-filesystem/
+recipes/branding/
+recipes/filesystem/
 vm/phase4/stone-recipes/
 ```
 
@@ -31,12 +31,12 @@ packages/
 Phase 504 changes builder defaults so the next build reads from:
 
 ```text
-packages/base/onix-branding/
-packages/base/onix-filesystem/
-packages/core/onix-busybox/
-packages/services/onix-dropbear/
-packages/services/onix-systemd/
-packages/services/onix-bootstrap-policy/
+packages/base/branding/
+packages/base/filesystem/
+packages/core/busybox/
+packages/services/dropbear/
+packages/services/systemd/
+packages/services/bootstrap-policy/
 ```
 
 ## Why the old paths still exist
@@ -81,7 +81,7 @@ ONIX_BUSYBOX_RECIPE_TEMPLATE=some/other/stone.yaml.in \
 But the default is now canonical:
 
 ```text
-packages/core/onix-busybox/stone.yaml.in
+packages/core/busybox/stone.yaml.in
 ```
 
 ### What "switching a default" concretely means
@@ -89,7 +89,7 @@ packages/core/onix-busybox/stone.yaml.in
 The change inside each builder is one line — a shell default-value expansion:
 
 ```sh
-RECIPE_TEMPLATE="${ONIX_BUSYBOX_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/core/onix-busybox/stone.yaml.in}"
+RECIPE_TEMPLATE="${ONIX_BUSYBOX_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/core/busybox/stone.yaml.in}"
 ```
 
 Read it as: "use `ONIX_BUSYBOX_RECIPE_TEMPLATE` if the caller set it; otherwise fall
@@ -121,7 +121,7 @@ Some essential packages are cheap.
 
 Some are not.
 
-Native `onix-systemd` can be expensive to rebuild.
+Native `systemd` can be expensive to rebuild.
 
 So the normal command:
 
@@ -160,11 +160,11 @@ ONIX_PHASE504_REBUILD=1 make phase 504
 That rebuilds the cheaper essential package set from canonical defaults:
 
 ```text
-onix-branding
-onix-filesystem
-onix-busybox
-onix-dropbear
-onix-bootstrap-policy
+branding
+filesystem
+busybox
+dropbear
+bootstrap-policy
 ```
 
 Native systemd rebuild is intentionally one more explicit flag:
@@ -177,7 +177,7 @@ make phase 504
 
 ## Why native systemd is separate
 
-`onix-systemd` is essential, but it is a large source build.
+`systemd` is essential, but it is a large source build.
 
 It also currently has a documented dynamic musl/bootstrap-native exception.
 
@@ -210,8 +210,8 @@ artifacts/onix-publish/unstable/x86_64/
 Expected:
 
 ```text
-onix-branding-*.stone
-onix-filesystem-*.stone
+branding-*.stone
+filesystem-*.stone
 stone.index
 ```
 
@@ -224,10 +224,10 @@ artifacts/onix-local-repo/
 Expected:
 
 ```text
-onix-busybox-*.stone
-onix-dropbear-*.stone
-onix-systemd-*.stone
-onix-bootstrap-policy-*.stone
+busybox-*.stone
+dropbear-*.stone
+systemd-*.stone
+bootstrap-policy-*.stone
 stone.index
 ```
 

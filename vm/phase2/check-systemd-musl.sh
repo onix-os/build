@@ -114,7 +114,7 @@ echo "metadata : OK (musl-targeted systemd derivation exists and is not marked b
 
 echo
 echo "==> dry-run build graph"
-dry_log="$(mktemp "${TMPDIR:-/tmp}/onix-systemd-musl-dry.XXXXXX")"
+dry_log="$(mktemp "${TMPDIR:-/tmp}/systemd-musl-dry.XXXXXX")"
 trap 'rm -f "$dry_log"' EXIT
 if timeout 60s nix build --dry-run --impure --expr "$NIX_PKG_EXPR" >"$dry_log" 2>&1; then
   if grep -E 'derivations? will be built|path will be fetched|will be fetched' "$dry_log" | sed -n '1,3p'; then

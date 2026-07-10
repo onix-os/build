@@ -16,10 +16,10 @@ user="${1:-$BUILD_USER}"
 STONE_DIR="${ONIX_STONE_DIR:-$ONIX_ROOT/artifacts/onix-stones}"
 LOCAL_REPO_DIR="${ONIX_LOCAL_REPO_DIR:-$ONIX_ROOT/artifacts/onix-local-repo}"
 STONE_WORK_DIR="${ONIX_STONE_WORK_DIR:-$ONIX_ROOT/artifacts/onix-stone-work}"
-RECIPE_TEMPLATE="${ONIX_DROPBEAR_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/services/onix-dropbear/stone.yaml.in}"
+RECIPE_TEMPLATE="${ONIX_DROPBEAR_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/services/dropbear/stone.yaml.in}"
 HOST_MOSS="${ONIX_HOST_MOSS:-$ONIX_ROOT/artifacts/host-tools/bin/moss}"
 
-LAB="/home/$user/stone-lab/onix-dropbear"
+LAB="/home/$user/stone-lab/dropbear"
 
 need_cmd nix
 need_cmd awk
@@ -74,7 +74,7 @@ DROPBEAR_VERSION="$(printf '%s\n' "$DROPBEAR_ARCHIVE" | sed -E 's/^.*dropbear-([
 [[ "$DROPBEAR_VERSION" != "$DROPBEAR_ARCHIVE" ]] || die "could not infer Dropbear version from $DROPBEAR_ARCHIVE"
 
 DROPBEAR_SHA256="$(sha256sum "$DROPBEAR_SRC" | awk '{print $1}')"
-WORK="$STONE_WORK_DIR/onix-dropbear"
+WORK="$STONE_WORK_DIR/dropbear"
 BUILD_ENV="$WORK/build.env"
 
 log "Phase 412 source-built Dropbear stone"
@@ -105,7 +105,7 @@ tar -cf - \
   -C "$WORK" build.env \
   -C "$(dirname "$RECIPE_TEMPLATE")" "$(basename "$RECIPE_TEMPLATE")" \
   -C "$(dirname "$DROPBEAR_SRC")" "$DROPBEAR_ARCHIVE" \
-  | "$PHASE0_DIR/ssh.sh" "$user" "rm -rf '$LAB' && mkdir -p '$LAB/src' && tar -C '$LAB' -xf - && mv '$LAB/$DROPBEAR_ARCHIVE' '$LAB/src/$DROPBEAR_ARCHIVE' && mv '$LAB/$(basename "$RECIPE_TEMPLATE")' '$LAB/stone.yaml.in'"
+  | "$PHASE0_DIR/ssh.sh" "$user" "rm -rf '$LAB' && mkdir -p '$LAB/src' && tar -C '$LAB' -xf - && mv '$LAB/$DROPBEAR_ARCHIVE' '$LAB/src/$DROPBEAR_ARCHIVE' && if [ '$LAB/$(basename "$RECIPE_TEMPLATE")' != '$LAB/stone.yaml.in' ]; then mv '$LAB/$(basename "$RECIPE_TEMPLATE")' '$LAB/stone.yaml.in'; fi"
 
 "$PHASE0_DIR/ssh.sh" "$user" /bin/sh -s <<'REMOTE'
 set -eu
@@ -132,7 +132,7 @@ need_tool awk
 need_tool install
 need_tool file
 
-LAB="$HOME/stone-lab/onix-dropbear"
+LAB="$HOME/stone-lab/dropbear"
 BUILD_SRC="$LAB/source-build"
 PAYLOAD_SRC="$LAB/payload-src"
 OUT="$LAB/out"
@@ -210,7 +210,7 @@ grep -Eqi 'statically linked|static-pie linked' "$LAB/dropbearkey.file"
 test -s "$LAB/test_ed25519_host_key"
 rm -f "$LAB/test_ed25519_host_key"
 
-PAYLOAD_NAME="onix-dropbear-payload-$DROPBEAR_VERSION"
+PAYLOAD_NAME="dropbear-payload-$DROPBEAR_VERSION"
 PAYLOAD_ROOT="$LAB/src/$PAYLOAD_NAME"
 PAYLOAD_ARCHIVE="$LAB/src/$PAYLOAD_NAME.tar.gz"
 
@@ -223,10 +223,10 @@ mkdir -p \
 install -m 00755 "$DROPBEAR_BIN" "$PAYLOAD_ROOT/usr/sbin/dropbear"
 install -m 00755 "$DROPBEARKEY_BIN" "$PAYLOAD_ROOT/usr/bin/dropbearkey"
 
-cat > "$PAYLOAD_ROOT/usr/share/onix/packages/onix-dropbear.md" <<EOF_DOC
-# onix-dropbear
+cat > "$PAYLOAD_ROOT/usr/share/onix/packages/dropbear.md" <<EOF_DOC
+# dropbear
 
-\`onix-dropbear\` is the ONIX bootstrap SSH server stone in Phase 4.
+\`dropbear\` is the ONIX bootstrap SSH server stone in Phase 4.
 
 Source archive:
 
@@ -262,7 +262,7 @@ Those choices keep the Phase 4 SSH proof small. Later ONIX can decide whether
 to expand the SSH package or replace Dropbear with another server.
 EOF_DOC
 
-chmod 0644 "$PAYLOAD_ROOT/usr/share/onix/packages/onix-dropbear.md"
+chmod 0644 "$PAYLOAD_ROOT/usr/share/onix/packages/dropbear.md"
 chmod g-s \
     "$PAYLOAD_ROOT/usr" \
     "$PAYLOAD_ROOT/usr/bin" \
@@ -287,7 +287,7 @@ echo "==> recipe"
 sed -n '1,260p' "$LAB/stone.yaml"
 
 echo
-echo "==> building onix-dropbear stone"
+echo "==> building dropbear stone"
 rm -rf "$OUT"
 mkdir -p "$OUT"
 (
@@ -295,9 +295,9 @@ mkdir -p "$OUT"
     boulder build -y --normal-priority -o "$OUT" stone.yaml
 )
 
-STONE="$(find "$OUT" -maxdepth 1 -name 'onix-dropbear-*.stone' ! -name '*dbginfo*' | sort | head -n 1)"
+STONE="$(find "$OUT" -maxdepth 1 -name 'dropbear-*.stone' ! -name '*dbginfo*' | sort | head -n 1)"
 if [ ! -f "$STONE" ]; then
-    echo "error: boulder did not produce an onix-dropbear .stone under $OUT" >&2
+    echo "error: boulder did not produce an dropbear .stone under $OUT" >&2
     exit 1
 fi
 printf '%s\n' "$STONE" > "$LAB/stone.path"
@@ -332,7 +332,7 @@ grep -Eqi 'statically linked|static-pie linked' "$LAB/dropbearkey.extracted.file
 "$PAYLOAD/usr/bin/dropbearkey" -t ed25519 -f "$LAB/test_extracted_ed25519_host_key" >/dev/null
 test -s "$LAB/test_extracted_ed25519_host_key"
 rm -f "$LAB/test_extracted_ed25519_host_key"
-test -f "$PAYLOAD/usr/share/onix/packages/onix-dropbear.md"
+test -f "$PAYLOAD/usr/share/onix/packages/dropbear.md"
 
 echo
 echo "==> index local repo and install into disposable target"
@@ -342,7 +342,7 @@ cp "$STONE" "$REPO/"
 moss index "$REPO"
 moss -D "$ROOT" --cache "$CACHE" repo add local "file://$REPO/stone.index" -c "local onix dropbear repo"
 moss -D "$ROOT" --cache "$CACHE" repo update
-moss -D "$ROOT" --cache "$CACHE" -y install --to "$TARGET" onix-dropbear
+moss -D "$ROOT" --cache "$CACHE" -y install --to "$TARGET" dropbear
 
 test -x "$TARGET/usr/sbin/dropbear"
 test -x "$TARGET/usr/bin/dropbearkey"
@@ -359,25 +359,25 @@ echo "target: $TARGET"
 REMOTE
 
 log "copying built stone back to host artifacts"
-rm -f "$STONE_DIR"/onix-dropbear-*.stone "$STONE_DIR"/onix-dropbear-dbginfo-*.stone
+rm -f "$STONE_DIR"/dropbear-*.stone "$STONE_DIR"/dropbear-dbginfo-*.stone
 "$PHASE0_DIR/ssh.sh" "$user" "stone=\$(cat '$LAB/stone.path') && cd \"\$(dirname \"\$stone\")\" && tar -cf - \"\$(basename \"\$stone\")\"" \
   | tar -C "$STONE_DIR" -xf -
 
-HOST_STONE="$(find "$STONE_DIR" -maxdepth 1 -name 'onix-dropbear-*.stone' ! -name '*dbginfo*' | sort | tail -n 1)"
-[[ -f "$HOST_STONE" ]] || die "failed to copy onix-dropbear stone into ${STONE_DIR#$ONIX_ROOT/}"
+HOST_STONE="$(find "$STONE_DIR" -maxdepth 1 -name 'dropbear-*.stone' ! -name '*dbginfo*' | sort | tail -n 1)"
+[[ -f "$HOST_STONE" ]] || die "failed to copy dropbear stone into ${STONE_DIR#$ONIX_ROOT/}"
 
 log "host moss integrity check"
 "$HOST_MOSS" inspect --check "$HOST_STONE"
 
 log "refreshing local Phase 4 moss repo"
-rm -f "$LOCAL_REPO_DIR"/onix-dropbear-*.stone "$LOCAL_REPO_DIR"/onix-dropbear-dbginfo-*.stone
+rm -f "$LOCAL_REPO_DIR"/dropbear-*.stone "$LOCAL_REPO_DIR"/dropbear-dbginfo-*.stone
 cp "$HOST_STONE" "$LOCAL_REPO_DIR/"
 "$HOST_MOSS" index "$LOCAL_REPO_DIR"
 
 cat <<EOF
 
 ==> success
-onix-dropbear stone: ${HOST_STONE#$ONIX_ROOT/}
+dropbear stone: ${HOST_STONE#$ONIX_ROOT/}
 local repo index    : ${LOCAL_REPO_DIR#$ONIX_ROOT/}/stone.index
 
 Next:

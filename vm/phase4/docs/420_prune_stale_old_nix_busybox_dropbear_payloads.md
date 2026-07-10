@@ -26,8 +26,8 @@ Those were useful bootstrap tools.
 But later we built real ONIX stones:
 
 ```text
-onix-busybox
-onix-dropbear
+busybox
+dropbear
 ```
 
 And then we proved that the booted system uses those stones:
@@ -155,7 +155,7 @@ Phase 420 does **not** remove the packaged systemd bootstrap copy under:
 /usr/lib/onix/bootstrap/nix/store
 ```
 
-That directory is owned by `onix-systemd`.
+That directory is owned by `systemd`.
 
 It is the package-owned source used to materialize systemd's runtime closure
 into `/nix/store`.
@@ -210,9 +210,9 @@ question in this phase is filesystem ownership and stale payload removal.
 Runtime boot proofs already happened in:
 
 ```text
-411 — boot-prove onix-busybox
-413 — install/use onix-dropbear and prove SSH
-417 — boot-prove onix-systemd
+411 — boot-prove busybox
+413 — install/use dropbear and prove SSH
+417 — boot-prove systemd
 418 — package/prove bootstrap policy ownership
 ```
 
@@ -228,8 +228,8 @@ Phase 420 proves:
   `/persist/nix/store`,
 - shared paths with systemd are preserved,
 - the systemd runtime closure is still present,
-- `onix-busybox` still owns the active BusyBox command path,
-- `onix-dropbear` still owns the active SSH command path,
+- `busybox` still owns the active BusyBox command path,
+- `dropbear` still owns the active SSH command path,
 - active bootstrap units no longer reference the old Nix BusyBox path.
 
 ## What this phase does not solve
@@ -275,6 +275,6 @@ systemd is package-owned but still Nix-built
 So the next compressed step is:
 
 ```text
-421 — prepare native source-built onix-systemd
-422 — build/install/boot-prove native onix-systemd
+421 — prepare native source-built systemd
+422 — build/install/boot-prove native systemd
 ```

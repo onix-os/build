@@ -23,7 +23,7 @@
 #
 # Phase 213 reuses this script with --systemd-payload to stage the first
 # musl-targeted systemd userspace payload. This is a bootstrap/probe payload
-# from pinned pkgsMusl.systemd, not the final onix-systemd stone.
+# from pinned pkgsMusl.systemd, not the final systemd stone.
 #
 # Phase 214 reuses this script with --module-payload to stage the first
 # matching kmod/modprobe + kernel modules payload from the same initramfs that
@@ -347,7 +347,7 @@ verify_systemd_payload_output() {
   [[ -x "$out/lib/systemd/systemd-udevd" ]] || die "systemd payload lacks executable lib/systemd/systemd-udevd: $out"
   [[ -f "$out/example/systemd/system/multi-user.target" ]] || die "systemd payload lacks example/systemd/system/multi-user.target: $out"
 
-  shared_strings="$(mktemp "${TMPDIR:-/tmp}/onix-systemd-strings.XXXXXX")"
+  shared_strings="$(mktemp "${TMPDIR:-/tmp}/systemd-strings.XXXXXX")"
   strings "$out"/lib/systemd/libsystemd-shared-*.so > "$shared_strings"
   grep -q 'libmount[.]so[.]1' "$shared_strings" \
     || { rm -f "$shared_strings"; die "systemd payload was not built with libmount dlopen support: $out"; }
@@ -620,7 +620,7 @@ copy_nix_closure_into() {
   [[ -d "$dest" ]] || die "closure destination is missing: $dest"
   [[ -s "$list" ]] || die "closure list is missing/empty: ${list#$ONIX_ROOT/}"
 
-  rel_list="$(mktemp "${TMPDIR:-/tmp}/onix-systemd-closure.XXXXXX")"
+  rel_list="$(mktemp "${TMPDIR:-/tmp}/systemd-closure.XXXXXX")"
   sed 's#^/##' "$list" > "$rel_list"
 
   mkdir -p "$dest/nix/store"
@@ -889,7 +889,7 @@ install_systemd_payload() {
     echo "the ONIX image so the kernel can execute /usr/lib/systemd/systemd."
     echo
     echo "It is a slim bootstrap/probe payload from pinned pkgsMusl.systemd."
-    echo "It is not the final onix-systemd .stone package."
+    echo "It is not the final systemd .stone package."
     echo
     echo "systemd output:"
     echo "$out"
@@ -917,7 +917,7 @@ $out
 This is a slim bootstrap/probe payload copied from pinned pkgsMusl.systemd so
 the next boot probe can test the userspace handoff. The musl loader path file
 lets lazy dlopen libraries such as libmount.so.1 resolve during early PID 1
-startup. This is not the final onix-systemd stone.
+startup. This is not the final systemd stone.
 
 The compiled Nix store unit directory is linked to the packaged example unit
 directory so multi-user.target and rescue.target resolve during the probe.

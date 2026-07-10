@@ -99,7 +99,7 @@ paths, users, groups, services, and dependencies.
 So the future package must be ONIX-owned:
 
 ```text
-onix-systemd
+systemd
 ```
 
 That package name is the contract for now. It may eventually be split into
@@ -108,7 +108,7 @@ systemd userspace rather than smuggling in the host one.
 
 #### What systemd userspace must include
 
-The minimum future `onix-systemd` package needs more than one binary.
+The minimum future `systemd` package needs more than one binary.
 
 At minimum, the contract needs:
 
@@ -250,7 +250,7 @@ The future image or first-boot policy must handle:
 The future package name for this responsibility is:
 
 ```text
-onix-systemd
+systemd
 ```
 
 Again: ONIX should build or package this intentionally for its musl base.
@@ -263,7 +263,7 @@ Again: ONIX should build or package this intentionally for its musl base.
 - the planned PID 1 path is `/usr/lib/systemd/systemd`
 - the boot entry still asks for `systemd.unit=multi-user.target`
 - the target path is `/usr/lib/systemd/system/multi-user.target`
-- the plan names `onix-systemd`
+- the plan names `systemd`
 - the plan says `musl`
 - the plan says `do not copy host systemd`
 - the plan says `do not copy Nix systemd`

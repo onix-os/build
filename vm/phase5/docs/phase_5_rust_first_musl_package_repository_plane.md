@@ -244,18 +244,27 @@ detail, not a redesign.
 The first package set should be small and essential:
 
 ```text
-onix-branding
-onix-filesystem
-onix-busybox
-onix-dropbear
-onix-systemd
-onix-bootstrap-policy
+branding
+filesystem
+busybox
 uutils-coreutils
+dropbear
+systemd
+bootstrap-policy
+musl
+linux-pam
+libseccomp
+libgcc-runtime
 rootasrole
+rootasrole-policy
+moss
 ```
 
-The first six already exist in earlier phase/lab form. Phase 5 will turn the
-package/repo flow into a canonical ONIX workflow.
+Some entries started as earlier phase/lab stones. Phase 5 turns them into one
+canonical ONIX package/repo workflow and then keeps extending that workflow with
+Rust-first essentials, the minimal shared-library surface needed by privilege
+tools and systemd, RootAsRole policy, uutils command ownership, and packaged
+`moss` itself.
 
 ## Package metadata should explain implementation choice
 
@@ -293,6 +302,8 @@ would be a better ONIX fit.
 511 — build RootAsRole against the owned shared surface
 512 — materialize live RootAsRole policy as an owned stone
 513 — move coreutils command links from BusyBox to uutils
+514 — inspect the booted VM for Phase 5 runtime ownership
+515 — package moss and prove in-VM repo consumption
 ```
 
 The exact list can change as we learn.
@@ -324,11 +335,15 @@ right, each step relying on the guarantees the previous one established:
 511  RootAsRole package   -> dosr/chsr become ONIX-owned stones
 512  RootAsRole policy    -> live /etc policy becomes package-owned
 513  uutils wiring        -> common coreutils commands point at uutils
+514  runtime proof        -> the booted VM exposes the Phase 5 ownership model
+515  moss runtime         -> the booted VM can run packaged moss against an ONIX repo
 ```
 
 Read top to bottom, the arrow from "a rule on paper" (500) to "an image that boots
-from a publish-shaped repository and accepts its first Rust/shared-surface packages" (507–513)
-is the current Phase 5 deliverable.
+from a publish-shaped repository and accepts its first Rust/shared-surface packages" (507–514)
+is the first Phase 5 deliverable. Phase 515 then gives that booted image its own
+package-manager binary and proves it can consume the same repository from inside
+the VM.
 
 ## Steps
 
@@ -346,3 +361,5 @@ is the current Phase 5 deliverable.
 - [511 — RootAsRole privilege stone](./511_rootasrole_privilege_stone.md)
 - [512 — live RootAsRole policy stone](./512_rootasrole_policy_stone.md)
 - [513 — uutils command ownership](./513_uutils_command_ownership.md)
+- [514 — booted Phase 5 runtime proof](./514_booted_phase_5_runtime_proof.md)
+- [515 — `moss` runtime package and self-repo probe](./515_moss_runtime_package_and_self_repo_probe.md)

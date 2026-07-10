@@ -56,7 +56,7 @@ There is no SSH. There is no forge copy. There is no forge Moss.
 Mechanically, the script re-runs the Phase 200 readiness gate, checksums the input
 stones against `SHA256SUMS`, adds the local repo to a scratch moss root with
 `repo add ... file://.../stone.index`, runs `repo update`, then
-`install --to <root-tree> onix-branding onix-filesystem`. After the install it
+`install --to <root-tree> branding filesystem`. After the install it
 materializes the same root-level `/etc` glue that Phase 201 did (the `os-release`
 symlink, `issue`/`motd`/`fstab`/`profile` copies, `/etc/hostname`, the mount-point
 directories, sticky `/tmp`). The only thing that changed versus 201 is *who* ran
@@ -111,7 +111,7 @@ Phase 203 verifies:
 - host Moss exists and matches the pinned `OS_TOOLS_REF`
 - `SHA256SUMS` validates
 - host Moss can add the local repo index
-- host Moss can install `onix-branding` and `onix-filesystem`
+- host Moss can install `branding` and `filesystem`
 - `/usr/lib/system-model.kdl` records the installed packages
 - `/etc/os-release` points to `../usr/lib/os-release`
 - `/etc/fstab` contains `onix-root` and `ONIX-PERSIST`

@@ -74,8 +74,8 @@ mkdir -p "$MOSS_ROOT" "$MOSS_CACHE" "$TARGET_TMP"
   -c "ONIX Phase 203 host image assembly repo"
 "$HOST_MOSS" -D "$MOSS_ROOT" --cache "$MOSS_CACHE" repo update
 "$HOST_MOSS" -D "$MOSS_ROOT" --cache "$MOSS_CACHE" -y install --to "$TARGET_TMP" \
-  onix-branding \
-  onix-filesystem
+  branding \
+  filesystem
 
 echo
 echo "==> materialize image-owned root-level glue"
@@ -136,8 +136,8 @@ grep -q "alias ll='ls -laF'" "$TARGET_TMP/etc/profile.d/onix-path.sh"
 grep -q 'logo.ansi' "$TARGET_TMP/etc/profile.d/onix-login.sh"
 test "$(wc -c < "$TARGET_TMP/etc/motd")" -lt 2048
 grep -q 'moss owns /usr' "$TARGET_TMP/usr/share/onix/filesystem-layout.md"
-grep -q 'onix-branding' "$TARGET_TMP/usr/lib/system-model.kdl"
-grep -q 'onix-filesystem' "$TARGET_TMP/usr/lib/system-model.kdl"
+grep -q 'branding' "$TARGET_TMP/usr/lib/system-model.kdl"
+grep -q 'filesystem' "$TARGET_TMP/usr/lib/system-model.kdl"
 grep -q 'ONIX Phase 203 host image assembly repo' "$TARGET_TMP/usr/lib/system-model.kdl"
 
 bad_brand='O''nix'

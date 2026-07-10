@@ -7,7 +7,7 @@
 | Requires | Phase 413 image state |
 | Mutates disk/image? | No |
 | Boots QEMU? | No |
-| Main proof | ONIX knows exactly what still comes from the Nix systemd payload before building `onix-systemd`. |
+| Main proof | ONIX knows exactly what still comes from the Nix systemd payload before building `systemd`. |
 
 ## Why this phase exists
 
@@ -20,7 +20,7 @@ Phase 410 moved the active shell/tool applets to:
 from:
 
 ```text
-onix-busybox.stone
+busybox.stone
 ```
 
 Phase 413 moved the active SSH daemon to:
@@ -32,7 +32,7 @@ Phase 413 moved the active SSH daemon to:
 from:
 
 ```text
-onix-dropbear.stone
+dropbear.stone
 ```
 
 That means two important machine-plane payloads are now ONIX package-owned.
@@ -41,7 +41,7 @@ The next big one is systemd.
 
 But systemd is much larger than BusyBox or Dropbear.
 
-Before writing `onix-systemd`, Phase 414 asks:
+Before writing `systemd`, Phase 414 asks:
 
 ```text
 What is the current systemd payload actually doing?
@@ -52,7 +52,7 @@ What exactly must the future stone own?
 
 This is a pause-and-map phase.
 
-It prevents us from building a fake `onix-systemd` package that only contains
+It prevents us from building a fake `systemd` package that only contains
 one binary while the boot still secretly depends on the copied Nix closure.
 
 ### Background: what an ownership audit (debt map) is
@@ -66,7 +66,7 @@ forgotten. The output is a **debt map**: a list of "this file works, but it is n
 yet package-owned, and here is who must eventually own it."
 
 The reason this deserves its own phase is a subtle failure mode. It is very easy to
-build a package named `onix-systemd`, point one symlink at it, declare victory, and
+build a package named `systemd`, point one symlink at it, declare victory, and
 never notice that the boot still depends on dozens of borrowed files underneath. The
 audit exists so the next package's scope is honest.
 
@@ -78,7 +78,7 @@ complete set is called the **closure**. So the systemd closure is not just the
 systemd binary; it is systemd *plus* the musl loader it links against, `libkmod`,
 `util-linux` helpers, compression libraries, and everything else required for it to
 run. Phase 414 records that closure in `systemd-payload.closure`, because the future
-`onix-systemd` package must reproduce ownership of the whole set, not just the one
+`systemd` package must reproduce ownership of the whole set, not just the one
 headline binary.
 
 ## Why systemd is different from BusyBox and Dropbear
@@ -110,7 +110,7 @@ systemd includes:
 - mount/swap/helper integration,
 - compiled unit search paths.
 
-So the future `onix-systemd` package cannot be treated as:
+So the future `systemd` package cannot be treated as:
 
 ```text
 copy one executable and call it done
@@ -171,8 +171,8 @@ SSH server             -> /usr/sbin/dropbear
 Those paths come from:
 
 ```text
-onix-busybox
-onix-dropbear
+busybox
+dropbear
 ```
 
 So the audit expects:
@@ -230,7 +230,7 @@ Those closure entries are not just random files.
 
 They are clues.
 
-They tell us what `onix-systemd` and its dependency stones may need to own.
+They tell us what `systemd` and its dependency stones may need to own.
 
 ## Why this phase checks both host artifacts and mounted image state
 
@@ -314,8 +314,8 @@ The phase verifies host-side artifacts:
 - the systemd closure contains a systemd Nix output,
 - the closure contains expected dependency families such as kmod, util-linux,
   and musl,
-- the local Phase 4 repo contains `onix-busybox`,
-- the local Phase 4 repo contains `onix-dropbear`.
+- the local Phase 4 repo contains `busybox`,
+- the local Phase 4 repo contains `dropbear`.
 
 Then it verifies mounted image state:
 
@@ -326,16 +326,16 @@ Then it verifies mounted image state:
 - the boot entry still uses `init=/usr/lib/systemd/systemd`,
 - the serial shell unit uses `/usr/bin/busybox`,
 - the Dropbear unit uses `/usr/sbin/dropbear`,
-- `onix-busybox` files are present,
-- `onix-dropbear` files are present.
+- `busybox` files are present,
+- `dropbear` files are present.
 
-That gives us a precise before-picture for `onix-systemd`.
+That gives us a precise before-picture for `systemd`.
 
 ## What this phase does not do
 
 Phase 414 does not build systemd.
 
-It does not install `onix-systemd`.
+It does not install `systemd`.
 
 It does not delete the Nix systemd closure.
 
@@ -362,8 +362,8 @@ You should see:
 ```text
 systemd  : active PID 1 path is /usr/lib/systemd/systemd
 systemd  : /usr/lib/systemd/systemd -> /nix/store/...-systemd-.../lib/systemd/systemd
-stone    : /usr/bin/busybox is present from onix-busybox
-stone    : /usr/sbin/dropbear is present from onix-dropbear
+stone    : /usr/bin/busybox is present from busybox
+stone    : /usr/sbin/dropbear is present from dropbear
 debt     : systemd, udev, systemctl, kmod/libkmod, util-linux helpers, and musl loader support remain in the Nix systemd closure
 ```
 
@@ -376,7 +376,7 @@ Phase 414 audited the current systemd boundary.
 
 ## Next step
 
-Phase 415 should begin the first `onix-systemd.stone`.
+Phase 415 should begin the first `systemd.stone`.
 
 The first version can still be narrow, but it must be honest.
 

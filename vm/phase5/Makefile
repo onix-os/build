@@ -3,7 +3,7 @@
 
 PHASE_ARG := $(word 2,$(MAKECMDGOALS))
 
-.PHONY: help phases phase phase-5 5 500 501 502 503 504 505 506 507 508 509 510 511 512 513 list check package-policy package-layout payload-audit canonical-package-copies canonical-essential-builds canonical-local-repo ownership-collision-fix canonical-image-repo-consumption local-public-repo rust-essential-stones privilege-shared-surface rootasrole rootasrole-policy uutils-coreutils-wiring
+.PHONY: help phases phase phase-5 5 500 501 502 503 504 505 506 507 508 509 510 511 512 513 514 515 list check package-policy package-layout payload-audit canonical-package-copies canonical-essential-builds canonical-local-repo ownership-collision-fix canonical-image-repo-consumption local-public-repo rust-essential-stones privilege-shared-surface rootasrole rootasrole-policy uutils-coreutils-wiring runtime-proof moss-runtime
 
 help: ## show Phase 5 help
 	@echo "ONIX Phase 5 targets:"
@@ -11,7 +11,7 @@ help: ## show Phase 5 help
 	  awk -F':.*?## ' '{printf "  \033[36m%-17s\033[0m %s\n", $$1, $$2}'
 
 phases: ## list the learning-phase aliases
-	@printf "  \033[36mmake phase 5\033[0m    run current Phase 5 gates: 500..513\n"
+	@printf "  \033[36mmake phase 5\033[0m    run current Phase 5 build/repo gates: 500..513\n"
 	@printf "  \033[36mmake phase 500\033[0m  define Rust-first musl-only static-first package law\n"
 	@printf "  \033[36mmake phase 501\033[0m  define canonical packages/ layout and metadata contract\n"
 	@printf "  \033[36mmake phase 502\033[0m  provide runtime-clean stone payload audit helper\n"
@@ -26,6 +26,8 @@ phases: ## list the learning-phase aliases
 	@printf "  \033[36mmake phase 511\033[0m  build/audit RootAsRole privilege stone\n"
 	@printf "  \033[36mmake phase 512\033[0m  build/audit live RootAsRole policy stone\n"
 	@printf "  \033[36mmake phase 513\033[0m  wire uutils command links instead of BusyBox links\n"
+	@printf "  \033[36mmake phase 514\033[0m  install, boot, and prove Phase 5 runtime ownership\n"
+	@printf "  \033[36mmake phase 515\033[0m  package moss and prove in-VM repo consumption\n"
 
 phase: ## run a Phase 5 learning alias
 	@case "$(PHASE_ARG)" in \
@@ -44,14 +46,16 @@ phase: ## run a Phase 5 learning alias
 	  511) $(MAKE) --no-print-directory rootasrole ;; \
 	  512) $(MAKE) --no-print-directory rootasrole-policy ;; \
 	  513) $(MAKE) --no-print-directory uutils-coreutils-wiring ;; \
+	  514) $(MAKE) --no-print-directory runtime-proof ;; \
+	  515) $(MAKE) --no-print-directory moss-runtime ;; \
 	  ""|list) $(MAKE) --no-print-directory phases ;; \
 	  *) echo "unknown Phase 5 step: $(PHASE_ARG)" >&2; $(MAKE) --no-print-directory phases; exit 2 ;; \
 	esac
 
-5 500 501 502 503 504 505 506 507 508 509 510 511 512 513 list:
+5 500 501 502 503 504 505 506 507 508 509 510 511 512 513 514 515 list:
 	@:
 
-phase-5: ## run current Phase 5 gates in order
+phase-5: ## run current Phase 5 build/repo gates in order
 	@set -e; \
 	for phase in 500 501 502 503 504 505 506 507 508 509 510 511 512 513; do \
 	  echo; \
@@ -75,6 +79,8 @@ check: ## host-side validation for Phase 5 docs/routing
 	@test -f docs/511_rootasrole_privilege_stone.md
 	@test -f docs/512_rootasrole_policy_stone.md
 	@test -f docs/513_uutils_command_ownership.md
+	@test -f docs/514_booted_phase_5_runtime_proof.md
+	@test -f docs/515_moss_runtime_package_and_self_repo_probe.md
 	@bash -n audit-stone-payload.sh
 	@bash -n canonical-package-copies.sh
 	@bash -n canonical-essential-builds.sh
@@ -87,6 +93,9 @@ check: ## host-side validation for Phase 5 docs/routing
 	@bash -n build-rootasrole.sh
 	@bash -n build-rootasrole-policy.sh
 	@bash -n wire-uutils-coreutils.sh
+	@bash -n phase5-runtime-proof.sh
+	@bash -n build-moss-runtime.sh
+	@bash -n moss-runtime-self-repo-proof.sh
 	@./audit-stone-payload.sh --self-test >/dev/null
 	@./canonical-package-copies.sh --check >/dev/null
 	@./canonical-essential-builds.sh --check >/dev/null
@@ -99,6 +108,8 @@ check: ## host-side validation for Phase 5 docs/routing
 	@./build-rootasrole.sh --check >/dev/null
 	@./build-rootasrole-policy.sh --check >/dev/null
 	@./wire-uutils-coreutils.sh --check >/dev/null
+	@./phase5-runtime-proof.sh --check >/dev/null
+	@./moss-runtime-self-repo-proof.sh --check >/dev/null
 	@test -d ../../packages
 	@test -d ../../packages/base
 	@test -d ../../packages/core
@@ -113,8 +124,10 @@ check: ## host-side validation for Phase 5 docs/routing
 	@test -f ../../packages/core/uutils-coreutils/stone.yaml.in
 	@test -f ../../packages/core/rootasrole/PACKAGE.md
 	@test -f ../../packages/core/rootasrole/stone.yaml.in
-	@test -f ../../packages/services/onix-rootasrole-policy/PACKAGE.md
-	@test -f ../../packages/services/onix-rootasrole-policy/stone.yaml.in
+	@test -f ../../packages/core/moss/PACKAGE.md
+	@test -f ../../packages/core/moss/stone.yaml.in
+	@test -f ../../packages/services/rootasrole-policy/PACKAGE.md
+	@test -f ../../packages/services/rootasrole-policy/stone.yaml.in
 	@test -f ../../packages/libs/linux-pam/PACKAGE.md
 	@test -f ../../packages/libs/linux-pam/stone.yaml.in
 	@test -f ../../packages/libs/libseccomp/PACKAGE.md
@@ -126,10 +139,11 @@ check: ## host-side validation for Phase 5 docs/routing
 	@grep -q 'runtime-clean' ../../packages/README.md
 	@grep -q 'uutils-coreutils' ../../packages/STONES.md
 	@grep -q 'rootasrole' ../../packages/STONES.md
+	@grep -q 'moss' ../../packages/STONES.md
 	@grep -q 'linux-pam' ../../packages/STONES.md
 	@grep -q 'libseccomp' ../../packages/STONES.md
 	@grep -q 'libgcc-runtime' ../../packages/STONES.md
-	@grep -q 'onix-rootasrole-policy' ../../packages/STONES.md
+	@grep -q 'rootasrole-policy' ../../packages/STONES.md
 	@grep -q 'Implementation language' ../../packages/templates/PACKAGE.md
 	@grep -q 'Rust alternative considered' ../../packages/templates/PACKAGE.md
 	@grep -q 'Link model' ../../packages/templates/PACKAGE.md
@@ -262,3 +276,9 @@ uutils-coreutils-wiring: ## move command links from BusyBox to uutils
 	else \
 	  ./wire-uutils-coreutils.sh --apply; \
 	fi
+
+runtime-proof: ## install, boot, and prove Phase 5 runtime ownership
+	./phase5-runtime-proof.sh --apply
+
+moss-runtime: ## package moss and prove in-VM repo consumption
+	./moss-runtime-self-repo-proof.sh --apply

@@ -201,9 +201,14 @@ rootasrole
 /usr/bin/dosr
 /usr/bin/chsr
 /usr/share/defaults/rootasrole/rootasrole.json
+/usr/share/defaults/pam.d/sr
 /usr/share/defaults/pam.d/dosr
 /usr/share/onix/packages/rootasrole.md
 ```
+
+`dosr` is the command humans type. `sr` is the PAM service name RootAsRole opens
+internally. The package therefore ships both default sample names so the later
+live policy phase does not teach the wrong service name.
 
 `dosr` is installed setuid root:
 
@@ -227,6 +232,7 @@ It deliberately does **not** write live policy directly into:
 
 ```text
 /etc/security/rootasrole.json
+/etc/pam.d/sr
 /etc/pam.d/dosr
 ```
 
@@ -273,7 +279,7 @@ check no /nix/store or glibc leakage
 ```
 
 The first phase that creates live `/etc/security/rootasrole.json` and
-`/etc/pam.d/dosr` should be the first phase allowed to execute `dosr` as a real
+`/etc/pam.d/sr` should be the first phase allowed to execute `dosr` as a real
 machine command.
 
 ## What the phase proves
@@ -290,6 +296,7 @@ Phase 511 proves:
 - Moss can install `rootasrole` and automatically pull its owned shared surface;
 - `/usr/bin/dosr` is installed with mode `4755`;
 - `/usr/bin/chsr` is installed executable;
+- `/usr/share/defaults/pam.d/sr` and `/usr/share/defaults/pam.d/dosr` are present;
 - no `/nix/store` runtime paths leak into the installed target;
 - no glibc loader appears;
 - the exact allowed runtime dependencies are:
@@ -332,7 +339,7 @@ Questions for the next phase:
 
 - Where should ONIX materialize live `/etc/security/rootasrole.json`?
 - Should the first policy allow only `root`, or also the build/admin user?
-- What should `/etc/pam.d/dosr` include in a minimal ONIX system?
+- What should `/etc/pam.d/sr` include in a minimal ONIX system?
 - Should ONIX provide `/usr/bin/sudo` as a compatibility wrapper to `dosr`?
 
 Phase 511 gives us the package. The next phase decides the machine policy.

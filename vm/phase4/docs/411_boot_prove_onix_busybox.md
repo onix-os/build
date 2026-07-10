@@ -1,4 +1,4 @@
-# Phase 411 — boot-prove `onix-busybox`
+# Phase 411 — boot-prove `busybox`
 
 | Item | Value |
 |---|---|
@@ -7,7 +7,7 @@
 | Re-validates image install with | `vm/phase4/materialize-etc.sh --busybox-stone` |
 | Mutates disk/image? | Yes, idempotently re-applies Phase 410 first |
 | Boots QEMU? | Yes, several short snapshot boots |
-| Main proof | The running ONIX image can use `onix-busybox` for serial shell, networking, remote inspection, and SSH command execution. |
+| Main proof | The running ONIX image can use `busybox` for serial shell, networking, remote inspection, and SSH command execution. |
 
 ## Background: what "boot-proving a stone" means
 
@@ -15,7 +15,7 @@ A **stone** (`.stone`) is ONIX's package format — a self-describing archive of
 plus metadata, produced by **boulder** (the builder) and installed by **moss**
 (the atomic package/state manager). Both are Rust tools ONIX borrows from AerynOS;
 ONIX ships none of AerynOS's packages, only this tooling. Phase 409 built the
-`onix-busybox` stone; Phase 410 installed it into the disk image and pointed the
+`busybox` stone; Phase 410 installed it into the disk image and pointed the
 active command paths at it.
 
 But installing a package into a disk image only proves the *files are in the right
@@ -222,7 +222,7 @@ That script uses BusyBox commands such as:
 /bin/awk
 ```
 
-Because Phase 410 made `/bin` resolve to the `onix-busybox` payload, this checks
+Because Phase 410 made `/bin` resolve to the `busybox` payload, this checks
 the running network bootstrap against the stone BusyBox.
 
 The expected marker is:
@@ -307,7 +307,7 @@ This proves:
 - Dropbear still starts,
 - public-key authentication still works,
 - the non-root SSH account can run commands,
-- the command path can use `onix-busybox`.
+- the command path can use `busybox`.
 
 ## Why the proof uses several boots
 
@@ -341,10 +341,10 @@ You should see:
 
 ```text
 ==> Phase 411 stone BusyBox live proof
-==> probe 1/4: serial shell uses onix-busybox
-==> probe 2/4: network scripts use onix-busybox commands
-==> probe 3/4: remote inspection listener uses onix-busybox nc/netstat
-==> probe 4/4: SSH session uses onix-busybox commands
+==> probe 1/4: serial shell uses busybox
+==> probe 2/4: network scripts use busybox commands
+==> probe 3/4: remote inspection listener uses busybox nc/netstat
+==> probe 4/4: SSH session uses busybox commands
 ```
 
 Each sub-proof prints its own success message.
@@ -353,7 +353,7 @@ The final success block is:
 
 ```text
 ==> success
-Phase 411 proved the booted ONIX image can use onix-busybox for:
+Phase 411 proved the booted ONIX image can use busybox for:
 
   - serial bootstrap shell
   - bootstrap QEMU user networking
@@ -413,7 +413,7 @@ Phase 411 does not prove that all Nix-sourced machine-plane payloads are gone.
 It proves only:
 
 ```text
-the active BusyBox runtime path works through onix-busybox
+the active BusyBox runtime path works through busybox
 ```
 
 The old copied Nix BusyBox closure may still exist on disk.

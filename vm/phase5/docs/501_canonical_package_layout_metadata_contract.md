@@ -18,8 +18,8 @@ It creates the contract that later package work must follow.
 Before Phase 5, package work grew in learning-specific places:
 
 ```text
-recipes/onix-branding/
-recipes/onix-filesystem/
+recipes/branding/
+recipes/filesystem/
 vm/phase4/stone-recipes/
 ```
 
@@ -109,9 +109,9 @@ system policy.
 Examples:
 
 ```text
-onix-branding
-onix-filesystem
-onix-bootstrap-policy
+branding
+filesystem
+bootstrap-policy
 ```
 
 These packages may be mostly data, templates, or scripts.
@@ -127,7 +127,7 @@ Examples:
 ```text
 uutils-coreutils
 rootasrole
-onix-busybox
+busybox
 ```
 
 This group should be especially strict:
@@ -168,8 +168,8 @@ Service packages provide daemons, service units, and service policy.
 Examples:
 
 ```text
-onix-dropbear
-onix-systemd
+dropbear
+systemd
 ```
 
 Service packages have extra risk because they often include systemd units.

@@ -11,10 +11,10 @@
 | Mutates disk/image? | Yes, it rematerializes the native systemd payload into the image before boot. |
 | Boots QEMU? | Yes |
 | Leaves QEMU running? | Yes |
-| Main proof | The native `onix-systemd` image boots, SSH works, and the VM remains available for learning/debugging. |
+| Main proof | The native `systemd` image boots, SSH works, and the VM remains available for learning/debugging. |
 
 Phase 422 proved that ONIX can build, install, and boot native
-`onix-systemd`.
+`systemd`.
 
 Phase 424 is the operational version of that proof:
 
@@ -39,7 +39,7 @@ Phase 422 is a build/proof milestone:
 
 ```text
 build native systemd
-package it as onix-systemd.stone
+package it as systemd.stone
 install it
 boot once
 prove PID 1
@@ -49,7 +49,7 @@ shut down
 Phase 424 is a lab/inspection milestone:
 
 ```text
-install the already-built native onix-systemd stone
+install the already-built native systemd stone
 boot ONIX
 prove SSH
 leave QEMU running
@@ -144,7 +144,7 @@ That target performs these important actions:
 
 1. stops any older Phase 422/424 native-systemd QEMU probe,
 2. refreshes compact login defaults such as `/etc/motd` and `/etc/profile`,
-3. rematerializes the native `onix-systemd` package into the image,
+3. rematerializes the native `systemd` package into the image,
 4. boots QEMU with SSH forwarding and keeps QEMU alive after the proof passes.
 
 The materialization step uses:
@@ -252,7 +252,7 @@ Also check:
 test -L /usr/lib/systemd/systemd && echo symlink || echo real-file
 ```
 
-For native `onix-systemd`, the expected answer is:
+For native `systemd`, the expected answer is:
 
 ```text
 real-file
@@ -359,7 +359,7 @@ That path:
 5. reinstalls/proves the bootstrap policy stone,
 6. brings the native systemd image up for inspection.
 
-If the native `onix-systemd` stone itself is missing, rebuild it with:
+If the native `systemd` stone itself is missing, rebuild it with:
 
 ```sh
 make phase 422
@@ -387,7 +387,7 @@ Alpine kernel/initramfs payload for now
   ↓ root=LABEL=onix-root
 ONIX root filesystem
   ↓ init=/usr/lib/systemd/systemd
-native onix-systemd as PID 1
+native systemd as PID 1
   ↓ units
 network + Dropbear SSH
   ↓ forwarded port 7630

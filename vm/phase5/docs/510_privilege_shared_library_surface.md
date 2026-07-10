@@ -92,6 +92,28 @@ image, `/lib/ld-musl-x86_64.so.1` resolves to that file through the `/lib`
 symlink. That keeps the package manager happy and keeps the boot/runtime path
 compatible with normal musl binaries.
 
+Phase 510 currently pins the official musl `1.2.6` release tarball directly.
+That version is deliberate: the forge VM currently links native system packages
+against Alpine's musl 1.2.6 surface. ONIX's `musl` stone must provide the same
+ABI level, otherwise a package can build successfully and then fail at boot when
+the dynamic loader cannot find a libc symbol.
+
+The concrete regression check is:
+
+```text
+renameat2
+```
+
+If `/usr/lib/ld-musl-x86_64.so.1` does not export `renameat2`, native
+`systemd` fails very early as PID 1 with:
+
+```text
+renameat2: symbol not found
+```
+
+So Phase 510 does not only build "some musl". It builds the canonical ONIX musl
+runtime provider at the ABI level required by the rest of the package graph.
+
 ### `linux-pam`
 
 `linux-pam` owns the PAM ABI and module surface:
@@ -155,6 +177,7 @@ Phase 510 uses this model:
 ```text
 host Nix
   -> locate pinned linux-pam/libseccomp sources from nixpkgs_2
+  -> fetch/check the official musl 1.2.6 source tarball
 
 forge VM
   -> installs build tools needed for Meson/autotools
@@ -186,6 +209,7 @@ Phase 510 proves:
 - all three build in the musl forge VM;
 - boulder can cut all three into `.stone` packages;
 - moss can inspect and install all three packages;
+- the installed musl loader exports `renameat2`;
 - the installed proof target contains:
 
   ```text

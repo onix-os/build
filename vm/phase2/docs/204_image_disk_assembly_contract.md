@@ -170,7 +170,7 @@ So the contract uses `xfs` for:
 /persist
 ```
 
-The Phase 1 `onix-filesystem` package already emits the same policy in the
+The Phase 1 `filesystem` package already emits the same policy in the
 default fstab template:
 
 ```text

@@ -108,8 +108,8 @@ test -x /usr/bin/busybox || fail "missing busybox"
 test -x /usr/sbin/dropbear || fail "missing dropbear"
 
 test -f /usr/share/onix/bootstrap/native-systemd-stone.txt || fail "missing native-systemd provenance note"
-test -f /usr/share/onix/packages/onix-systemd.md || fail "missing onix-systemd package note"
-if $bb grep -R -F /nix/store /usr/share/onix/bootstrap/native-systemd-stone.txt /usr/share/onix/packages/onix-systemd.md >/dev/null 2>&1; then
+test -f /usr/share/onix/packages/systemd.md || fail "missing systemd package note"
+if $bb grep -R -F /nix/store /usr/share/onix/bootstrap/native-systemd-stone.txt /usr/share/onix/packages/systemd.md >/dev/null 2>&1; then
   fail "native-systemd provenance notes mention /nix/store"
 fi
 
@@ -183,7 +183,7 @@ cat <<EOF
 Phase 425 accepted the Phase 4 booted ONIX base.
 
 What was proved:
-  - native source-built onix-systemd is PID 1
+  - native source-built systemd is PID 1
   - old /usr/lib/onix/bootstrap payload is absent
   - BusyBox and Dropbear are system packages in the image
   - Dropbear disables its own MOTD with -m

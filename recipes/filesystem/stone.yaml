@@ -1,0 +1,138 @@
+name        : filesystem
+version     : 0.1.0
+release     : 1
+summary     : ONIX filesystem layout policy and default templates
+license     : MIT
+homepage    : https://onix-os.com
+description : |
+    Filesystem layout policy for ONIX. This package documents the intended
+    machine/user/persistence boundaries and ships default templates under
+    /usr/share/defaults/etc for image assembly or boot-time materialization.
+install     : |
+    install -dm00755 %(installroot)/usr/share/onix
+    install -dm00755 %(installroot)/usr/share/defaults/etc/profile.d
+
+    cat > %(installroot)/usr/share/onix/filesystem-layout.md <<'EOF_LAYOUT'
+    # ONIX filesystem layout
+
+    ONIX keeps a hard ownership boundary:
+
+    - moss owns /usr, boot artifacts, and the machine plane.
+    - Nix owns /nix and user-selected toolbox software.
+    - local/admin state lives outside immutable package payloads.
+
+    ## Package payload rule
+
+    ONIX stones are /usr-centric. Packages ship defaults and policy under /usr.
+    Image assembly or boot-time glue materializes mutable root-level state.
+
+    ## Important paths
+
+    - /usr — moss-managed, transactional machine payload
+    - /.moss — moss content/state store
+    - /usr/share/defaults/etc — packaged defaults for future /etc materialization
+    - /etc — local machine configuration and compatibility symlinks
+    - /persist — persistent system data on installed systems
+    - /persist/home -> /home — user data
+    - /persist/nix -> /nix — persistent Nix store
+    - /run — runtime state, never packaged
+    - /var/run -> /run — compatibility link for software that still writes runtime state through /var/run
+    - /dev, /proc, /sys — kernel/runtime filesystems, never packaged
+
+    ## Compatibility links created by image assembly
+
+    - /etc/os-release -> ../usr/lib/os-release
+    - /var/run -> ../run
+    EOF_LAYOUT
+
+    cat > %(installroot)/usr/share/defaults/etc/fstab <<'EOF_FSTAB'
+    # ONIX default fstab template.
+    # Image assembly should copy/adapt this into /etc/fstab.
+
+    LABEL=ONIX-ESP      /efi      vfat  rw,relatime,noatime,nofail,x-systemd.device-timeout=10s  0 2
+    LABEL=ONIX-BOOT     /boot     vfat  rw,relatime,noatime,nofail,x-systemd.device-timeout=10s  0 2
+    LABEL=onix-root     /         xfs   rw,relatime          0 1
+    LABEL=ONIX-PERSIST  /persist  xfs   rw,relatime          0 2
+
+    /persist/home       /home     none  bind                  0 0
+    /persist/nix        /nix      none  bind                  0 0
+    EOF_FSTAB
+
+    cat > %(installroot)/usr/share/defaults/etc/profile <<'EOF_PROFILE'
+    # ONIX default login shell profile.
+    #
+    # BusyBox ash reads /etc/profile for login shells. Keep this file small and
+    # source package-provided policy from /etc/profile.d.
+
+    for script in /etc/profile.d/*.sh; do
+        [ -r "$script" ] && . "$script"
+    done
+
+    unset script
+    EOF_PROFILE
+
+    cat > %(installroot)/usr/share/defaults/etc/profile.d/onix-path.sh <<'EOF_PATH'
+    # ONIX default PATH policy.
+    # This is a default template; image/boot glue may install it into /etc/profile.d.
+
+    case ":${PATH:-}:" in
+        *:/usr/bin:*) ;;
+        *) PATH="/usr/bin${PATH:+:$PATH}" ;;
+    esac
+
+    case ":$PATH:" in
+        *:/usr/sbin:*) ;;
+        *) PATH="/usr/sbin:$PATH" ;;
+    esac
+
+    export PATH
+
+    if [ -n "${PS1:-}" ]; then
+        alias ll='ls -laF'
+        alias la='ls -A'
+        alias l='ls -CF'
+    fi
+    EOF_PATH
+
+    cat > %(installroot)/usr/share/defaults/etc/profile.d/onix-login.sh <<'EOF_LOGIN'
+    # ONIX interactive login banner.
+    #
+    # Dropbear is started with -m so it does not print /etc/motd. That avoids
+    # Dropbear's MOTD byte limit. Interactive shells print the colored logo
+    # here instead.
+
+    [ -n "${PS1:-}" ] || return 0
+    [ -t 1 ] || return 0
+    [ "${TERM:-}" != "dumb" ] || return 0
+    [ "${ONIX_LOGIN_BANNER:-1}" != "0" ] || return 0
+
+    if [ -z "${ONIX_LOGIN_BANNER_SHOWN:-}" ]; then
+        export ONIX_LOGIN_BANNER_SHOWN=1
+
+        if [ -r /usr/share/onix/branding/logo.ansi ]; then
+            cat /usr/share/onix/branding/logo.ansi
+        elif [ -r /etc/motd ]; then
+            cat /etc/motd
+        fi
+
+        printf '\nWelcome to ONIX.\n'
+        printf 'moss controls the machine. Nix controls the toolbox.\n'
+    fi
+    EOF_LOGIN
+
+    chmod 0644 \
+        %(installroot)/usr/share/onix/filesystem-layout.md \
+        %(installroot)/usr/share/defaults/etc/fstab \
+        %(installroot)/usr/share/defaults/etc/profile \
+        %(installroot)/usr/share/defaults/etc/profile.d/onix-path.sh \
+        %(installroot)/usr/share/defaults/etc/profile.d/onix-login.sh
+
+    # Boulder build dirs inherit setgid. Clear it on directories we created so
+    # Moss receives ordinary directory layout metadata.
+    chmod g-s \
+        %(installroot)/usr \
+        %(installroot)/usr/share \
+        %(installroot)/usr/share/onix \
+        %(installroot)/usr/share/defaults \
+        %(installroot)/usr/share/defaults/etc \
+        %(installroot)/usr/share/defaults/etc/profile.d

@@ -2,8 +2,8 @@
 # vm/phase4/native-systemd-prep.sh — Phase 421 native systemd prep.
 #
 # This phase does not build systemd yet. It turns the current Nix-wrapped
-# onix-systemd truth into a compact Phase 422 contract: build one native
-# source-owned onix-systemd stone, with dependencies bundled for the first
+# systemd truth into a compact Phase 422 contract: build one native
+# source-owned systemd stone, with dependencies bundled for the first
 # proof and split into separate stones later.
 set -euo pipefail
 
@@ -16,7 +16,7 @@ source "$PHASE0_DIR/config.sh"
 PLAN_DIR="${ONIX_NATIVE_SYSTEMD_PLAN_DIR:-$ONIX_ROOT/artifacts/onix-native-systemd-plan}"
 SYSTEMD_PAYLOAD_OUT_FILE="${ONIX_SYSTEMD_PAYLOAD_OUT_FILE:-$ONIX_ROOT/artifacts/onix-image/systemd-payload.out}"
 SYSTEMD_CLOSURE_LIST="${ONIX_SYSTEMD_CLOSURE_LIST:-$ONIX_ROOT/artifacts/onix-image/systemd-payload.closure}"
-NATIVE_RECIPE_DRAFT="${ONIX_NATIVE_SYSTEMD_RECIPE_DRAFT:-$ONIX_ROOT/packages/services/onix-systemd/stone.yaml.in}"
+NATIVE_RECIPE_DRAFT="${ONIX_NATIVE_SYSTEMD_RECIPE_DRAFT:-$ONIX_ROOT/packages/services/systemd/stone.yaml.in}"
 
 need_cmd awk
 need_cmd basename
@@ -137,7 +137,7 @@ write_closure_buckets() {
       reason = "not yet classified"
 
       if (name ~ /^systemd-/) {
-        bucket = "native-onix-systemd-core"
+        bucket = "native-systemd-core"
         reason = "the package we replace with a source-built stone"
       } else if (name ~ /^musl-/ || name ~ /^gcc-.*-lib/ || name ~ /^libxcrypt-/) {
         bucket = "phase422-runtime-bundle"
@@ -184,13 +184,13 @@ rm -rf "$PLAN_DIR"
 install -dm0755 "$PLAN_DIR"
 
 write_closure_buckets > "$PLAN_DIR/current-systemd-closure-buckets.tsv"
-cp "$NATIVE_RECIPE_DRAFT" "$PLAN_DIR/onix-systemd-native.stone.yaml.in"
+cp "$NATIVE_RECIPE_DRAFT" "$PLAN_DIR/systemd-native.stone.yaml.in"
 
 cat > "$PLAN_DIR/current-wrapper.txt" <<EOF
 ONIX Phase 421 current systemd wrapper truth
 
 Current package name:
-  onix-systemd
+  systemd
 
 Current package kind:
   bootstrap ownership stone wrapping a Nix-built musl systemd payload
@@ -216,8 +216,8 @@ cat > "$PLAN_DIR/source-policy.txt" <<EOF
 ONIX Phase 421 native systemd source policy
 
 Goal:
-  Phase 422 replaces the Nix-wrapped onix-systemd payload with a source-built
-  onix-systemd stone.
+  Phase 422 replaces the Nix-wrapped systemd payload with a source-built
+  systemd stone.
 
 Systemd version:
   $SYSTEMD_VERSION
@@ -252,14 +252,14 @@ Policy:
 EOF
 
 cat > "$PLAN_DIR/phase422-build-contract.txt" <<'EOF'
-ONIX Phase 422 native onix-systemd build contract
+ONIX Phase 422 native systemd build contract
 
 User-facing phase budget:
   Keep this compressed. Phase 422 should build/install/boot-prove one native
-  onix-systemd stone. Do not create one public phase per dependency.
+  systemd stone. Do not create one public phase per dependency.
 
 Initial packaging shape:
-  Build a monolithic bootstrap-native onix-systemd stone first.
+  Build a monolithic bootstrap-native systemd stone first.
 
 Why monolithic first:
   systemd has many runtime libraries/helpers. Splitting every dependency into
@@ -285,7 +285,7 @@ Minimum install shape:
   /usr/bin/systemd-tmpfiles
   /usr/bin/systemd-sysusers
   /usr/bin/udevadm
-  /usr/share/onix/packages/onix-systemd.md
+  /usr/share/onix/packages/systemd.md
 
 Minimum boot proof:
   PID 1 is systemd.
@@ -317,18 +317,18 @@ $(date -u '+%Y-%m-%dT%H:%M:%SZ')
 
 Files:
 
-- \`current-wrapper.txt\` — what the current Nix-wrapped \`onix-systemd\` is.
+- \`current-wrapper.txt\` — what the current Nix-wrapped \`systemd\` is.
 - \`source-policy.txt\` — source identity and Nix-as-source-reference policy.
 - \`current-systemd-closure-buckets.tsv\` — current closure split into compressed Phase 422 buckets.
 - \`phase422-build-contract.txt\` — what the next phase must build and prove.
-- \`onix-systemd-native.stone.yaml.in\` — tracked native recipe draft copied from \`${NATIVE_RECIPE_DRAFT#$ONIX_ROOT/}\`.
+- \`systemd-native.stone.yaml.in\` — tracked native recipe draft copied from \`${NATIVE_RECIPE_DRAFT#$ONIX_ROOT/}\`.
 
 This artifact is generated output. The educational explanation lives in the
 mdBook page for Phase 421.
 EOF
 
-grep -q '^name[[:space:]]*: onix-systemd$' "$NATIVE_RECIPE_DRAFT" \
-  || die "native recipe draft must keep the package name onix-systemd"
+grep -q '^name[[:space:]]*: systemd$' "$NATIVE_RECIPE_DRAFT" \
+  || die "native recipe draft must keep the package name systemd"
 grep -q '@SYSTEMD_VERSION@' "$NATIVE_RECIPE_DRAFT" \
   || die "native recipe draft must expose @SYSTEMD_VERSION@"
 grep -q '@SYSTEMD_NATIVE_PAYLOAD_URL@' "$NATIVE_RECIPE_DRAFT" \
@@ -349,7 +349,7 @@ recipe     : ${NATIVE_RECIPE_DRAFT#$ONIX_ROOT/}
 artifact   : ${PLAN_DIR#$ONIX_ROOT/}
 
 Phase 422 contract:
-  build one source-built native onix-systemd stone
+  build one source-built native systemd stone
   bundle immediate runtime deps for the first boot proof
   install/prove it without any /nix/store systemd runtime path
 EOF

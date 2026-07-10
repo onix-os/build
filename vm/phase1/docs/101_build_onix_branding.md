@@ -1,4 +1,4 @@
-# Phase 101 — build `onix-branding`
+# Phase 101 — build `branding`
 
 ## At a glance
 
@@ -8,13 +8,13 @@
 | Run command | `make phase 101` |
 | Underlying make target/script | `vm/phase1/build-branding-stone.sh` |
 | Runs on | guest over SSH |
-| Main proof/artifact | Builds and verifies the onix-branding stone. |
+| Main proof/artifact | Builds and verifies the branding stone. |
 
 
 Builds the recipe at:
 
 ```text
-recipes/onix-branding/stone.yaml
+recipes/branding/stone.yaml
 ```
 
 inside the forge, then verifies:
@@ -27,13 +27,13 @@ inside the forge, then verifies:
 - default `/etc` text lives under `/usr/share/defaults/etc/`
 - installing into a disposable target root works
 
-## Why `onix-branding` is the first real stone
+## Why `branding` is the first real stone
 
 A distribution has to be able to say what it is. `cat /etc/os-release` is how
 every tool — from a login prompt to a bug tracker to `systemd` — learns the
 name, ID, version, and homepage of the running system. Before ONIX can boot,
 before it can even be assembled into an image, it needs a package that *owns*
-that identity. `onix-branding` is that package, and because it is pure text and
+that identity. `branding` is that package, and because it is pure text and
 metadata (no compiler, no dependencies) it is the cleanest possible first real
 stone: it exercises the whole boulder→moss→repo pipeline without dragging in a
 musl toolchain.
@@ -53,7 +53,7 @@ file. **moss** later reads that file, verifies it, and unpacks the payload into 
 real root filesystem — recording the operation as a rollback-able state.
 
 Here is the shape of the branding recipe's install phase (from
-`recipes/onix-branding/stone.yaml`), abbreviated:
+`recipes/branding/stone.yaml`), abbreviated:
 
 ```yaml
 install     : |
@@ -119,7 +119,7 @@ should (the `os-info.json` identity keys, the logo glyphs, the color escapes).
 ## Boulder currently ignores non-`/usr` payload files
 
 Boulder currently ignores non-`/usr` payload files in this layout. That means
-`onix-branding` ships the canonical input metadata at `/usr/lib/os-info.json`.
+`branding` ships the canonical input metadata at `/usr/lib/os-info.json`.
 Moss uses that to generate `/usr/lib/os-release` during install. Later image
 assembly or first-boot glue creates the compatibility symlink:
 

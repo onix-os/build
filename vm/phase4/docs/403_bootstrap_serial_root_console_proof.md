@@ -195,7 +195,7 @@ multi-user.target
 There is one ugly bootstrap detail here.
 
 The current systemd payload is still the Phase 213 Nix-store bootstrap payload,
-not a real `onix-systemd` stone. Its active unit tree lives under a copied path
+not a real `systemd` stone. Its active unit tree lives under a copied path
 like:
 
 ```text

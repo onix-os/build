@@ -1,10 +1,10 @@
-# Phase 412 — build `onix-dropbear.stone`
+# Phase 412 — build `dropbear.stone`
 
 | Item | Value |
 |---|---|
 | Command | `make phase 412` |
 | Underlying make target/script | `vm/phase4/build-dropbear-stone.sh` |
-| Recipe template | `vm/phase4/stone-recipes/onix-dropbear/stone.yaml.in` |
+| Recipe template | `vm/phase4/stone-recipes/dropbear/stone.yaml.in` |
 | Mutates disk/image? | No |
 | Boots QEMU? | No |
 | Main proof | ONIX can build Dropbear from source into a local `.stone`, verify it with moss, and add it to the local Phase 4 moss repo. |
@@ -44,7 +44,7 @@ So Dropbear needs to become an ONIX stone.
 Phase 412 builds that package:
 
 ```text
-onix-dropbear-...stone
+dropbear-...stone
 ```
 
 Phase 413 will install/use it in the image and boot-prove SSH again.
@@ -174,9 +174,9 @@ A **statically linked** program bundles everything it needs into the single
 executable file. It is bigger, but it has no external runtime dependencies: copy the
 one file anywhere and it runs. For a base system that does not yet own its shared
 libraries as packages, static linking removes a whole category of "file exists but
-won't execute" failures. This is the same reason `onix-busybox` was built static.
+won't execute" failures. This is the same reason `busybox` was built static.
 
-Just like `onix-busybox`, this phase builds static musl binaries.
+Just like `busybox`, this phase builds static musl binaries.
 
 A dynamic SSH server would need runtime library ownership sorted out:
 
@@ -232,7 +232,7 @@ create prepared payload tarball
 boulder packages payload into .stone
         |
         v
-onix-dropbear-...stone
+dropbear-...stone
         |
         v
 local Phase 4 moss repo
@@ -309,13 +309,13 @@ does this:
    ```text
    /usr/sbin/dropbear
    /usr/bin/dropbearkey
-   /usr/share/onix/packages/onix-dropbear.md
+   /usr/share/onix/packages/dropbear.md
    ```
 
 10. Generates a concrete `stone.yaml` from:
 
     ```text
-    vm/phase4/stone-recipes/onix-dropbear/stone.yaml.in
+    vm/phase4/stone-recipes/dropbear/stone.yaml.in
     ```
 
 11. Runs `boulder build` inside the forge VM.
@@ -338,7 +338,7 @@ The important payload paths are:
 ```text
 /usr/sbin/dropbear
 /usr/bin/dropbearkey
-/usr/share/onix/packages/onix-dropbear.md
+/usr/share/onix/packages/dropbear.md
 ```
 
 Why `/usr/sbin/dropbear`?
@@ -375,7 +375,7 @@ The important success lines are:
 
 ```text
 ==> success
-onix-dropbear stone: artifacts/onix-stones/onix-dropbear-...
+dropbear stone: artifacts/onix-stones/dropbear-...
 local repo index    : artifacts/onix-local-repo/stone.index
 ```
 
@@ -389,7 +389,7 @@ Phase 412 proves:
 - boulder can package the prepared payload,
 - moss accepts and verifies the `.stone`,
 - the package installs into a disposable moss target,
-- the host local repo now contains `onix-dropbear`.
+- the host local repo now contains `dropbear`.
 
 That is the package-production half of replacing the temporary Nix Dropbear
 payload.
@@ -405,9 +405,9 @@ That is intentional.
 The safe order is:
 
 ```text
-412 — build and verify onix-dropbear.stone
-413 — install/use onix-dropbear in the image
-414 — boot-prove SSH with onix-dropbear
+412 — build and verify dropbear.stone
+413 — install/use dropbear in the image
+414 — boot-prove SSH with dropbear
 ```
 
 If Phase 412 fails, the booting image remains unchanged.
@@ -424,7 +424,7 @@ ls -lh artifacts/onix-local-repo/
 You can inspect the package with host Moss:
 
 ```sh
-artifacts/host-tools/bin/moss inspect artifacts/onix-stones/onix-dropbear-*.stone
+artifacts/host-tools/bin/moss inspect artifacts/onix-stones/dropbear-*.stone
 ```
 
 You can check that the local repo now has both BusyBox and Dropbear:

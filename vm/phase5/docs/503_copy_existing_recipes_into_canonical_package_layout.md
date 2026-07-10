@@ -20,8 +20,8 @@ It does not change builders yet.
 Earlier phases still build from the old locations:
 
 ```text
-recipes/onix-branding/
-recipes/onix-filesystem/
+recipes/branding/
+recipes/filesystem/
 vm/phase4/stone-recipes/
 ```
 
@@ -68,51 +68,51 @@ This keeps the repo usable during the transition.
 Phase 503 creates these canonical package directories:
 
 ```text
-packages/base/onix-branding/
-packages/base/onix-filesystem/
-packages/core/onix-busybox/
-packages/services/onix-dropbear/
-packages/services/onix-systemd/
-packages/services/onix-bootstrap-policy/
+packages/base/branding/
+packages/base/filesystem/
+packages/core/busybox/
+packages/services/dropbear/
+packages/services/systemd/
+packages/services/bootstrap-policy/
 ```
 
 ## Copy map
 
 ```text
-recipes/onix-branding/stone.yaml
--> packages/base/onix-branding/stone.yaml
+recipes/branding/stone.yaml
+-> packages/base/branding/stone.yaml
 
-recipes/onix-filesystem/stone.yaml
--> packages/base/onix-filesystem/stone.yaml
+recipes/filesystem/stone.yaml
+-> packages/base/filesystem/stone.yaml
 
-vm/phase4/stone-recipes/onix-busybox/stone.yaml.in
--> packages/core/onix-busybox/stone.yaml.in
+vm/phase4/stone-recipes/busybox/stone.yaml.in
+-> packages/core/busybox/stone.yaml.in
 
-vm/phase4/stone-recipes/onix-dropbear/stone.yaml.in
--> packages/services/onix-dropbear/stone.yaml.in
+vm/phase4/stone-recipes/dropbear/stone.yaml.in
+-> packages/services/dropbear/stone.yaml.in
 
-vm/phase4/stone-recipes/onix-systemd-native/stone.yaml.in
--> packages/services/onix-systemd/stone.yaml.in
+vm/phase4/stone-recipes/systemd-native/stone.yaml.in
+-> packages/services/systemd/stone.yaml.in
 
-vm/phase4/stone-recipes/onix-bootstrap-policy/stone.yaml.in
--> packages/services/onix-bootstrap-policy/stone.yaml.in
+vm/phase4/stone-recipes/bootstrap-policy/stone.yaml.in
+-> packages/services/bootstrap-policy/stone.yaml.in
 ```
 
 Notice the systemd choice:
 
 ```text
-onix-systemd-native
+systemd-native
 ```
 
-is copied as the canonical Phase 5 `onix-systemd` recipe. The older bootstrap
+is copied as the canonical Phase 5 `systemd` recipe. The older bootstrap
 systemd recipe remains Phase 4 history and is not promoted as the canonical
 Phase 5 package.
 
 This is the one place the copy is also a *decision*. Phase 4 experimented with two
 ways to get systemd: an early bootstrap recipe that packaged a Nix-built payload, and
-a later native recipe (`onix-systemd-native`) that builds systemd from source on musl.
+a later native recipe (`systemd-native`) that builds systemd from source on musl.
 The native one is the honest ONIX package — it does not smuggle a `/nix/store` payload
-into the machine plane — so Phase 5 promotes *it* to the canonical name `onix-systemd`
+into the machine plane — so Phase 5 promotes *it* to the canonical name `systemd`
 and leaves the bootstrap recipe behind as history. Canonicalization is not just moving
 files; it is choosing which experiment becomes the real package.
 
@@ -143,28 +143,28 @@ explain why that package belongs in ONIX.
 
 ## Important package notes
 
-### `onix-branding`
+### `branding`
 
 Data package. Rust alternative is not applicable.
 
-### `onix-filesystem`
+### `filesystem`
 
 Data/policy package. Rust alternative is not applicable.
 
-### `onix-busybox`
+### `busybox`
 
 C package. Accepted as a temporary compact bootstrap command base.
 
 Future Rust-first core packages such as `uutils-coreutils` should reduce its
 importance.
 
-### `onix-dropbear`
+### `dropbear`
 
 C package. Accepted as temporary bootstrap SSH because it is small and proven.
 
 A Rust SSH server replacement needs a separate evaluation.
 
-### `onix-systemd`
+### `systemd`
 
 C package. Accepted because ONIX currently chooses systemd as PID 1 and there is
 no serious Rust replacement for its full role.
@@ -172,7 +172,7 @@ no serious Rust replacement for its full role.
 The canonical copy uses the native source-built Phase 422 recipe, not the older
 bootstrap Nix-payload recipe.
 
-### `onix-bootstrap-policy`
+### `bootstrap-policy`
 
 Shell/unit policy package. Accepted as small bootstrap glue.
 

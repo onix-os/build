@@ -12,12 +12,12 @@ ONIX_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$PHASE0_DIR/config.sh"
 
 user="${1:-$BUILD_USER}"
-RECIPE_DIR="${ONIX_FILESYSTEM_RECIPE_DIR:-$ONIX_ROOT/packages/base/onix-filesystem}"
-LAB="/home/$user/stone-lab/onix-filesystem"
+RECIPE_DIR="${ONIX_FILESYSTEM_RECIPE_DIR:-$ONIX_ROOT/packages/base/filesystem}"
+LAB="/home/$user/stone-lab/filesystem"
 
 [[ -f "$RECIPE_DIR/stone.yaml" ]] || die "missing recipe: ${RECIPE_DIR#$ONIX_ROOT/}/stone.yaml"
 
-log "copying onix-filesystem recipe into the forge"
+log "copying filesystem recipe into the forge"
 tar -C "$RECIPE_DIR" -cf - stone.yaml \
   | "$PHASE0_DIR/ssh.sh" "$user" "rm -rf '$LAB' && mkdir -p '$LAB' && tar -C '$LAB' -xf -"
 
@@ -36,8 +36,8 @@ need_tool() {
 need_tool boulder
 need_tool moss
 
-LAB="$HOME/stone-lab/onix-filesystem"
-BRANDING_OUT="$HOME/stone-lab/onix-branding/out"
+LAB="$HOME/stone-lab/filesystem"
+BRANDING_OUT="$HOME/stone-lab/branding/out"
 OUT="$LAB/out"
 EXTRACT="$LAB/extracted"
 REPO="$LAB/repo"
@@ -48,7 +48,7 @@ TARGET="$LAB/install-target"
 set -- "$BRANDING_OUT"/*.stone
 BRANDING_STONE="$1"
 if [ ! -f "$BRANDING_STONE" ]; then
-    echo "error: missing onix-branding stone. From the host, run: make phase 101" >&2
+    echo "error: missing branding stone. From the host, run: make phase 101" >&2
     exit 1
 fi
 
@@ -56,7 +56,7 @@ echo "==> recipe"
 sed -n '1,240p' "$LAB/stone.yaml"
 
 echo
-echo "==> building onix-filesystem stone"
+echo "==> building filesystem stone"
 rm -rf "$OUT"
 mkdir -p "$OUT"
 (
@@ -111,7 +111,7 @@ cp "$BRANDING_STONE" "$STONE" "$REPO/"
 moss index "$REPO"
 moss -D "$ROOT" --cache "$CACHE" repo add local "file://$REPO/stone.index" -c "local onix phase1 repo"
 moss -D "$ROOT" --cache "$CACHE" repo update
-moss -D "$ROOT" --cache "$CACHE" -y install --to "$TARGET" onix-branding onix-filesystem
+moss -D "$ROOT" --cache "$CACHE" -y install --to "$TARGET" branding filesystem
 
 test -f "$TARGET/usr/lib/os-release"
 test -f "$TARGET/usr/lib/os-info.json"

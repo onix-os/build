@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # vm/phase5/fix-essential-ownership.sh — Phase 506 ownership collision gate.
 #
-# Phase 506 removes the onix-busybox/onix-systemd overlap for /usr/bin/reboot
+# Phase 506 removes the busybox/systemd overlap for /usr/bin/reboot
 # and /usr/bin/poweroff. Later Phase 5 stones may still have their own
 # ownership cleanup work, so this phase proves the specific BusyBox/systemd
 # split plus a non-strict canonical repo install.
@@ -37,9 +37,9 @@ usage() {
   cat <<'EOF'
 usage: fix-essential-ownership.sh [--check|--rebuild]
 
---check    verify source policy, rebuilt onix-busybox payload, and canonical
+--check    verify source policy, rebuilt busybox payload, and canonical
            repo install proof
---rebuild  rebuild onix-busybox from the patched package rules, reassemble the
+--rebuild  rebuild busybox from the patched package rules, reassemble the
            canonical local repo, and run the same checks
 EOF
 }
@@ -86,7 +86,7 @@ reject_systemd_owned_busybox_link() {
 
   if printf '%s\n' "$list" | grep -Eq '^(reboot|poweroff)$'; then
     printf '%s\n' "$list" >&2
-    die "$source_name still asks onix-busybox to own reboot/poweroff"
+    die "$source_name still asks busybox to own reboot/poweroff"
   fi
 }
 
@@ -95,9 +95,9 @@ check_source_policy() {
 
   need_file "vm/phase4/build-busybox-stone.sh"
   need_file "vm/phase4/materialize-etc.sh"
-  need_file "packages/core/onix-busybox/stone.yaml.in"
-  need_file "vm/phase4/stone-recipes/onix-busybox/stone.yaml.in"
-  need_file "packages/core/onix-busybox/PACKAGE.md"
+  need_file "packages/core/busybox/stone.yaml.in"
+  need_file "vm/phase4/stone-recipes/busybox/stone.yaml.in"
+  need_file "packages/core/busybox/PACKAGE.md"
 
   reject_systemd_owned_busybox_link \
     "build-busybox-stone.sh" \
@@ -106,20 +106,20 @@ check_source_policy() {
     "materialize-etc.sh" \
     "$(bootstrap_list_from_materializer)"
 
-  grep -q '^release     : [3-9][0-9]*$' packages/core/onix-busybox/stone.yaml.in \
-    || die "canonical onix-busybox recipe must be release 3 or newer"
+  grep -q '^release     : [3-9][0-9]*$' packages/core/busybox/stone.yaml.in \
+    || die "canonical busybox recipe must be release 3 or newer"
   cmp -s \
-    vm/phase4/stone-recipes/onix-busybox/stone.yaml.in \
-    packages/core/onix-busybox/stone.yaml.in \
-    || die "old and canonical onix-busybox recipe templates must stay byte-for-byte equal during migration"
+    vm/phase4/stone-recipes/busybox/stone.yaml.in \
+    packages/core/busybox/stone.yaml.in \
+    || die "old and canonical busybox recipe templates must stay byte-for-byte equal during migration"
   grep -q 'must not own `/usr/bin/reboot` or `/usr/bin/poweroff`' \
-    packages/core/onix-busybox/PACKAGE.md \
-    || die "onix-busybox PACKAGE.md must document systemd-owned command names"
+    packages/core/busybox/PACKAGE.md \
+    || die "busybox PACKAGE.md must document systemd-owned command names"
 }
 
 select_busybox_stone() {
-  local matches=("$LOCAL_REPO_DIR"/onix-busybox-*.stone)
-  [[ "${#matches[@]}" -eq 1 ]] || die "expected exactly one onix-busybox stone in $(rel "$LOCAL_REPO_DIR"), found ${#matches[@]}"
+  local matches=("$LOCAL_REPO_DIR"/busybox-*.stone)
+  [[ "${#matches[@]}" -eq 1 ]] || die "expected exactly one busybox stone in $(rel "$LOCAL_REPO_DIR"), found ${#matches[@]}"
   printf '%s\n' "${matches[0]}"
 }
 
@@ -141,25 +141,25 @@ check_busybox_artifact() {
   "$HOST_MOSS" extract -o "$tmp" "$stone" >/dev/null
 
   payload="$(find "$tmp" -mindepth 1 -maxdepth 1 -type d | sort | sed -n '1p')"
-  [[ -n "$payload" ]] || die "could not find extracted onix-busybox payload"
+  [[ -n "$payload" ]] || die "could not find extracted busybox payload"
 
   need_file "$payload/usr/bin/busybox"
-  need_file "$payload/usr/share/onix/packages/onix-busybox.links"
-  need_file "$payload/usr/share/onix/packages/onix-busybox.systemd-owned"
+  need_file "$payload/usr/share/onix/packages/busybox.links"
+  need_file "$payload/usr/share/onix/packages/busybox.systemd-owned"
 
   [[ ! -e "$payload/usr/bin/reboot" ]] \
-    || die "rebuilt onix-busybox still owns /usr/bin/reboot"
+    || die "rebuilt busybox still owns /usr/bin/reboot"
   [[ ! -e "$payload/usr/bin/poweroff" ]] \
-    || die "rebuilt onix-busybox still owns /usr/bin/poweroff"
+    || die "rebuilt busybox still owns /usr/bin/poweroff"
 
-  grep -qx 'reboot' "$payload/usr/share/onix/packages/onix-busybox.systemd-owned" \
-    || die "onix-busybox.systemd-owned must list reboot"
-  grep -qx 'poweroff' "$payload/usr/share/onix/packages/onix-busybox.systemd-owned" \
-    || die "onix-busybox.systemd-owned must list poweroff"
+  grep -qx 'reboot' "$payload/usr/share/onix/packages/busybox.systemd-owned" \
+    || die "busybox.systemd-owned must list reboot"
+  grep -qx 'poweroff' "$payload/usr/share/onix/packages/busybox.systemd-owned" \
+    || die "busybox.systemd-owned must list poweroff"
 
   reject_systemd_owned_busybox_link \
-    "onix-busybox.links" \
-    "$(cat "$payload/usr/share/onix/packages/onix-busybox.links")"
+    "busybox.links" \
+    "$(cat "$payload/usr/share/onix/packages/busybox.links")"
 
   rm -rf "$tmp"
   trap - RETURN
@@ -180,14 +180,14 @@ run_check() {
   cat <<'EOF'
 
 ==> success
-Phase 506 proved onix-busybox no longer owns systemd's reboot/poweroff command
+Phase 506 proved busybox no longer owns systemd's reboot/poweroff command
 paths, and the canonical local repo remains installable.
 EOF
 }
 
 run_rebuild() {
   log "Phase 506 essential package ownership collision fix"
-  log "mode      : rebuild onix-busybox, then prove canonical repo install"
+  log "mode      : rebuild busybox, then prove canonical repo install"
   check_source_policy
 
   "$(command -v make)" --no-print-directory -C "$PHASE4_DIR" busybox-stone

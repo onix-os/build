@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# vm/phase4/build-systemd-stone.sh — Phase 415 bootstrap onix-systemd stone.
+# vm/phase4/build-systemd-stone.sh — Phase 415 bootstrap systemd stone.
 #
 # This is intentionally not the final native ONIX systemd recipe. It packages
 # the exact musl systemd payload proved in Phase 213/414 into a .stone so the
@@ -17,12 +17,12 @@ user="${1:-$BUILD_USER}"
 STONE_DIR="${ONIX_STONE_DIR:-$ONIX_ROOT/artifacts/onix-stones}"
 LOCAL_REPO_DIR="${ONIX_LOCAL_REPO_DIR:-$ONIX_ROOT/artifacts/onix-local-repo}"
 STONE_WORK_DIR="${ONIX_STONE_WORK_DIR:-$ONIX_ROOT/artifacts/onix-stone-work}"
-RECIPE_TEMPLATE="${ONIX_SYSTEMD_RECIPE_TEMPLATE:-$SCRIPT_DIR/stone-recipes/onix-systemd/stone.yaml.in}"
+RECIPE_TEMPLATE="${ONIX_SYSTEMD_RECIPE_TEMPLATE:-$SCRIPT_DIR/stone-recipes/systemd/stone.yaml.in}"
 HOST_MOSS="${ONIX_HOST_MOSS:-$ONIX_ROOT/artifacts/host-tools/bin/moss}"
 SYSTEMD_PAYLOAD_OUT_FILE="${ONIX_SYSTEMD_PAYLOAD_OUT_FILE:-$ONIX_ROOT/artifacts/onix-image/systemd-payload.out}"
 SYSTEMD_CLOSURE_LIST="${ONIX_SYSTEMD_CLOSURE_LIST:-$ONIX_ROOT/artifacts/onix-image/systemd-payload.closure}"
 
-LAB="/home/$user/stone-lab/onix-systemd"
+LAB="/home/$user/stone-lab/systemd"
 
 need_cmd awk
 need_cmd file
@@ -65,8 +65,8 @@ SYSTEMD_VERSION="$(basename "$SYSTEMD_PAYLOAD_OUT" | sed -E 's/^[^-]+-systemd-([
 [[ -n "$SYSTEMD_VERSION" && "$SYSTEMD_VERSION" != "$(basename "$SYSTEMD_PAYLOAD_OUT")" ]] \
   || die "could not infer systemd version from $SYSTEMD_PAYLOAD_OUT"
 
-WORK="$STONE_WORK_DIR/onix-systemd"
-PAYLOAD_NAME="onix-systemd-payload-$SYSTEMD_VERSION"
+WORK="$STONE_WORK_DIR/systemd"
+PAYLOAD_NAME="systemd-payload-$SYSTEMD_VERSION"
 PAYLOAD_ROOT="$WORK/$PAYLOAD_NAME"
 BOOTSTRAP_PREFIX="/usr/lib/onix/bootstrap"
 BOOTSTRAP_ROOT="$PAYLOAD_ROOT$BOOTSTRAP_PREFIX"
@@ -77,7 +77,7 @@ CLOSURE_COUNT="$(wc -l < "$SYSTEMD_CLOSURE_LIST" | tr -d '[:space:]')"
 
 cleanup_work_dir() {
   case "$WORK" in
-    "$ONIX_ROOT"/artifacts/onix-stone-work/onix-systemd) ;;
+    "$ONIX_ROOT"/artifacts/onix-stone-work/systemd) ;;
     *) die "refusing unsafe work cleanup path: $WORK" ;;
   esac
 
@@ -91,7 +91,7 @@ mkdir -p "$STONE_DIR" "$LOCAL_REPO_DIR" "$STONE_WORK_DIR"
 cleanup_work_dir
 mkdir -p "$PAYLOAD_ROOT"
 
-log "Phase 415 bootstrap onix-systemd stone"
+log "Phase 415 bootstrap systemd stone"
 cat <<EOF
 systemd out : $SYSTEMD_PAYLOAD_OUT
 version     : $SYSTEMD_VERSION
@@ -143,9 +143,9 @@ for bin in systemctl journalctl loginctl machinectl networkctl systemd-analyze s
 done
 
 {
-  echo "# onix-systemd"
+  echo "# systemd"
   echo
-  echo "\`onix-systemd\` is the Phase 415 bootstrap ownership stone for the"
+  echo "\`systemd\` is the Phase 415 bootstrap ownership stone for the"
   echo "currently proven musl systemd userspace payload."
   echo
   echo "Systemd output:"
@@ -182,9 +182,9 @@ done
   echo
   echo "Phase 416 materializes that bootstrap copy to /nix/store inside the image"
   echo "so the absolute musl loader and runtime dependency paths resolve at boot."
-} > "$PAYLOAD_ROOT/usr/share/onix/packages/onix-systemd.md"
+} > "$PAYLOAD_ROOT/usr/share/onix/packages/systemd.md"
 
-cp "$SYSTEMD_CLOSURE_LIST" "$PAYLOAD_ROOT/usr/share/onix/packages/onix-systemd.closure"
+cp "$SYSTEMD_CLOSURE_LIST" "$PAYLOAD_ROOT/usr/share/onix/packages/systemd.closure"
 {
   echo "/usr/lib/onix/bootstrap/nix/store -> packaged copy of runtime closure"
   echo "/usr/lib/systemd/systemd -> $SYSTEMD_PAYLOAD_OUT/lib/systemd/systemd"
@@ -194,12 +194,12 @@ cp "$SYSTEMD_CLOSURE_LIST" "$PAYLOAD_ROOT/usr/share/onix/packages/onix-systemd.c
     [[ -e "$link" ]] || continue
     printf '/usr/bin/%s -> %s\n' "$(basename "$link")" "$(readlink "$link")"
   done
-} > "$PAYLOAD_ROOT/usr/share/onix/packages/onix-systemd.links"
+} > "$PAYLOAD_ROOT/usr/share/onix/packages/systemd.links"
 
 chmod 0644 \
-  "$PAYLOAD_ROOT/usr/share/onix/packages/onix-systemd.md" \
-  "$PAYLOAD_ROOT/usr/share/onix/packages/onix-systemd.closure" \
-  "$PAYLOAD_ROOT/usr/share/onix/packages/onix-systemd.links"
+  "$PAYLOAD_ROOT/usr/share/onix/packages/systemd.md" \
+  "$PAYLOAD_ROOT/usr/share/onix/packages/systemd.closure" \
+  "$PAYLOAD_ROOT/usr/share/onix/packages/systemd.links"
 
 log "verifying staged payload"
 [[ -x "$BOOTSTRAP_ROOT$SYSTEMD_PAYLOAD_OUT/lib/systemd/systemd" ]]
@@ -207,8 +207,8 @@ log "verifying staged payload"
 [[ "$(readlink "$PAYLOAD_ROOT/usr/lib/systemd/system")" == "$SYSTEMD_PAYLOAD_OUT/example/systemd/system" ]]
 [[ -L "$PAYLOAD_ROOT/usr/bin/systemctl" ]]
 [[ -d "$PAYLOAD_ROOT/usr/lib/onix/bootstrap/nix/store" ]]
-[[ -f "$PAYLOAD_ROOT/usr/share/onix/packages/onix-systemd.closure" ]]
-grep -q "$SYSTEMD_PAYLOAD_OUT" "$PAYLOAD_ROOT/usr/share/onix/packages/onix-systemd.closure"
+[[ -f "$PAYLOAD_ROOT/usr/share/onix/packages/systemd.closure" ]]
+grep -q "$SYSTEMD_PAYLOAD_OUT" "$PAYLOAD_ROOT/usr/share/onix/packages/systemd.closure"
 
 log "creating prepared payload archive"
 tar --numeric-owner -C "$WORK" -czf "$PAYLOAD_ARCHIVE" "$PAYLOAD_NAME"
@@ -227,7 +227,7 @@ log "copying recipe template + prepared payload into the forge"
 tar -cf - \
   -C "$WORK" build.env "$(basename "$PAYLOAD_ARCHIVE")" \
   -C "$(dirname "$RECIPE_TEMPLATE")" "$(basename "$RECIPE_TEMPLATE")" \
-  | "$PHASE0_DIR/ssh.sh" "$user" "if [ -d '$LAB' ]; then chmod -R u+rwX '$LAB' 2>/dev/null || true; rm -rf '$LAB'; fi && mkdir -p '$LAB/src' && tar -C '$LAB' -xf - && mv '$LAB/$(basename "$PAYLOAD_ARCHIVE")' '$LAB/src/$(basename "$PAYLOAD_ARCHIVE")' && mv '$LAB/$(basename "$RECIPE_TEMPLATE")' '$LAB/stone.yaml.in'"
+  | "$PHASE0_DIR/ssh.sh" "$user" "if [ -d '$LAB' ]; then chmod -R u+rwX '$LAB' 2>/dev/null || true; rm -rf '$LAB'; fi && mkdir -p '$LAB/src' && tar -C '$LAB' -xf - && mv '$LAB/$(basename "$PAYLOAD_ARCHIVE")' '$LAB/src/$(basename "$PAYLOAD_ARCHIVE")' && if [ '$(basename "$RECIPE_TEMPLATE")' != 'stone.yaml.in' ]; then mv '$LAB/$(basename "$RECIPE_TEMPLATE")' '$LAB/stone.yaml.in'; fi"
 
 "$PHASE0_DIR/ssh.sh" "$user" /bin/sh -s <<'REMOTE'
 set -eu
@@ -253,7 +253,7 @@ need_tool install
 need_tool file
 need_tool readelf
 
-LAB="$HOME/stone-lab/onix-systemd"
+LAB="$HOME/stone-lab/systemd"
 OUT="$LAB/out"
 EXTRACT="$LAB/extracted"
 REPO="$LAB/repo"
@@ -299,7 +299,7 @@ echo "==> recipe"
 sed -n '1,260p' "$LAB/stone.yaml"
 
 echo
-echo "==> building onix-systemd stone"
+echo "==> building systemd stone"
 safe_rm_rf "$OUT"
 mkdir -p "$OUT"
 (
@@ -307,9 +307,9 @@ mkdir -p "$OUT"
     boulder build -y --normal-priority -o "$OUT" stone.yaml
 )
 
-STONE="$(find "$OUT" -maxdepth 1 -name 'onix-systemd-*.stone' ! -name '*dbginfo*' | sort | head -n 1)"
+STONE="$(find "$OUT" -maxdepth 1 -name 'systemd-*.stone' ! -name '*dbginfo*' | sort | head -n 1)"
 if [ ! -f "$STONE" ]; then
-    echo "error: boulder did not produce an onix-systemd .stone under $OUT" >&2
+    echo "error: boulder did not produce an systemd .stone under $OUT" >&2
     exit 1
 fi
 printf '%s\n' "$STONE" > "$LAB/stone.path"
@@ -341,9 +341,9 @@ test -d "$PAYLOAD/usr/lib/onix/bootstrap/nix/store"
 test "$(readlink "$PAYLOAD/usr/lib/systemd/systemd")" = "$SYSTEMD_PAYLOAD_OUT/lib/systemd/systemd"
 test "$(readlink "$PAYLOAD/usr/lib/systemd/system")" = "$SYSTEMD_PAYLOAD_OUT/example/systemd/system"
 test -L "$PAYLOAD/usr/bin/systemctl"
-test -f "$PAYLOAD/usr/share/onix/packages/onix-systemd.md"
-test -f "$PAYLOAD/usr/share/onix/packages/onix-systemd.closure"
-grep -q "$SYSTEMD_PAYLOAD_OUT" "$PAYLOAD/usr/share/onix/packages/onix-systemd.closure"
+test -f "$PAYLOAD/usr/share/onix/packages/systemd.md"
+test -f "$PAYLOAD/usr/share/onix/packages/systemd.closure"
+grep -q "$SYSTEMD_PAYLOAD_OUT" "$PAYLOAD/usr/share/onix/packages/systemd.closure"
 file "$PAYLOAD/usr/lib/onix/bootstrap$SYSTEMD_PAYLOAD_OUT/lib/systemd/systemd" | tee "$LAB/systemd.extracted.file"
 readelf -l "$PAYLOAD/usr/lib/onix/bootstrap$SYSTEMD_PAYLOAD_OUT/lib/systemd/systemd" |
     grep -q 'Requesting program interpreter: /nix/store/.*/ld-musl-x86_64\.so\.1'
@@ -356,13 +356,13 @@ cp "$STONE" "$REPO/"
 moss index "$REPO"
 moss -D "$ROOT" --cache "$CACHE" repo add local "file://$REPO/stone.index" -c "local onix systemd repo"
 moss -D "$ROOT" --cache "$CACHE" repo update
-moss -D "$ROOT" --cache "$CACHE" -y install --to "$TARGET" onix-systemd
+moss -D "$ROOT" --cache "$CACHE" -y install --to "$TARGET" systemd
 
 test -x "$TARGET/usr/lib/onix/bootstrap$SYSTEMD_PAYLOAD_OUT/lib/systemd/systemd"
 test -d "$TARGET/usr/lib/onix/bootstrap/nix/store"
 test "$(readlink "$TARGET/usr/lib/systemd/systemd")" = "$SYSTEMD_PAYLOAD_OUT/lib/systemd/systemd"
 test "$(readlink "$TARGET/usr/bin/systemctl")" = "$SYSTEMD_PAYLOAD_OUT/bin/systemctl"
-test -f "$TARGET/usr/share/onix/packages/onix-systemd.md"
+test -f "$TARGET/usr/share/onix/packages/systemd.md"
 
 echo
 echo "==> success"
@@ -373,25 +373,25 @@ echo "target: $TARGET"
 REMOTE
 
 log "copying built stone back to host artifacts"
-rm -f "$STONE_DIR"/onix-systemd-*.stone "$STONE_DIR"/onix-systemd-dbginfo-*.stone
+rm -f "$STONE_DIR"/systemd-*.stone "$STONE_DIR"/systemd-dbginfo-*.stone
 "$PHASE0_DIR/ssh.sh" "$user" "stone=\$(cat '$LAB/stone.path') && cd \"\$(dirname \"\$stone\")\" && tar -cf - \"\$(basename \"\$stone\")\"" \
   | tar -C "$STONE_DIR" -xf -
 
-HOST_STONE="$(find "$STONE_DIR" -maxdepth 1 -name 'onix-systemd-*.stone' ! -name '*dbginfo*' | sort | tail -n 1)"
-[[ -f "$HOST_STONE" ]] || die "failed to copy onix-systemd stone into ${STONE_DIR#$ONIX_ROOT/}"
+HOST_STONE="$(find "$STONE_DIR" -maxdepth 1 -name 'systemd-*.stone' ! -name '*dbginfo*' | sort | tail -n 1)"
+[[ -f "$HOST_STONE" ]] || die "failed to copy systemd stone into ${STONE_DIR#$ONIX_ROOT/}"
 
 log "host moss integrity check"
 "$HOST_MOSS" inspect --check "$HOST_STONE"
 
 log "refreshing local Phase 4 moss repo"
-rm -f "$LOCAL_REPO_DIR"/onix-systemd-*.stone "$LOCAL_REPO_DIR"/onix-systemd-dbginfo-*.stone
+rm -f "$LOCAL_REPO_DIR"/systemd-*.stone "$LOCAL_REPO_DIR"/systemd-dbginfo-*.stone
 cp "$HOST_STONE" "$LOCAL_REPO_DIR/"
 "$HOST_MOSS" index "$LOCAL_REPO_DIR"
 
 cat <<EOF
 
 ==> success
-onix-systemd stone: ${HOST_STONE#$ONIX_ROOT/}
+systemd stone: ${HOST_STONE#$ONIX_ROOT/}
 local repo index  : ${LOCAL_REPO_DIR#$ONIX_ROOT/}/stone.index
 
 Next:

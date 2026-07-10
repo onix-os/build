@@ -118,7 +118,7 @@ If yes, why are we not using it?
 
 The word doing the work is **serious**. "A Rust crate exists on crates.io" is not the
 bar; "a production-quality implementation that can carry this system role today" is.
-systemd as PID 1 has no serious Rust replacement, so `onix-systemd` stays C — but its
+systemd as PID 1 has no serious Rust replacement, so `systemd` stays C — but its
 `PACKAGE.md` says so out loud, which is what keeps the exception honest rather than
 lazy.
 
@@ -352,9 +352,9 @@ For example:
 ```text
 packages/core/uutils-coreutils/
 packages/core/rootasrole/
-packages/base/onix-busybox/
-packages/base/onix-dropbear/
-packages/base/onix-systemd/
+packages/base/busybox/
+packages/base/dropbear/
+packages/base/systemd/
 ```
 
 The exact directory names can change, but the metadata contract should be strict.

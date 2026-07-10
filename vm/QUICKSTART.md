@@ -109,7 +109,7 @@ Examples:
 ```sh
 make phase 002   # build the forge disk
 make phase 003   # boot the forge VM
-make phase 101   # build onix-branding
+make phase 101   # build branding
 make phase 213   # stage the first musl systemd userspace payload
 make phase 214   # stage the first kernel module/kmod payload
 make phase 212   # run the ONIX boot probe
@@ -123,20 +123,20 @@ make phase 405   # prove host-to-guest TCP inspection
 make phase 406   # prove authenticated SSH access
 make phase 407   # audit temporary Nix-sourced system payloads
 make phase 408   # define local stone/repo contract
-make phase 409   # build source-based onix-busybox stone
-make phase 410   # install/use onix-busybox in the image
-make phase 411   # boot-prove shell/network/SSH with onix-busybox
-make phase 412   # build source-based onix-dropbear stone
-make phase 413   # install/use onix-dropbear and prove SSH
+make phase 409   # build source-based busybox stone
+make phase 410   # install/use busybox in the image
+make phase 411   # boot-prove shell/network/SSH with busybox
+make phase 412   # build source-based dropbear stone
+make phase 413   # install/use dropbear and prove SSH
 make phase 414   # audit systemd ownership before packaging
-make phase 415   # build bootstrap onix-systemd stone
-make phase 416   # install/use onix-systemd in the image
-make phase 417   # boot-prove onix-systemd as PID 1 runtime
+make phase 415   # build bootstrap systemd stone
+make phase 416   # install/use systemd in the image
+make phase 417   # boot-prove systemd as PID 1 runtime
 make phase 418   # package/prove bootstrap policy ownership
 make phase 419   # audit booted-base ownership/debt map
 make phase 420   # prune stale old Nix BusyBox/Dropbear payloads
-make phase 421   # prepare native source-built onix-systemd plan
-make phase 422   # build/install/boot-prove native onix-systemd
+make phase 421   # prepare native source-built systemd plan
+make phase 422   # build/install/boot-prove native systemd
 make phase 424   # boot native ONIX, prove SSH, and leave QEMU running
 make phase 425   # final Phase 4 acceptance check against the running VM
 make phase 500   # define Rust-first musl-only static-first package law

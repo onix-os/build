@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # vm/phase5/wire-uutils-coreutils.sh — Phase 513.
 #
-# Move normal coreutils command-name ownership from onix-busybox to
+# Move normal coreutils command-name ownership from busybox to
 # uutils-coreutils while keeping BusyBox as bootstrap/recovery shell.
 set -euo pipefail
 
@@ -24,7 +24,7 @@ usage() {
   cat <<'EOF'
 usage: wire-uutils-coreutils.sh [--apply|--check|--rebuild]
 
---apply    rebuild onix-busybox with reduced command links, rebuild
+--apply    rebuild busybox with reduced command links, rebuild
            uutils-coreutils with command-name links, and prove they install
            together without path collisions
 --check    verify existing stones and docs
@@ -53,9 +53,9 @@ local_stone_for() {
 check_source_files() {
   [[ -f "$ONIX_ROOT/vm/phase5/docs/513_uutils_command_ownership.md" ]] || die "missing Phase 513 doc page"
   [[ -f "$ONIX_ROOT/packages/core/uutils-coreutils/PACKAGE.md" ]] || die "missing uutils package contract"
-  [[ -f "$ONIX_ROOT/packages/core/onix-busybox/PACKAGE.md" ]] || die "missing busybox package contract"
+  [[ -f "$ONIX_ROOT/packages/core/busybox/PACKAGE.md" ]] || die "missing busybox package contract"
   grep -q 'Phase 513' "$ONIX_ROOT/packages/core/uutils-coreutils/PACKAGE.md"
-  grep -q 'uutils-coreutils' "$ONIX_ROOT/packages/core/onix-busybox/PACKAGE.md"
+  grep -q 'uutils-coreutils' "$ONIX_ROOT/packages/core/busybox/PACKAGE.md"
   grep -q 'uutils-coreutils' "$ONIX_ROOT/packages/STONES.md"
 }
 
@@ -63,9 +63,9 @@ prove_install() {
   [[ -x "$HOST_MOSS" ]] || die "missing host moss: ${HOST_MOSS#$ONIX_ROOT/} (run: make phase 202)"
 
   local busybox_stone uutils_stone
-  busybox_stone="$(local_stone_for onix-busybox)"
+  busybox_stone="$(local_stone_for busybox)"
   uutils_stone="$(local_stone_for uutils-coreutils)"
-  [[ -n "$busybox_stone" ]] || die "missing onix-busybox stone in ${LOCAL_REPO_DIR#$ONIX_ROOT/}"
+  [[ -n "$busybox_stone" ]] || die "missing busybox stone in ${LOCAL_REPO_DIR#$ONIX_ROOT/}"
   [[ -n "$uutils_stone" ]] || die "missing uutils-coreutils stone in ${LOCAL_REPO_DIR#$ONIX_ROOT/}"
 
   "$HOST_MOSS" inspect --check "$busybox_stone" >/dev/null
@@ -90,9 +90,9 @@ prove_install() {
   if ! "$HOST_MOSS" -D "$root" \
       --cache "$cache" \
       -y install --to "$target" \
-      onix-busybox uutils-coreutils >"$install_log" 2>&1; then
+      busybox uutils-coreutils >"$install_log" 2>&1; then
     cat "$install_log" >&2
-    die "Moss could not install onix-busybox + uutils-coreutils"
+    die "Moss could not install busybox + uutils-coreutils"
   fi
 
   if grep -q 'duplicate entry:' "$install_log"; then
@@ -135,7 +135,7 @@ prove_install() {
 
 run_check() {
   check_source_files
-  if [[ -z "$(local_stone_for onix-busybox)" || -z "$(local_stone_for uutils-coreutils)" ]]; then
+  if [[ -z "$(local_stone_for busybox)" || -z "$(local_stone_for uutils-coreutils)" ]]; then
     log "stone     : Phase 513 stones not both built yet"
     log "phase513  : check OK"
     return
@@ -148,7 +148,7 @@ run_apply() {
   check_source_files
 
   log "Phase 513 uutils command wiring"
-  log "step 1/3 : rebuild onix-busybox without uutils-overlapping command links"
+  log "step 1/3 : rebuild busybox without uutils-overlapping command links"
   "$PHASE4_DIR/build-busybox-stone.sh"
 
   log "step 2/3 : rebuild uutils-coreutils with command-name links"
@@ -163,7 +163,7 @@ run_apply() {
   cat <<EOF_SUCCESS
 
 ==> success
-onix-busybox     : $(local_stone_for onix-busybox | sed "s|^$ONIX_ROOT/||")
+busybox     : $(local_stone_for busybox | sed "s|^$ONIX_ROOT/||")
 uutils-coreutils : $(local_stone_for uutils-coreutils | sed "s|^$ONIX_ROOT/||")
 
 Phase 513 moved normal coreutils command-name ownership to uutils while keeping

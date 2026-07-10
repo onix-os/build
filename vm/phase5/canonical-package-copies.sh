@@ -39,21 +39,21 @@ log "Phase 503 canonical package copies"
 log "policy    : copy-only; old recipe paths remain for existing builders"
 
 mappings=(
-  "recipes/onix-branding/stone.yaml|packages/base/onix-branding/stone.yaml"
-  "recipes/onix-filesystem/stone.yaml|packages/base/onix-filesystem/stone.yaml"
-  "vm/phase4/stone-recipes/onix-busybox/stone.yaml.in|packages/core/onix-busybox/stone.yaml.in"
-  "vm/phase4/stone-recipes/onix-dropbear/stone.yaml.in|packages/services/onix-dropbear/stone.yaml.in"
-  "vm/phase4/stone-recipes/onix-systemd-native/stone.yaml.in|packages/services/onix-systemd/stone.yaml.in"
-  "vm/phase4/stone-recipes/onix-bootstrap-policy/stone.yaml.in|packages/services/onix-bootstrap-policy/stone.yaml.in"
+  "recipes/branding/stone.yaml|packages/base/branding/stone.yaml"
+  "recipes/filesystem/stone.yaml|packages/base/filesystem/stone.yaml"
+  "vm/phase4/stone-recipes/busybox/stone.yaml.in|packages/core/busybox/stone.yaml.in"
+  "vm/phase4/stone-recipes/dropbear/stone.yaml.in|packages/services/dropbear/stone.yaml.in"
+  "vm/phase4/stone-recipes/systemd-native/stone.yaml.in|packages/services/systemd/stone.yaml.in"
+  "vm/phase4/stone-recipes/bootstrap-policy/stone.yaml.in|packages/services/bootstrap-policy/stone.yaml.in"
 )
 
 packages=(
-  "packages/base/onix-branding"
-  "packages/base/onix-filesystem"
-  "packages/core/onix-busybox"
-  "packages/services/onix-dropbear"
-  "packages/services/onix-systemd"
-  "packages/services/onix-bootstrap-policy"
+  "packages/base/branding"
+  "packages/base/filesystem"
+  "packages/core/busybox"
+  "packages/services/dropbear"
+  "packages/services/systemd"
+  "packages/services/bootstrap-policy"
 )
 
 for mapping in "${mappings[@]}"; do

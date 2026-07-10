@@ -28,8 +28,8 @@ need_tool() {
 need_tool moss
 need_tool sha256sum
 
-BRANDING_OUT="$HOME/stone-lab/onix-branding/out"
-FILESYSTEM_OUT="$HOME/stone-lab/onix-filesystem/out"
+BRANDING_OUT="$HOME/stone-lab/branding/out"
+FILESYSTEM_OUT="$HOME/stone-lab/filesystem/out"
 LAB="$HOME/stone-lab/onix-publish"
 TEST_LAB="$HOME/stone-lab/onix-publish-test"
 CHANNEL="unstable"
@@ -42,14 +42,14 @@ TARGET="$TEST_LAB/install-target"
 set -- "$BRANDING_OUT"/*.stone
 BRANDING_STONE="$1"
 if [ ! -f "$BRANDING_STONE" ]; then
-    echo "error: missing onix-branding stone. From the host, run: make phase 101" >&2
+    echo "error: missing branding stone. From the host, run: make phase 101" >&2
     exit 1
 fi
 
 set -- "$FILESYSTEM_OUT"/*.stone
 FILESYSTEM_STONE="$1"
 if [ ! -f "$FILESYSTEM_STONE" ]; then
-    echo "error: missing onix-filesystem stone. From the host, run: make phase 102" >&2
+    echo "error: missing filesystem stone. From the host, run: make phase 102" >&2
     exit 1
 fi
 
@@ -115,7 +115,7 @@ echo
 echo "==> verify install from publish-style repo URL"
 moss -D "$ROOT" --cache "$CACHE" repo add onix-unstable "file://$PUBLISH_REPO/stone.index" -c "ONIX unstable local publish test"
 moss -D "$ROOT" --cache "$CACHE" repo update
-moss -D "$ROOT" --cache "$CACHE" -y install --to "$TARGET" onix-branding onix-filesystem
+moss -D "$ROOT" --cache "$CACHE" -y install --to "$TARGET" branding filesystem
 
 test -f "$TARGET/usr/lib/os-release"
 test -f "$TARGET/usr/share/onix/filesystem-layout.md"

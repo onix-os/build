@@ -5,8 +5,8 @@ Phase 1 turns the Phase 0 tooling proof into real ONIX package artifacts.
 We start deliberately small:
 
 ```text
-onix-branding
-onix-filesystem
+branding
+filesystem
 ```
 
 These packages establish identity, default filesystem policy, and the first
@@ -68,11 +68,11 @@ isolate the packaging machinery from the far harder problem of cross-compiling a
 musl toolchain. If something breaks in Phase 1, it is the repo/index/publish
 pipeline, not a compiler.
 
-- **`onix-branding`** ships the system's *identity*: an `os-info.json` metadata
+- **`branding`** ships the system's *identity*: an `os-info.json` metadata
   file that moss turns into a standard `os-release`, plus the terminal logo and
   default login text. This is what makes a booted machine able to say "I am
   ONIX." (Step 101.)
-- **`onix-filesystem`** ships the system's *filesystem policy*: a documented
+- **`filesystem`** ships the system's *filesystem policy*: a documented
   ownership boundary between moss's `/usr`, Nix's `/nix`, and local `/etc`
   state, plus default templates (`fstab`, login `profile`, PATH policy) that
   future image assembly can materialize. (Step 102.)
@@ -84,8 +84,8 @@ straight into live `/etc`.** More on why in step 101.
 ## Steps
 
 - [100 — forge readiness](./100_forge_readiness.md)
-- [101 — build `onix-branding`](./101_build_onix_branding.md)
-- [102 — build `onix-filesystem`](./102_build_onix_filesystem.md)
+- [101 — build `branding`](./101_build_onix_branding.md)
+- [102 — build `filesystem`](./102_build_onix_filesystem.md)
 - [103 — assemble first named local ONIX repo](./103_assemble_first_named_local_onix_repo.md)
 - [104 — prepare publishable ONIX repo layout](./104_prepare_publishable_repo_layout.md)
 - [105 — export publishable repo to the host](./105_export_publishable_repo_to_host.md)

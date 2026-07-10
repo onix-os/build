@@ -74,12 +74,12 @@ safe_artifact_path() {
 
 host_stone_for() {
   local package="$1"
-  find "$STONE_DIR" -maxdepth 1 -name "$package-*.stone" ! -name '*dbginfo*' ! -name '*devel*' | sort | tail -n 1
+  find "$STONE_DIR" -maxdepth 1 -name "$package-[0-9]*.stone" ! -name '*dbginfo*' ! -name '*devel*' | sort | tail -n 1
 }
 
 local_stone_for() {
   local package="$1"
-  find "$LOCAL_REPO_DIR" -maxdepth 1 -name "$package-*.stone" ! -name '*dbginfo*' ! -name '*devel*' | sort | tail -n 1
+  find "$LOCAL_REPO_DIR" -maxdepth 1 -name "$package-[0-9]*.stone" ! -name '*dbginfo*' ! -name '*devel*' | sort | tail -n 1
 }
 
 check_source_files() {
@@ -93,7 +93,9 @@ check_source_files() {
   grep -q 'rootasrole' "$ONIX_ROOT/packages/STONES.md"
   grep -q 'libgcc-runtime' "$ONIX_ROOT/packages/STONES.md"
   grep -q 'libgcc-runtime' "$ONIX_ROOT/packages/core/rootasrole/PACKAGE.md"
+  grep -q '/etc/pam.d/sr' "$ONIX_ROOT/packages/core/rootasrole/PACKAGE.md"
   grep -q 'RootAsRole' "$ONIX_ROOT/vm/phase5/docs/511_rootasrole_privilege_stone.md"
+  grep -q '/etc/pam.d/sr' "$ONIX_ROOT/vm/phase5/docs/511_rootasrole_privilege_stone.md"
 }
 
 require_phase510_stones() {
@@ -174,6 +176,8 @@ prove_host_install_and_audit() {
 
   [[ -x "$target/usr/bin/dosr" ]] || die "missing installed dosr"
   [[ -x "$target/usr/bin/chsr" ]] || die "missing installed chsr"
+  [[ -f "$target/usr/share/defaults/pam.d/sr" ]] || die "missing installed RootAsRole PAM service sample sr"
+  [[ -f "$target/usr/share/defaults/pam.d/dosr" ]] || die "missing installed RootAsRole PAM companion sample dosr"
   [[ -e "$target/usr/lib/libpam.so.0" ]] || die "missing installed libpam.so.0"
   [[ -e "$target/usr/lib/libseccomp.so.2" ]] || die "missing installed libseccomp.so.2"
   [[ -e "$target/usr/lib/libgcc_s.so.1" ]] || die "missing installed libgcc_s.so.1"
@@ -458,7 +462,7 @@ cut_stone() {
         boulder build -y --normal-priority -o "$out" "$recipe"
     )
 
-    stone="$(find "$out" -maxdepth 1 -name "$package-*.stone" ! -name '*dbginfo*' ! -name '*devel*' | sort | head -n 1)"
+    stone="$(find "$out" -maxdepth 1 -name "$package-[0-9]*.stone" ! -name '*dbginfo*' ! -name '*devel*' | sort | head -n 1)"
     test -f "$stone"
     printf '%s\n' "$stone" > "$LAB/$package.stone.path"
     moss inspect --check "$stone"
@@ -562,16 +566,18 @@ build_rootasrole() {
     install -m 00755 "$build_src/target/release/chsr" "$payload_root/usr/bin/chsr"
     install -m 00644 "$build_src/resources/rootasrole.json" "$payload_root/usr/share/defaults/rootasrole/rootasrole.json"
 
-    cat > "$payload_root/usr/share/defaults/pam.d/dosr" <<'EOF_PAM'
+    cat > "$payload_root/usr/share/defaults/pam.d/sr" <<'EOF_PAM'
 #%PAM-1.0
 # ONIX packaged default for RootAsRole.
 #
 # This file is documentation/default policy, not live machine policy. Copy and
-# adapt it deliberately into /etc/pam.d/dosr in a later integration phase.
+# adapt it deliberately into /etc/pam.d/sr in a later integration phase.
 auth     required   pam_deny.so
 account  required   pam_permit.so
 session  required   pam_permit.so
 EOF_PAM
+    cp "$payload_root/usr/share/defaults/pam.d/sr" \
+      "$payload_root/usr/share/defaults/pam.d/dosr"
 
     check_shared_object "$payload_root/usr/bin/dosr"
     check_shared_object "$payload_root/usr/bin/chsr"
@@ -598,6 +604,16 @@ Installed commands:
 /usr/bin/chsr
 \`\`\`
 
+Default PAM samples:
+
+\`\`\`text
+/usr/share/defaults/pam.d/sr
+/usr/share/defaults/pam.d/dosr
+\`\`\`
+
+RootAsRole opens PAM service "sr" internally; "dosr" is the visible command
+name and companion file for operators.
+
 Allowed runtime shared surface:
 
 \`\`\`text
@@ -606,6 +622,7 @@ chsr -> libseccomp.so.2, libgcc_s.so.1, libc.musl-x86_64.so.1
 \`\`\`
 EOF_DOC
 
+    chmod 0644 "$payload_root/usr/share/defaults/pam.d/sr"
     chmod 0644 "$payload_root/usr/share/defaults/pam.d/dosr"
     chmod 0644 "$payload_root/usr/share/onix/packages/rootasrole.md"
     tar -C "$LAB/src" -czf "$payload_archive" "$payload_name"
@@ -626,6 +643,8 @@ prove_remote_install() {
 
     test -x "$TARGET/usr/bin/dosr"
     test -x "$TARGET/usr/bin/chsr"
+    test -f "$TARGET/usr/share/defaults/pam.d/sr"
+    test -f "$TARGET/usr/share/defaults/pam.d/dosr"
     test -e "$TARGET/usr/lib/libpam.so.0"
     test -e "$TARGET/usr/lib/libseccomp.so.2"
     test -e "$TARGET/usr/lib/libgcc_s.so.1"
@@ -654,7 +673,7 @@ REMOTE
     "$STONE_DIR"/libgcc-runtime-*.stone \
     "$STONE_DIR"/libgcc-runtime-dbginfo-*.stone \
     "$STONE_DIR"/libgcc-runtime-devel-*.stone \
-    "$STONE_DIR"/rootasrole-*.stone \
+    "$STONE_DIR"/rootasrole-[0-9]*.stone \
     "$STONE_DIR"/rootasrole-dbginfo-*.stone \
     "$STONE_DIR"/rootasrole-devel-*.stone
 
@@ -681,7 +700,7 @@ REMOTE
     "$LOCAL_REPO_DIR"/libgcc-runtime-*.stone \
     "$LOCAL_REPO_DIR"/libgcc-runtime-dbginfo-*.stone \
     "$LOCAL_REPO_DIR"/libgcc-runtime-devel-*.stone \
-    "$LOCAL_REPO_DIR"/rootasrole-*.stone \
+    "$LOCAL_REPO_DIR"/rootasrole-[0-9]*.stone \
     "$LOCAL_REPO_DIR"/rootasrole-dbginfo-*.stone \
     "$LOCAL_REPO_DIR"/rootasrole-devel-*.stone
   cp "$host_gcc" "$LOCAL_REPO_DIR/"
@@ -699,7 +718,7 @@ local repo index     : ${LOCAL_REPO_DIR#$ONIX_ROOT/}/stone.index
 
 Phase 511 built/audited RootAsRole against ONIX-owned musl + PAM + seccomp +
 libgcc-runtime. The next step is policy integration: deciding how ONIX
-materializes live /etc/security/rootasrole.json and /etc/pam.d/dosr.
+materializes live /etc/security/rootasrole.json and /etc/pam.d/sr.
 EOF_SUCCESS
 }
 

@@ -108,9 +108,9 @@ That is acceptable only because each one is named and scheduled for replacement.
 | Temporary payload | Why it exists now | Future `.stone` owner |
 |---|---|---|
 | Alpine virt kernel/initramfs/modules | lets Phase 2/4 boot while kernel work is deferred | `onix-kernel`, `onix-initramfs`, `onix-kernel-modules` |
-| `pkgsMusl.systemd` | proves systemd-on-musl and service startup | `onix-systemd` |
-| `pkgsMusl.busybox` | provides `/bin/sh` and early applets for proofs | `onix-busybox` or `onix-base` |
-| `pkgsMusl.dropbear` | proves authenticated SSH before recipe work | `onix-dropbear` or `onix-ssh` |
+| `pkgsMusl.systemd` | proves systemd-on-musl and service startup | `systemd` |
+| `pkgsMusl.busybox` | provides `/bin/sh` and early applets for proofs | `busybox` or `onix-base` |
+| `pkgsMusl.dropbear` | proves authenticated SSH before recipe work | `dropbear` or `onix-ssh` |
 | Nix-store util-linux `nologin` | gives safe non-interactive account shells | `onix-util-linux` or `onix-base` |
 
 This table is the heart of Phase 407.
@@ -156,9 +156,9 @@ It prints the ownership table and checks the docs for the important future
 owners:
 
 ```text
-onix-systemd
-onix-busybox
-onix-dropbear
+systemd
+busybox
+dropbear
 onix-kernel
 ```
 
@@ -184,9 +184,9 @@ Expected output:
 Temporary payload                         Final machine-plane owner
 ---------------------------------------------------------------------------
 Alpine virt kernel/initramfs/modules      onix-kernel + onix-initramfs stones
-pkgsMusl.systemd                          onix-systemd stone
-pkgsMusl.busybox                          onix-busybox / onix-base stone
-pkgsMusl.dropbear                         onix-dropbear / onix-ssh stone
+pkgsMusl.systemd                          systemd stone
+pkgsMusl.busybox                          busybox / onix-base stone
+pkgsMusl.dropbear                         dropbear / onix-ssh stone
 Nix-store util-linux nologin              onix-util-linux or onix-base stone
 
 ==> success
@@ -200,9 +200,9 @@ Phase 407 does not yet write the real recipes.
 It does not build:
 
 ```text
-onix-systemd.stone
-onix-busybox.stone
-onix-dropbear.stone
+systemd.stone
+busybox.stone
+dropbear.stone
 onix-kernel.stone
 ```
 

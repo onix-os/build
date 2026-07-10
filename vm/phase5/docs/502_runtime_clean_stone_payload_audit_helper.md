@@ -241,7 +241,7 @@ silently loads the *wrong* library on the installed system. Making the default a
 "no" means every shared-library dependency has to be a conscious, written decision
 (`--allow-dynamic-musl` plus an `Exceptions` note in the contract), not an accident
 nobody noticed. The exception is allowed only for a minimal ONIX-owned surface, not
-for random host libraries. This is the same reasoning that made `onix-systemd`
+for random host libraries. This is the same reasoning that made `systemd`
 carry an explicit documented exception rather than quietly slipping its shared
 libraries past the gate.
 

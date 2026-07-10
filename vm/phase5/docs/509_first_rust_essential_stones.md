@@ -35,10 +35,10 @@ dependencies into ONIX-owned shared-library stones.
 ONIX currently boots because of bootstrap packages:
 
 ```text
-onix-busybox
-onix-dropbear
-onix-systemd
-onix-bootstrap-policy
+busybox
+dropbear
+systemd
+bootstrap-policy
 ```
 
 That is enough to boot, log in, and inspect the machine.
@@ -126,10 +126,10 @@ wc
 But ONIX already has:
 
 ```text
-onix-busybox
+busybox
 ```
 
-and `onix-busybox` currently owns many bootstrap command paths under:
+and `busybox` currently owns many bootstrap command paths under:
 
 ```text
 /usr/bin
@@ -146,7 +146,7 @@ If Phase 509 installed uutils command-name links like:
 then Moss would see duplicate package ownership:
 
 ```text
-onix-busybox owns /usr/bin/ls
+busybox owns /usr/bin/ls
 uutils-coreutils owns /usr/bin/ls
 ```
 

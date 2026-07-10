@@ -35,11 +35,11 @@ echo "artifact  : OK (${EXPORT_ROOT#$ONIX_ROOT/})"
 need_file "$REPO_DIR/stone.index"
 need_file "$REPO_DIR/SHA256SUMS"
 
-branding_count="$(find "$REPO_DIR" -maxdepth 1 -type f -name 'onix-branding-*.stone' | wc -l)"
-filesystem_count="$(find "$REPO_DIR" -maxdepth 1 -type f -name 'onix-filesystem-*.stone' | wc -l)"
-[[ "$branding_count" -eq 1 ]] || die "expected exactly one onix-branding stone, found $branding_count"
-[[ "$filesystem_count" -eq 1 ]] || die "expected exactly one onix-filesystem stone, found $filesystem_count"
-echo "stones    : OK (onix-branding + onix-filesystem)"
+branding_count="$(find "$REPO_DIR" -maxdepth 1 -type f -name 'branding-*.stone' | wc -l)"
+filesystem_count="$(find "$REPO_DIR" -maxdepth 1 -type f -name 'filesystem-*.stone' | wc -l)"
+[[ "$branding_count" -eq 1 ]] || die "expected exactly one branding stone, found $branding_count"
+[[ "$filesystem_count" -eq 1 ]] || die "expected exactly one filesystem stone, found $filesystem_count"
+echo "stones    : OK (branding + filesystem)"
 
 echo
 echo "==> Phase 2 readiness: host image tools"

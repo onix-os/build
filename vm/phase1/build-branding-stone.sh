@@ -12,12 +12,12 @@ ONIX_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$PHASE0_DIR/config.sh"
 
 user="${1:-$BUILD_USER}"
-RECIPE_DIR="${ONIX_BRANDING_RECIPE_DIR:-$ONIX_ROOT/packages/base/onix-branding}"
-LAB="/home/$user/stone-lab/onix-branding"
+RECIPE_DIR="${ONIX_BRANDING_RECIPE_DIR:-$ONIX_ROOT/packages/base/branding}"
+LAB="/home/$user/stone-lab/branding"
 
 [[ -f "$RECIPE_DIR/stone.yaml" ]] || die "missing recipe: ${RECIPE_DIR#$ONIX_ROOT/}/stone.yaml"
 
-log "copying onix-branding recipe into the forge"
+log "copying branding recipe into the forge"
 tar -C "$RECIPE_DIR" -cf - stone.yaml \
   | "$PHASE0_DIR/ssh.sh" "$user" "rm -rf '$LAB' && mkdir -p '$LAB' && tar -C '$LAB' -xf -"
 
@@ -36,7 +36,7 @@ need_tool() {
 need_tool boulder
 need_tool moss
 
-LAB="$HOME/stone-lab/onix-branding"
+LAB="$HOME/stone-lab/branding"
 OUT="$LAB/out"
 EXTRACT="$LAB/extracted"
 REPO="$LAB/repo"
@@ -48,7 +48,7 @@ echo "==> recipe"
 sed -n '1,240p' "$LAB/stone.yaml"
 
 echo
-echo "==> building onix-branding stone"
+echo "==> building branding stone"
 rm -rf "$OUT"
 mkdir -p "$OUT"
 (
@@ -112,7 +112,7 @@ cp "$STONE" "$REPO/"
 moss index "$REPO"
 moss -D "$ROOT" --cache "$CACHE" repo add local "file://$REPO/stone.index" -c "local onix branding repo"
 moss -D "$ROOT" --cache "$CACHE" repo update
-moss -D "$ROOT" --cache "$CACHE" -y install --to "$TARGET" onix-branding
+moss -D "$ROOT" --cache "$CACHE" -y install --to "$TARGET" branding
 
 test -f "$TARGET/usr/lib/os-release"
 test -f "$TARGET/usr/lib/os-info.json"

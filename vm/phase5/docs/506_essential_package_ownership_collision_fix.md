@@ -31,8 +31,8 @@ That worked, but Moss reported duplicate path ownership for:
 Both of these package paths were claimed by:
 
 ```text
-onix-busybox
-onix-systemd
+busybox
+systemd
 ```
 
 That is not clean distribution packaging.
@@ -75,9 +75,9 @@ On a systemd-based system, those commands should route through systemd policy.
 So the Phase 506 decision is:
 
 ```text
-onix-systemd owns /usr/bin/reboot
-onix-systemd owns /usr/bin/poweroff
-onix-busybox does not install those applet links
+systemd owns /usr/bin/reboot
+systemd owns /usr/bin/poweroff
+busybox does not install those applet links
 ```
 
 The BusyBox binary may still contain `reboot` and `poweroff` internally because
@@ -86,7 +86,7 @@ BusyBox builds many applets into one executable.
 The important packaging rule is different:
 
 ```text
-the onix-busybox stone must not own /usr/bin/reboot or /usr/bin/poweroff
+the busybox stone must not own /usr/bin/reboot or /usr/bin/poweroff
 ```
 
 In other words:
@@ -107,14 +107,14 @@ Each of those links is a real path in the filesystem — and therefore a path a 
 
 This is the crux of the fix. The `reboot` and `poweroff` code still lives *inside* the
 BusyBox binary; nobody is recompiling BusyBox to strip it out. What changes is that
-the `onix-busybox` package stops creating and owning the `/usr/bin/reboot` and
+the `busybox` package stops creating and owning the `/usr/bin/reboot` and
 `/usr/bin/poweroff` *links*. The applet is present but unlinked; the command name is
-left for `onix-systemd` to own. The package records this split in two manifests
+left for `systemd` to own. The package records this split in two manifests
 shipped in its own payload:
 
 ```text
-onix-busybox.links           the command links BusyBox does own
-onix-busybox.systemd-owned   applets present in the binary but deliberately not linked
+busybox.links           the command links BusyBox does own
+busybox.systemd-owned   applets present in the binary but deliberately not linked
 ```
 
 The `systemd-owned` list is documentation-as-data: it tells a future reader exactly
@@ -134,19 +134,19 @@ reboot
 The package now records two manifests:
 
 ```text
-/usr/share/onix/packages/onix-busybox.links
-/usr/share/onix/packages/onix-busybox.systemd-owned
+/usr/share/onix/packages/busybox.links
+/usr/share/onix/packages/busybox.systemd-owned
 ```
 
-`onix-busybox.links` is the list of command links BusyBox actually owns.
+`busybox.links` is the list of command links BusyBox actually owns.
 
-`onix-busybox.systemd-owned` documents BusyBox applets that exist in the binary
+`busybox.systemd-owned` documents BusyBox applets that exist in the binary
 but are intentionally not installed as package-owned command paths because
 systemd owns them.
 
 ## Why the BusyBox release is bumped
 
-The `onix-busybox` stone payload changed.
+The `busybox` stone payload changed.
 
 It no longer owns two paths.
 
@@ -170,7 +170,7 @@ number is ONIX's own revision counter for the *packaging* — bump it whenever t
 payload changes even if the upstream software did not. Here BusyBox itself is
 unchanged, but the package now owns two fewer paths, so the payload is genuinely
 different. Leaving the release at `1` would let two different payloads both call
-themselves "onix-busybox release 1," and a client could not tell which one it has.
+themselves "busybox release 1," and a client could not tell which one it has.
 Bumping `release: 1 -> 2` gave the new payload a distinct identity, so caches,
 indexes, and rollback history could never confuse the old collision-prone build with the
 fixed one. Later Phase 513 bumps the same package again because it removes more
@@ -192,8 +192,8 @@ Normal check mode verifies:
 - the canonical and old BusyBox recipe templates still match during migration,
 - the BusyBox recipe release is bumped,
 - `PACKAGE.md` documents the ownership rule,
-- the current `onix-busybox` artifact does not contain `/usr/bin/reboot`,
-- the current `onix-busybox` artifact does not contain `/usr/bin/poweroff`,
+- the current `busybox` artifact does not contain `/usr/bin/reboot`,
+- the current `busybox` artifact does not contain `/usr/bin/poweroff`,
 - the canonical local repo remains installable.
 
 Important: Phase 506 is scoped to the BusyBox/systemd command collision. Later
@@ -209,7 +209,7 @@ loader path one clear owner.
 
 ## One-time rebuild mode
 
-After the source fix, the old already-built `onix-busybox` stone may still
+After the source fix, the old already-built `busybox` stone may still
 exist in:
 
 ```text

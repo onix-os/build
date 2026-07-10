@@ -33,17 +33,17 @@ They came from different historical needs.
 The first was built in Phase 1 to prove a publish-style repository layout for:
 
 ```text
-onix-branding
-onix-filesystem
+branding
+filesystem
 ```
 
 The second was built in Phase 4 to prove booted-base system packages for:
 
 ```text
-onix-busybox
-onix-dropbear
-onix-systemd
-onix-bootstrap-policy
+busybox
+dropbear
+systemd
+bootstrap-policy
 ```
 
 That split was fine while ONIX was learning.
@@ -68,12 +68,12 @@ artifacts/onix-repo/
       MANIFEST.tsv
       SHA256SUMS
       stone.index
-      onix-branding-*.stone
-      onix-filesystem-*.stone
-      onix-busybox-*.stone
-      onix-dropbear-*.stone
-      onix-systemd-*.stone
-      onix-bootstrap-policy-*.stone
+      branding-*.stone
+      filesystem-*.stone
+      busybox-*.stone
+      dropbear-*.stone
+      systemd-*.stone
+      bootstrap-policy-*.stone
 ```
 
 The important file for Moss is:
@@ -119,7 +119,7 @@ install this exact .stone file
 we can say:
 
 ```text
-install onix-systemd from the onix repo
+install systemd from the onix repo
 ```
 
 That is the move from package files toward a distribution package repository.
@@ -133,8 +133,8 @@ dependencies, and the content hash needed to fetch and verify it. That table is 
 turns "a folder of files" into "a repository you can query by name."
 
 The payoff is indirection. A client (moss on the target) never has to know the exact
-filename `onix-systemd-<version>-<release>.stone`; it asks the index for
-`onix-systemd` and the index answers with the right object. That indirection is the
+filename `systemd-<version>-<release>.stone`; it asks the index for
+`systemd` and the index answers with the right object. That indirection is the
 seed of everything a real distro repo does later — channels, upgrades, dependency
 resolution — but at this stage it is just: name in, stone out.
 
@@ -191,12 +191,12 @@ Phase 505 consumes the already-built stones and assembles one combined repo.
 The first canonical local repo contains:
 
 ```text
-onix-branding
-onix-filesystem
-onix-busybox
-onix-dropbear
-onix-systemd
-onix-bootstrap-policy
+branding
+filesystem
+busybox
+dropbear
+systemd
+bootstrap-policy
 ```
 
 These are the minimum current ONIX base packages:
@@ -235,8 +235,8 @@ Example shape:
 
 ```text
 package                 stone                                source_repo
-onix-branding           onix-branding-...stone               artifacts/onix-publish/unstable/x86_64
-onix-systemd            onix-systemd-...stone                artifacts/onix-local-repo
+branding           branding-...stone               artifacts/onix-publish/unstable/x86_64
+systemd            systemd-...stone                artifacts/onix-local-repo
 ```
 
 This makes the repo auditable.
@@ -319,12 +319,12 @@ artifacts/onix-repo-work/install-target/
 The script asks Moss to install:
 
 ```text
-onix-branding
-onix-filesystem
-onix-busybox
-onix-dropbear
-onix-systemd
-onix-bootstrap-policy
+branding
+filesystem
+busybox
+dropbear
+systemd
+bootstrap-policy
 ```
 
 Then it checks for key installed files:
@@ -335,7 +335,7 @@ Then it checks for key installed files:
 /usr/bin/busybox
 /usr/sbin/dropbear
 /usr/lib/systemd/systemd
-/usr/share/onix/packages/onix-bootstrap-policy.md
+/usr/share/onix/packages/bootstrap-policy.md
 ```
 
 This proves the combined repo is not only a directory of files.
@@ -352,7 +352,7 @@ spins up a throwaway moss root, adds the repo, and installs the full essential s
 ```sh
 moss -D <work>/moss-root --cache <work>/moss-cache \
   repo add onix-canonical-local file://.../artifacts/onix-repo/unstable/x86_64/stone.index
-moss ... install --to <work>/install-target onix-branding onix-filesystem ...
+moss ... install --to <work>/install-target branding filesystem ...
 ```
 
 `file://` is the key trick. moss speaks URLs; it does not care whether a repository
@@ -373,8 +373,8 @@ collision during the install proof:
 /usr/bin/poweroff
 ```
 
-Early in Phase 5 this happened because `onix-busybox` provided BusyBox applet
-links while `onix-systemd` also provided system-management commands.
+Early in Phase 5 this happened because `busybox` provided BusyBox applet
+links while `systemd` also provided system-management commands.
 
 Phase 505 did not hide this.
 
@@ -394,8 +394,8 @@ separate package phases instead of being hidden.
 Phase 506 fixes the overlap by making ownership explicit:
 
 ```text
-onix-systemd owns reboot and poweroff
-onix-busybox keeps only the bootstrap applet links ONIX wants from it
+systemd owns reboot and poweroff
+busybox keeps only the bootstrap applet links ONIX wants from it
 ```
 
 ## Why Phase 505 still uses existing artifacts
@@ -432,7 +432,7 @@ The next step should be:
 ```
 
 That follow-up exists because Phase 505 found the `reboot`/`poweroff` overlap
-between `onix-busybox` and `onix-systemd`.
+between `busybox` and `systemd`.
 
 After that fix, the plan returns to image consumption:
 

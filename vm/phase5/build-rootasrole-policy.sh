@@ -18,19 +18,20 @@ FORCE_REBUILD="${ONIX_PHASE512_REBUILD:-0}"
 STONE_DIR="${ONIX_STONE_DIR:-$ONIX_ROOT/artifacts/onix-stones}"
 LOCAL_REPO_DIR="${ONIX_LOCAL_REPO_DIR:-$ONIX_ROOT/artifacts/onix-local-repo}"
 STONE_WORK_DIR="${ONIX_STONE_WORK_DIR:-$ONIX_ROOT/artifacts/onix-stone-work}"
-WORK="${ONIX_PHASE512_WORK_DIR:-$STONE_WORK_DIR/onix-rootasrole-policy}"
+WORK="${ONIX_PHASE512_WORK_DIR:-$STONE_WORK_DIR/rootasrole-policy}"
 HOST_MOSS="${ONIX_HOST_MOSS:-$ONIX_ROOT/artifacts/host-tools/bin/moss}"
-RECIPE_TEMPLATE="${ONIX_ROOTASROLE_POLICY_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/services/onix-rootasrole-policy/stone.yaml.in}"
+RECIPE_TEMPLATE="${ONIX_ROOTASROLE_POLICY_RECIPE_TEMPLATE:-$ONIX_ROOT/packages/services/rootasrole-policy/stone.yaml.in}"
 PROOF_DIR="$ONIX_ROOT/artifacts/onix-phase5-work/512"
 POLICY_VERSION="${ONIX_ROOTASROLE_POLICY_VERSION:-0.1.0}"
+POLICY_RELEASE="${ONIX_ROOTASROLE_POLICY_RELEASE:-3}"
 
-LAB="/home/$user/stone-lab/onix-rootasrole-policy"
+LAB="/home/$user/stone-lab/rootasrole-policy"
 
 usage() {
   cat <<'EOF'
 usage: build-rootasrole-policy.sh [--apply|--check|--rebuild]
 
---apply    build missing onix-rootasrole-policy stone, audit it, and refresh
+--apply    build missing rootasrole-policy stone, audit it, and refresh
            the local ONIX repo
 --check    verify metadata and inspect/audit the existing policy stone
 --rebuild  force rebuilding/rechecking the Phase 512 policy stone
@@ -60,21 +61,29 @@ safe_artifact_path() {
 
 host_stone_for() {
   local package="$1"
-  find "$STONE_DIR" -maxdepth 1 -name "$package-*.stone" ! -name '*dbginfo*' ! -name '*devel*' | sort | tail -n 1
+  find "$STONE_DIR" -maxdepth 1 -name "$package-[0-9]*.stone" ! -name '*dbginfo*' ! -name '*devel*' | sort | tail -n 1
+}
+
+local_exact_policy_stone() {
+  find "$LOCAL_REPO_DIR" -maxdepth 1 \
+    -name "rootasrole-policy-$POLICY_VERSION-$POLICY_RELEASE-*.stone" \
+    ! -name '*dbginfo*' ! -name '*devel*' | sort | tail -n 1
 }
 
 local_stone_for() {
   local package="$1"
-  find "$LOCAL_REPO_DIR" -maxdepth 1 -name "$package-*.stone" ! -name '*dbginfo*' ! -name '*devel*' | sort | tail -n 1
+  find "$LOCAL_REPO_DIR" -maxdepth 1 -name "$package-[0-9]*.stone" ! -name '*dbginfo*' ! -name '*devel*' | sort | tail -n 1
 }
 
 check_source_files() {
   [[ -f "$RECIPE_TEMPLATE" ]] || die "missing recipe template: ${RECIPE_TEMPLATE#$ONIX_ROOT/}"
-  [[ -f "$ONIX_ROOT/packages/services/onix-rootasrole-policy/PACKAGE.md" ]] \
-    || die "missing onix-rootasrole-policy PACKAGE.md"
+  [[ -f "$ONIX_ROOT/packages/services/rootasrole-policy/PACKAGE.md" ]] \
+    || die "missing rootasrole-policy PACKAGE.md"
   [[ -f "$ONIX_ROOT/vm/phase5/docs/512_rootasrole_policy_stone.md" ]] || die "missing Phase 512 doc page"
-  grep -q 'onix-rootasrole-policy' "$ONIX_ROOT/packages/STONES.md"
-  grep -q '/etc/security/rootasrole.json' "$ONIX_ROOT/packages/services/onix-rootasrole-policy/PACKAGE.md"
+  grep -q 'rootasrole-policy' "$ONIX_ROOT/packages/STONES.md"
+  grep -q '/etc/security/rootasrole.json' "$ONIX_ROOT/packages/services/rootasrole-policy/PACKAGE.md"
+  grep -q '/etc/pam.d/sr' "$ONIX_ROOT/packages/services/rootasrole-policy/PACKAGE.md"
+  grep -q '/etc/pam.d/sr' "$ONIX_ROOT/vm/phase5/docs/512_rootasrole_policy_stone.md"
 }
 
 require_dependency_stones() {
@@ -96,13 +105,31 @@ write_payload() {
   cat > "$payload_root/usr/share/factory/etc/security/rootasrole.json" <<'EOF_JSON'
 {
     "version": "4.0.0",
+    "storage": {
+        "method": "json",
+        "settings": {
+            "path": "/etc/security/rootasrole.d/",
+            "immutable": false
+        }
+    }
+}
+EOF_JSON
+
+  install -dm00755 "$payload_root/usr/share/factory/etc/security/rootasrole.d"
+  cat > "$payload_root/usr/share/factory/etc/security/rootasrole.d/policy.json" <<'EOF_JSON'
+{
+    "version": "4.0.0",
     "roles": [
         {
             "name": "r_onix_root_bootstrap",
             "actors": [
                 {
                     "type": "user",
-                    "name": "root"
+                    "id": 0
+                },
+                {
+                    "type": "user",
+                    "id": 1000
                 }
             ],
             "tasks": [
@@ -116,26 +143,17 @@ write_payload() {
                         }
                     },
                     "name": "t_root",
-                    "purpose": "bootstrap root-only administrative access",
+                    "purpose": "bootstrap ONIX administrative access",
                     "cred": {
-                        "setuid": {
-                            "fallback": "root",
-                            "default": "all"
-                        },
-                        "setgid": {
-                            "fallback": "root",
-                            "default": "all"
-                        },
-                        "capabilities": {
-                            "default": "all",
-                            "sub": ["CAP_LINUX_IMMUTABLE"]
-                        }
+                        "setuid": "0",
+                        "setgid": ["0"],
+                        "caps": []
                     },
                     "commands": "all"
                 },
                 {
                     "name": "t_chsr",
-                    "purpose": "root-only RootAsRole policy editing",
+                    "purpose": "ONIX RootAsRole policy editing",
                     "cred": {
                         "setuid": "root",
                         "setgid": "root",
@@ -149,7 +167,7 @@ write_payload() {
 }
 EOF_JSON
 
-  cat > "$payload_root/usr/share/factory/etc/pam.d/dosr" <<'EOF_PAM'
+  cat > "$payload_root/usr/share/factory/etc/pam.d/sr" <<'EOF_PAM'
 #%PAM-1.0
 # ONIX Phase 512 bootstrap policy.
 #
@@ -160,9 +178,11 @@ auth      required   pam_permit.so
 account   required   pam_permit.so
 session   required   pam_permit.so
 EOF_PAM
+  cp "$payload_root/usr/share/factory/etc/pam.d/sr" \
+    "$payload_root/usr/share/factory/etc/pam.d/dosr"
 
-  cat > "$payload_root/usr/share/onix/packages/onix-rootasrole-policy.md" <<EOF_DOC
-# onix-rootasrole-policy
+  cat > "$payload_root/usr/share/onix/packages/rootasrole-policy.md" <<EOF_DOC
+# rootasrole-policy
 
 Phase 512 live RootAsRole policy package.
 
@@ -170,22 +190,33 @@ Installed factory policy:
 
 \`\`\`text
 /usr/share/factory/etc/security/rootasrole.json
+/usr/share/factory/etc/security/rootasrole.d/policy.json
+/usr/share/factory/etc/pam.d/sr
 /usr/share/factory/etc/pam.d/dosr
 \`\`\`
 
 Bootstrap rule:
 
 \`\`\`text
-Only root is a RootAsRole actor.
+root and onix are RootAsRole bootstrap actors.
 \`\`\`
 
-This package intentionally does not grant the default ONIX login user full
-administrative rights yet.
+This package grants the default ONIX bootstrap login user enough administrative
+rights for Phase 514 to prove dosr execution in the development VM.
+
+Runtime note:
+
+\`\`\`text
+RootAsRole opens the PAM service named "sr"; /etc/pam.d/dosr is kept as a
+human-readable companion for the user-facing dosr command.
+\`\`\`
 EOF_DOC
 
   chmod 00600 "$payload_root/usr/share/factory/etc/security/rootasrole.json"
+  chmod 00600 "$payload_root/usr/share/factory/etc/security/rootasrole.d/policy.json"
+  chmod 00644 "$payload_root/usr/share/factory/etc/pam.d/sr"
   chmod 00644 "$payload_root/usr/share/factory/etc/pam.d/dosr"
-  chmod 00644 "$payload_root/usr/share/onix/packages/onix-rootasrole-policy.md"
+  chmod 00644 "$payload_root/usr/share/onix/packages/rootasrole-policy.md"
 }
 
 prove_host_install_and_audit() {
@@ -201,7 +232,7 @@ prove_host_install_and_audit() {
 
   "$HOST_MOSS" -D "$root" \
     --cache "$cache" \
-    repo add onix-rootasrole-policy \
+    repo add rootasrole-policy \
     "file://$LOCAL_REPO_DIR/stone.index" \
     -c "ONIX Phase 512 RootAsRole policy" >/dev/null
 
@@ -210,9 +241,9 @@ prove_host_install_and_audit() {
   if ! "$HOST_MOSS" -D "$root" \
       --cache "$cache" \
       -y install --to "$target" \
-      onix-rootasrole-policy >"$install_log" 2>&1; then
+      rootasrole-policy >"$install_log" 2>&1; then
     cat "$install_log" >&2
-    die "Moss could not install onix-rootasrole-policy and dependencies"
+    die "Moss could not install rootasrole-policy and dependencies"
   fi
 
   if grep -q 'duplicate entry:' "$install_log"; then
@@ -222,23 +253,34 @@ prove_host_install_and_audit() {
 
   [[ -x "$target/usr/bin/dosr" ]] || die "policy did not pull rootasrole/dosr"
   local factory_policy="$target/usr/share/factory/etc/security/rootasrole.json"
-  local factory_pam="$target/usr/share/factory/etc/pam.d/dosr"
+  local factory_policy_data="$target/usr/share/factory/etc/security/rootasrole.d/policy.json"
+  local factory_pam_sr="$target/usr/share/factory/etc/pam.d/sr"
+  local factory_pam_dosr="$target/usr/share/factory/etc/pam.d/dosr"
 
   [[ -f "$factory_policy" ]] || die "missing factory rootasrole.json"
-  [[ -f "$factory_pam" ]] || die "missing factory PAM policy"
+  [[ -f "$factory_policy_data" ]] || die "missing factory rootasrole.d/policy.json"
+  [[ -f "$factory_pam_sr" ]] || die "missing factory RootAsRole PAM service: sr"
+  [[ -f "$factory_pam_dosr" ]] || die "missing factory RootAsRole PAM companion: dosr"
   [[ "$(stat -c '%a' "$factory_policy")" = "600" ]] \
     || die "rootasrole.json must be mode 600"
+  [[ "$(stat -c '%a' "$factory_policy_data")" = "600" ]] \
+    || die "rootasrole.d/policy.json must be mode 600"
 
-  grep -q '"name": "root"' "$factory_policy"
-  if grep -q 'ROOTADMINISTRATOR\|"name": "onix"' "$factory_policy"; then
-    die "bootstrap RootAsRole policy must not grant ROOTADMINISTRATOR/onix"
+  grep -q '/etc/security/rootasrole.d/' "$factory_policy"
+  grep -q '"id": 0' "$factory_policy_data"
+  grep -q '"id": 1000' "$factory_policy_data"
+  if grep -q 'ROOTADMINISTRATOR' "$factory_policy_data"; then
+    die "bootstrap RootAsRole policy must not grant ROOTADMINISTRATOR"
   fi
-  grep -q 'pam_permit.so' "$factory_pam"
+  grep -q 'pam_permit.so' "$factory_pam_sr"
+  grep -q 'pam_permit.so' "$factory_pam_dosr"
 
   if grep -R -F /nix/store \
       "$factory_policy" \
-      "$factory_pam" \
-      "$target/usr/share/onix/packages/onix-rootasrole-policy.md" >/dev/null 2>&1; then
+      "$factory_policy_data" \
+      "$factory_pam_sr" \
+      "$factory_pam_dosr" \
+      "$target/usr/share/onix/packages/rootasrole-policy.md" >/dev/null 2>&1; then
     die "policy payload contains /nix/store reference"
   fi
 
@@ -251,9 +293,9 @@ run_check() {
   [[ -x "$HOST_MOSS" ]] || die "missing host moss: ${HOST_MOSS#$ONIX_ROOT/} (run: make phase 202)"
 
   local stone
-  stone="$(local_stone_for onix-rootasrole-policy)"
+  stone="$(local_exact_policy_stone)"
   if [[ -z "$stone" ]]; then
-    log "stone     : onix-rootasrole-policy not built yet"
+    log "stone     : rootasrole-policy not built yet"
     log "phase512  : check OK"
     return
   fi
@@ -281,7 +323,7 @@ run_apply() {
   [[ -x "$HOST_MOSS" ]] || die "missing host moss: ${HOST_MOSS#$ONIX_ROOT/} (run: make phase 202)"
 
   local existing
-  existing="$(local_stone_for onix-rootasrole-policy)"
+  existing="$(local_exact_policy_stone)"
   if [[ "$FORCE_REBUILD" != "1" && -n "$existing" ]]; then
     log "Phase 512 RootAsRole policy stone already exists"
     run_check
@@ -293,12 +335,13 @@ run_apply() {
   mkdir -p "$WORK"
 
   local payload_name payload_root payload_archive payload_sha payload_url
-  payload_name="onix-rootasrole-policy-payload-$POLICY_VERSION"
+  payload_name="rootasrole-policy-payload-$POLICY_VERSION"
   payload_root="$WORK/$payload_name"
   payload_archive="$WORK/$payload_name.tar.gz"
 
   log "Phase 512 RootAsRole live policy"
-  log "policy    : root actor only"
+  log "policy    : root + onix bootstrap actors"
+  log "release   : $POLICY_RELEASE"
   log "stone out : ${STONE_DIR#$ONIX_ROOT/}"
   log "local repo: ${LOCAL_REPO_DIR#$ONIX_ROOT/}"
 
@@ -309,6 +352,7 @@ run_apply() {
 
   sed \
     -e "s|@ONIX_ROOTASROLE_POLICY_VERSION@|$POLICY_VERSION|g" \
+    -e "s|@ONIX_ROOTASROLE_POLICY_RELEASE@|$POLICY_RELEASE|g" \
     -e "s|@ONIX_ROOTASROLE_POLICY_PAYLOAD_URL@|$payload_url|g" \
     -e "s|@ONIX_ROOTASROLE_POLICY_PAYLOAD_SHA256@|$payload_sha|g" \
     "$RECIPE_TEMPLATE" > "$WORK/stone.yaml"
@@ -334,7 +378,7 @@ need_tool boulder
 need_tool moss
 need_tool tar
 
-LAB="$HOME/stone-lab/onix-rootasrole-policy"
+LAB="$HOME/stone-lab/rootasrole-policy"
 OUT="$LAB/out"
 
 rm -rf "$OUT"
@@ -344,36 +388,36 @@ mkdir -p "$OUT"
     boulder build -y --normal-priority -o "$OUT" stone.yaml
 )
 
-stone="$(find "$OUT" -maxdepth 1 -name 'onix-rootasrole-policy-*.stone' ! -name '*dbginfo*' ! -name '*devel*' | sort | head -n 1)"
+stone="$(find "$OUT" -maxdepth 1 -name 'rootasrole-policy-*.stone' ! -name '*dbginfo*' ! -name '*devel*' | sort | head -n 1)"
 test -f "$stone"
 printf '%s\n' "$stone" > "$LAB/stone.path"
 moss inspect --check "$stone"
 
 echo "==> success"
-echo "onix-rootasrole-policy stone: $stone"
+echo "rootasrole-policy stone: $stone"
 REMOTE
 
   log "copying built stone back to host artifacts"
   rm -f \
-    "$STONE_DIR"/onix-rootasrole-policy-*.stone \
-    "$STONE_DIR"/onix-rootasrole-policy-dbginfo-*.stone \
-    "$STONE_DIR"/onix-rootasrole-policy-devel-*.stone
+    "$STONE_DIR"/rootasrole-policy-*.stone \
+    "$STONE_DIR"/rootasrole-policy-dbginfo-*.stone \
+    "$STONE_DIR"/rootasrole-policy-devel-*.stone
 
   local remote_stone host_stone
   remote_stone="$("$PHASE0_DIR/ssh.sh" "$user" "cat '$LAB/stone.path'")"
   "$PHASE0_DIR/ssh.sh" "$user" "cd \"\$(dirname '$remote_stone')\" && tar -cf - \"\$(basename '$remote_stone')\"" \
     | tar -C "$STONE_DIR" -xf -
 
-  host_stone="$(host_stone_for onix-rootasrole-policy)"
-  [[ -f "$host_stone" ]] || die "failed to copy onix-rootasrole-policy stone into ${STONE_DIR#$ONIX_ROOT/}"
+  host_stone="$(host_stone_for rootasrole-policy)"
+  [[ -f "$host_stone" ]] || die "failed to copy rootasrole-policy stone into ${STONE_DIR#$ONIX_ROOT/}"
 
   "$HOST_MOSS" inspect --check "$host_stone" >/dev/null
 
   log "refreshing local Phase 5 moss repo"
   rm -f \
-    "$LOCAL_REPO_DIR"/onix-rootasrole-policy-*.stone \
-    "$LOCAL_REPO_DIR"/onix-rootasrole-policy-dbginfo-*.stone \
-    "$LOCAL_REPO_DIR"/onix-rootasrole-policy-devel-*.stone
+    "$LOCAL_REPO_DIR"/rootasrole-policy-*.stone \
+    "$LOCAL_REPO_DIR"/rootasrole-policy-dbginfo-*.stone \
+    "$LOCAL_REPO_DIR"/rootasrole-policy-devel-*.stone
   cp "$host_stone" "$LOCAL_REPO_DIR/"
   "$HOST_MOSS" index "$LOCAL_REPO_DIR"
 
@@ -382,11 +426,12 @@ REMOTE
   cat <<EOF_SUCCESS
 
 ==> success
-onix-rootasrole-policy stone: ${host_stone#$ONIX_ROOT/}
+rootasrole-policy stone: ${host_stone#$ONIX_ROOT/}
 local repo index             : ${LOCAL_REPO_DIR#$ONIX_ROOT/}/stone.index
 
-Phase 512 packaged the first RootAsRole policy source as a package-owned
-/usr/share/factory/etc payload. Normal users are not granted privilege yet.
+Phase 512 packaged the RootAsRole policy source as a package-owned
+/usr/share/factory/etc payload. The bootstrap development policy grants the
+default onix login enough rights for Phase 514 to prove dosr execution.
 EOF_SUCCESS
 }
 

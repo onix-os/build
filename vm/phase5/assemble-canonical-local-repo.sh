@@ -24,19 +24,20 @@ RUNTIME_SOURCE_DIR="${ONIX_PHASE505_RUNTIME_REPO:-$ONIX_ROOT/artifacts/onix-loca
 MODE="assemble"
 
 REQUIRED_PACKAGES=(
-  onix-branding
-  onix-filesystem
-  onix-busybox
+  branding
+  filesystem
+  busybox
   uutils-coreutils
-  onix-dropbear
-  onix-systemd
-  onix-bootstrap-policy
+  dropbear
+  systemd
+  bootstrap-policy
   musl
   linux-pam
   libseccomp
   libgcc-runtime
   rootasrole
-  onix-rootasrole-policy
+  rootasrole-policy
+  moss
 )
 
 die() {
@@ -100,27 +101,28 @@ need_host_moss() {
 
 package_contract_path() {
   case "$1" in
-    onix-branding) printf '%s\n' "packages/base/onix-branding/PACKAGE.md" ;;
-    onix-filesystem) printf '%s\n' "packages/base/onix-filesystem/PACKAGE.md" ;;
-    onix-busybox) printf '%s\n' "packages/core/onix-busybox/PACKAGE.md" ;;
+    branding) printf '%s\n' "packages/base/branding/PACKAGE.md" ;;
+    filesystem) printf '%s\n' "packages/base/filesystem/PACKAGE.md" ;;
+    busybox) printf '%s\n' "packages/core/busybox/PACKAGE.md" ;;
     uutils-coreutils) printf '%s\n' "packages/core/uutils-coreutils/PACKAGE.md" ;;
-    onix-dropbear) printf '%s\n' "packages/services/onix-dropbear/PACKAGE.md" ;;
-    onix-systemd) printf '%s\n' "packages/services/onix-systemd/PACKAGE.md" ;;
-    onix-bootstrap-policy) printf '%s\n' "packages/services/onix-bootstrap-policy/PACKAGE.md" ;;
+    dropbear) printf '%s\n' "packages/services/dropbear/PACKAGE.md" ;;
+    systemd) printf '%s\n' "packages/services/systemd/PACKAGE.md" ;;
+    bootstrap-policy) printf '%s\n' "packages/services/bootstrap-policy/PACKAGE.md" ;;
     musl) printf '%s\n' "packages/libs/musl/PACKAGE.md" ;;
     linux-pam) printf '%s\n' "packages/libs/linux-pam/PACKAGE.md" ;;
     libseccomp) printf '%s\n' "packages/libs/libseccomp/PACKAGE.md" ;;
     libgcc-runtime) printf '%s\n' "packages/libs/libgcc-runtime/PACKAGE.md" ;;
     rootasrole) printf '%s\n' "packages/core/rootasrole/PACKAGE.md" ;;
-    onix-rootasrole-policy) printf '%s\n' "packages/services/onix-rootasrole-policy/PACKAGE.md" ;;
+    rootasrole-policy) printf '%s\n' "packages/services/rootasrole-policy/PACKAGE.md" ;;
+    moss) printf '%s\n' "packages/core/moss/PACKAGE.md" ;;
     *) die "unknown package contract mapping: $1" ;;
   esac
 }
 
 package_source_dir() {
   case "$1" in
-    onix-branding|onix-filesystem) printf '%s\n' "$BASE_SOURCE_DIR" ;;
-    onix-busybox|uutils-coreutils|onix-dropbear|onix-systemd|onix-bootstrap-policy|musl|linux-pam|libseccomp|libgcc-runtime|rootasrole|onix-rootasrole-policy) printf '%s\n' "$RUNTIME_SOURCE_DIR" ;;
+    branding|filesystem) printf '%s\n' "$BASE_SOURCE_DIR" ;;
+    busybox|uutils-coreutils|dropbear|systemd|bootstrap-policy|musl|linux-pam|libseccomp|libgcc-runtime|rootasrole|rootasrole-policy|moss) printf '%s\n' "$RUNTIME_SOURCE_DIR" ;;
     *) die "unknown package source mapping: $1" ;;
   esac
 }
@@ -128,10 +130,21 @@ package_source_dir() {
 select_one_stone() {
   local package="$1"
   local source_dir="$2"
-  local matches=("$source_dir/$package"-*.stone)
+  local stone
+  local name
+  local matches=()
+
+  while IFS= read -r stone; do
+    name="$("$HOST_MOSS" inspect "$stone" 2>/dev/null |
+      awk -F: '$1 ~ /^Name[[:space:]]*$/ { gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2; exit }')"
+    if [[ "$name" == "$package" ]]; then
+      matches+=("$stone")
+    fi
+  done < <(find "$source_dir" -maxdepth 1 -type f -name '*.stone' \
+    ! -name '*dbginfo*' ! -name '*devel*' | sort)
 
   if [[ "${#matches[@]}" -ne 1 ]]; then
-    printf 'searched: %s/%s-*.stone\n' "$(rel "$source_dir")" "$package" >&2
+    printf 'searched: %s/*.stone with internal Name=%s\n' "$(rel "$source_dir")" "$package" >&2
     printf 'found   : %s\n' "${#matches[@]}" >&2
     if [[ "${#matches[@]}" -gt 0 ]]; then
       printf 'matches :\n' >&2
@@ -385,10 +398,13 @@ prove_install() {
   need_file "$WORK_ROOT/install-target/usr/bin/ls"
   need_file "$WORK_ROOT/install-target/usr/sbin/dropbear"
   need_file "$WORK_ROOT/install-target/usr/lib/systemd/systemd"
-  need_file "$WORK_ROOT/install-target/usr/share/onix/packages/onix-bootstrap-policy.md"
+  need_file "$WORK_ROOT/install-target/usr/share/onix/packages/bootstrap-policy.md"
   need_file "$WORK_ROOT/install-target/usr/bin/dosr"
+  need_file "$WORK_ROOT/install-target/usr/bin/moss"
   need_file "$WORK_ROOT/install-target/usr/share/factory/etc/security/rootasrole.json"
+  need_file "$WORK_ROOT/install-target/usr/share/factory/etc/pam.d/sr"
   need_file "$WORK_ROOT/install-target/usr/share/factory/etc/pam.d/dosr"
+  need_file "$WORK_ROOT/install-target/usr/share/onix/packages/moss.md"
 
   [[ -L "$WORK_ROOT/install-target/usr/bin/ls" ]] \
     || die "uutils-coreutils should own /usr/bin/ls as a command link"

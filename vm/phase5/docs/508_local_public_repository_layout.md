@@ -89,8 +89,8 @@ atomic and image-based systems keep **immutable snapshots** and a moving pointer
 "the current one," so a client can pin an exact past state for reproducible installs or
 rollback. ONIX's `pool` (shared package objects), `history/<id>` (immutable snapshot
 indexes), and `stream/unstable` (the moving pointer) are the same three ideas under
-moss-flavored names. Building them now — even with a single architecture and six
-packages — means the shape that eventually sits behind `repo.onix-os.com` is already
+moss-flavored names. Building them now — even with a single architecture and a small
+essential package set — means the shape that eventually sits behind `repo.onix-os.com` is already
 the one that has been exercised locally.
 
 The single most important property is **indirection through the root index**. A client
@@ -125,19 +125,39 @@ artifacts/onix-public-repo/
           stone.index
     pool/
       v0/
+        l/
+          libgcc-runtime/
+            libgcc-runtime-*.stone
+          libseccomp/
+            libseccomp-*.stone
+          linux-pam/
+            linux-pam-*.stone
+        m/
+          moss/
+            moss-*.stone
+          musl/
+            musl-*.stone
         o/
-          onix-branding/
-            onix-branding-*.stone
-          onix-filesystem/
-            onix-filesystem-*.stone
-          onix-busybox/
-            onix-busybox-*.stone
-          onix-dropbear/
-            onix-dropbear-*.stone
-          onix-systemd/
-            onix-systemd-*.stone
-          onix-bootstrap-policy/
-            onix-bootstrap-policy-*.stone
+          branding/
+            branding-*.stone
+          filesystem/
+            filesystem-*.stone
+          busybox/
+            busybox-*.stone
+          dropbear/
+            dropbear-*.stone
+          systemd/
+            systemd-*.stone
+          bootstrap-policy/
+            bootstrap-policy-*.stone
+          rootasrole-policy/
+            rootasrole-policy-*.stone
+        r/
+          rootasrole/
+            rootasrole-*.stone
+        u/
+          uutils-coreutils/
+            uutils-coreutils-*.stone
 ```
 
 The future public base URI is:
@@ -251,7 +271,7 @@ That gives us room for rollback, debugging, and reproducible installs.
 The pool stores the actual `.stone` files:
 
 ```text
-main/pool/v0/o/onix-systemd/onix-systemd-*.stone
+main/pool/v0/o/systemd/systemd-*.stone
 ```
 
 The index files do not need to sit beside every package file.
@@ -410,12 +430,20 @@ MANIFEST.tsv
 It also checks that exactly one stone exists for each current essential package:
 
 ```text
-onix-branding
-onix-filesystem
-onix-busybox
-onix-dropbear
-onix-systemd
-onix-bootstrap-policy
+branding
+filesystem
+busybox
+uutils-coreutils
+dropbear
+systemd
+bootstrap-policy
+musl
+linux-pam
+libseccomp
+libgcc-runtime
+rootasrole
+rootasrole-policy
+moss
 ```
 
 Each stone is checked with:
@@ -426,15 +454,20 @@ moss inspect --check
 
 ### 2. Copy stones into the pool
 
-The script copies those six stones into:
+The script copies those stones into:
 
 ```text
-artifacts/onix-public-repo/main/pool/v0/o/<package>/
+artifacts/onix-public-repo/main/pool/v0/<first-letter>/<package>/
 ```
 
-The `o` bucket is the first letter of each current package name.
+The bucket is the first letter of the package name. For example:
 
-That bucket is simple today.
+```text
+systemd      -> pool/v0/o/systemd/
+uutils-coreutils  -> pool/v0/u/uutils-coreutils/
+moss              -> pool/v0/m/moss/
+rootasrole        -> pool/v0/r/rootasrole/
+```
 
 It leaves room for a wider package pool later.
 
@@ -503,12 +536,20 @@ file://.../artifacts/onix-public-repo/main/stream/unstable/x86_64/stone.index
 Both proofs install:
 
 ```text
-onix-branding
-onix-filesystem
-onix-busybox
-onix-dropbear
-onix-systemd
-onix-bootstrap-policy
+branding
+filesystem
+busybox
+uutils-coreutils
+dropbear
+systemd
+bootstrap-policy
+musl
+linux-pam
+libseccomp
+libgcc-runtime
+rootasrole
+rootasrole-policy
+moss
 ```
 
 Then they check for expected files such as:
@@ -516,9 +557,16 @@ Then they check for expected files such as:
 ```text
 /usr/lib/os-release
 /usr/bin/busybox
+/usr/bin/coreutils
+/usr/bin/moss
 /usr/sbin/dropbear
 /usr/lib/systemd/systemd
-/usr/share/onix/packages/onix-bootstrap-policy.md
+/usr/lib/ld-musl-x86_64.so.1
+/usr/lib/libseccomp.so.2
+/usr/bin/dosr
+/usr/share/factory/etc/security/rootasrole.json
+/usr/share/onix/packages/bootstrap-policy.md
+/usr/share/onix/packages/moss.md
 ```
 
 If Moss cannot install from the local public-shaped repo, Phase 508 fails.
@@ -632,4 +680,3 @@ Good next steps are:
 - add it to the public-shaped repo proof;
 - only after the local loop is boring, design real upload/signing for
   `repo.onix-os.com`.
-

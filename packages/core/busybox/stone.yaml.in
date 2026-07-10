@@ -1,0 +1,42 @@
+name        : busybox
+version     : @BUSYBOX_VERSION@
+release     : 3
+summary     : Static BusyBox base command set for ONIX bootstrap images
+license     : GPL-2.0-only
+homepage    : https://busybox.net/
+upstreams   :
+    - @BUSYBOX_PAYLOAD_URL@: @BUSYBOX_PAYLOAD_SHA256@
+description : |
+    Musl-static BusyBox payload for ONIX bootstrap/recovery proofs.
+
+    The BusyBox source is built in the Alpine/musl forge VM first. Boulder then
+    packages that prepared payload into a .stone, making it moss-installable.
+    Release 3 intentionally stops owning common coreutils command names so
+    uutils-coreutils can own them.
+
+    Source archive: @BUSYBOX_SOURCE_ARCHIVE@
+    Source SHA-256: @BUSYBOX_SOURCE_SHA256@
+install     : |
+    install -dm00755 %(installroot)
+    cp -a usr %(installroot)/
+
+    chmod 00755 %(installroot)/usr
+    chmod 00755 %(installroot)/usr/bin
+    chmod 00755 %(installroot)/usr/share
+    chmod 00755 %(installroot)/usr/share/onix
+    chmod 00755 %(installroot)/usr/share/onix/packages
+    chmod 00755 %(installroot)/usr/bin/busybox
+    chmod 0644 \
+        %(installroot)/usr/share/onix/packages/busybox.applets \
+        %(installroot)/usr/share/onix/packages/busybox.links \
+        %(installroot)/usr/share/onix/packages/busybox.systemd-owned \
+        %(installroot)/usr/share/onix/packages/busybox.md
+
+    # Boulder build dirs inherit setgid. Clear it on directories we created so
+    # Moss receives ordinary directory layout metadata.
+    chmod g-s \
+        %(installroot)/usr \
+        %(installroot)/usr/bin \
+        %(installroot)/usr/share \
+        %(installroot)/usr/share/onix \
+        %(installroot)/usr/share/onix/packages
