@@ -1,0 +1,521 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>411 — boot-prove busybox - ONIX Book</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Step-by-step build book for the ONIX operating system.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="../../../favicon-8114d1fc.png">
+        <link rel="stylesheet" href="../../../css/variables-8adf115d.css">
+        <link rel="stylesheet" href="../../../css/general-e96d0476.css">
+        <link rel="stylesheet" href="../../../css/chrome-d279d366.css">
+        <link rel="stylesheet" href="../../../css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="../../../highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../../../tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../../../ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../../searchindex-37c19fff.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc-ee5fb59a.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">ONIX Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/onix-os/build" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="phase-411--boot-prove-busybox"><a class="header" href="#phase-411--boot-prove-busybox">Phase 411 — boot-prove <code>busybox</code></a></h1>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Item</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td>Command</td><td><code>make phase 411</code></td></tr>
+<tr><td>Underlying make target/script</td><td><code>vm/phase4/stone-busybox-probe.sh</code></td></tr>
+<tr><td>Re-validates image install with</td><td><code>vm/phase4/materialize-etc.sh --busybox-stone</code></td></tr>
+<tr><td>Mutates disk/image?</td><td>Yes, idempotently re-applies Phase 410 first</td></tr>
+<tr><td>Boots QEMU?</td><td>Yes, several short snapshot boots</td></tr>
+<tr><td>Main proof</td><td>The running ONIX image can use <code>busybox</code> for serial shell, networking, remote inspection, and SSH command execution.</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="background-what-boot-proving-a-stone-means"><a class="header" href="#background-what-boot-proving-a-stone-means">Background: what “boot-proving a stone” means</a></h2>
+<p>A <strong>stone</strong> (<code>.stone</code>) is ONIX’s package format — a self-describing archive of files
+plus metadata, produced by <strong>boulder</strong> (the builder) and installed by <strong>moss</strong>
+(the atomic package/state manager). Both are Rust tools ONIX borrows from AerynOS;
+ONIX ships none of AerynOS’s packages, only this tooling. Phase 409 built the
+<code>busybox</code> stone; Phase 410 installed it into the disk image and pointed the
+active command paths at it.</p>
+<p>But installing a package into a disk image only proves the <em>files are in the right
+place</em>. It does not prove the operating system actually runs those files once it is
+alive. <strong>Boot-proving</strong> closes that gap: you boot the real image in a virtual
+machine, let the kernel hand off to userspace, let the init system start its
+services, and only then check that the tool you packaged is the one actually doing
+the work.</p>
+<p>The phrase you will see repeated in Phase 4 is <em>“PID 1-served userspace.”</em> PID 1 is
+the first process the kernel starts after mounting the root filesystem — in ONIX
+that is systemd. Every service (the serial shell, networking, SSH) is a child that
+systemd starts. So when Phase 411 confirms that the serial shell, the network
+scripts, and the SSH session all run <code>/usr/bin/busybox</code>, it is confirming the whole
+chain: kernel → PID 1 → services → your stone-provided binary. That is a
+qualitatively stronger claim than “the file exists on disk.”</p>
+<h2 id="why-this-phase-exists"><a class="header" href="#why-this-phase-exists">Why this phase exists</a></h2>
+<p>Phase 410 proved the filesystem shape:</p>
+<pre><code class="language-text">/usr/bin/busybox exists
+/bin resolves to the BusyBox applet path
+the serial service ExecStart points at /usr/bin/busybox
+</code></pre>
+<p>That is necessary, but it is not enough.</p>
+<p>A Linux system can have correct-looking files and still fail at runtime.</p>
+<p>Examples:</p>
+<ul>
+<li>a binary exists but cannot execute,</li>
+<li>a symlink resolves on the mounted host but not after boot,</li>
+<li>a systemd unit points at the right path but never starts,</li>
+<li>a network script exists but fails inside the VM,</li>
+<li>SSH starts but the user’s shell cannot run commands.</li>
+</ul>
+<p>Phase 411 is the runtime proof.</p>
+<p>It asks:</p>
+<pre><code class="language-text">After the VM actually boots, do the existing ONIX behaviors still work with the
+stone-provided BusyBox?
+</code></pre>
+<h2 id="filesystem-proof-vs-runtime-proof"><a class="header" href="#filesystem-proof-vs-runtime-proof">Filesystem proof vs runtime proof</a></h2>
+<p>This is one of the most important operating-system lessons in Phase 4.</p>
+<p>Filesystem proof means:</p>
+<pre><code class="language-text">mount the disk image
+look at files
+check symlinks
+check executable bits
+check systemd unit text
+</code></pre>
+<p>Runtime proof means:</p>
+<pre><code class="language-text">boot the kernel
+mount the real root
+start systemd as PID 1
+start services
+execute commands inside the guest
+observe behavior from the host
+</code></pre>
+<p>Both are needed.</p>
+<p>Phase 410 was mostly filesystem proof.</p>
+<p>Phase 411 is runtime proof.</p>
+<h2 id="why-phase-411-re-applies-phase-410-first"><a class="header" href="#why-phase-411-re-applies-phase-410-first">Why Phase 411 re-applies Phase 410 first</a></h2>
+<p>The target does this:</p>
+<pre><code class="language-make">./materialize-etc.sh --busybox-stone
+./stone-busybox-probe.sh
+</code></pre>
+<p>That makes <code>make phase 411</code> safe to run by itself.</p>
+<p>If you already ran Phase 410, the first line is mostly a verification and
+idempotent refresh.</p>
+<p>If you forgot Phase 410, Phase 411 installs the stone BusyBox before booting.</p>
+<p>This follows the pattern of earlier Phase 4 targets:</p>
+<pre><code class="language-text">materialize expected image state
+then boot-prove behavior
+</code></pre>
+<h2 id="what-snapshot-boot-means"><a class="header" href="#what-snapshot-boot-means">What “snapshot boot” means</a></h2>
+<p>The QEMU probes use:</p>
+<pre><code class="language-text">snapshot=on
+</code></pre>
+<p>That means the VM sees the disk image, but writes made during that VM boot are
+discarded when QEMU exits.</p>
+<p>This matters because booting a system changes things:</p>
+<ul>
+<li><code>/run</code> gets created,</li>
+<li>logs may be written,</li>
+<li>host keys may be touched,</li>
+<li>service state may change,</li>
+<li>temporary files appear.</li>
+</ul>
+<p>For proof phases, we usually want:</p>
+<pre><code class="language-text">observe runtime behavior without permanently changing the image
+</code></pre>
+<p>So Phase 411 uses snapshot boots.</p>
+<p>The image is mutated before boot by Phase 410. The boot-time changes themselves
+are throwaway.</p>
+<h2 id="background-how-the-host-reaches-inside-the-guest"><a class="header" href="#background-how-the-host-reaches-inside-the-guest">Background: how the host reaches inside the guest</a></h2>
+<p>Two of the four proofs (remote inspection and SSH) need the host to open a TCP
+connection <em>into</em> the running guest. That works through <strong>QEMU user-mode
+networking</strong>, a lightweight NAT that QEMU implements in userspace. The guest sees a
+normal virtual NIC and gets the address <code>10.0.2.15</code> from QEMU’s built-in DHCP; the
+gateway is <code>10.0.2.2</code>. No root, no bridge, no tap device is needed on the host.</p>
+<p>Because that network is private to QEMU, the host cannot reach guest ports directly.
+Instead QEMU <strong>forwards</strong> a chosen host port to a guest port. Phase 411 forwards:</p>
+<pre><code class="language-text">host 127.0.0.1:7666  -&gt;  guest :6649   (remote inspection listener)
+host 127.0.0.1:7627  -&gt;  guest :22     (SSH)
+</code></pre>
+<p><code>6649</code> is the ONIX magic number (“ONIX” on a phone keypad); it reappears as the
+GID for Nix build users and as port offsets throughout the project. When you read a
+proof that says “the host connects to <code>127.0.0.1:7666</code>,” that is the host end of
+this forward, tunnelling into the guest’s BusyBox <code>nc</code> listener.</p>
+<p>The serial and network proofs do not need forwarding — they talk to the guest over
+a <strong>serial console</strong> (a virtual UART exposed to the host as a Unix socket), which is
+the most primitive channel available and works even before networking is up.</p>
+<h2 id="what-phase-411-proves"><a class="header" href="#what-phase-411-proves">What Phase 411 proves</a></h2>
+<p>Phase 411 runs four live proofs.</p>
+<h3 id="1-serial-shell-proof"><a class="header" href="#1-serial-shell-proof">1. Serial shell proof</a></h3>
+<p>The first proof boots the image and waits for the bootstrap serial shell marker:</p>
+<pre><code class="language-text">ONIX_BOOTSTRAP_SERIAL_CONSOLE_READY
+</code></pre>
+<p>Then the host sends a command over the serial socket.</p>
+<p>That command runs:</p>
+<pre><code class="language-text">/usr/bin/busybox sh -c ...
+</code></pre>
+<p>and expects:</p>
+<pre><code class="language-text">ONIX_STONE_BUSYBOX_SERIAL_OK uid=0 ... busybox=/usr/bin/busybox
+</code></pre>
+<p>This proves:</p>
+<ul>
+<li>the VM booted far enough for systemd to start the serial service,</li>
+<li>the serial service can execute the stone BusyBox,</li>
+<li>the root bootstrap shell can run commands.</li>
+</ul>
+<h3 id="2-network-proof"><a class="header" href="#2-network-proof">2. Network proof</a></h3>
+<p>The second proof boots again and runs:</p>
+<pre><code class="language-text">/usr/lib/onix/bootstrap-network-proof
+</code></pre>
+<p>That script uses BusyBox commands such as:</p>
+<pre><code class="language-text">/bin/ifconfig
+/bin/route
+/bin/grep
+/bin/awk
+</code></pre>
+<p>Because Phase 410 made <code>/bin</code> resolve to the <code>busybox</code> payload, this checks
+the running network bootstrap against the stone BusyBox.</p>
+<p>The expected marker is:</p>
+<pre><code class="language-text">ONIX_STONE_BUSYBOX_NETWORK_OK uid=0 ... busybox=/usr/bin/busybox
+</code></pre>
+<p>The normal network proof still has to pass first:</p>
+<pre><code class="language-text">ONIX_NETWORK_OK iface=&lt;name&gt; ip=10.0.2.15 router=10.0.2.2
+</code></pre>
+<h3 id="3-remote-inspection-proof"><a class="header" href="#3-remote-inspection-proof">3. Remote inspection proof</a></h3>
+<p>The third proof boots with QEMU host port forwarding.</p>
+<p>Inside the guest:</p>
+<pre><code class="language-text">onix-bootstrap-remote-inspection.service
+</code></pre>
+<p>starts a BusyBox <code>nc</code> listener.</p>
+<p>The host connects to:</p>
+<pre><code class="language-text">127.0.0.1:7666
+</code></pre>
+<p>and expects the remote marker:</p>
+<pre><code class="language-text">ONIX_REMOTE_INSPECTION_OK name=ONIX phase=405
+</code></pre>
+<p>The serial side also verifies:</p>
+<pre><code class="language-text">ONIX_STONE_BUSYBOX_REMOTE_OK uid=0 ... busybox=/usr/bin/busybox
+</code></pre>
+<p>This proves:</p>
+<ul>
+<li>the guest network came up,</li>
+<li>the BusyBox <code>nc</code> listener started,</li>
+<li>host-to-guest TCP forwarding still works,</li>
+<li>the BusyBox command path is the stone path.</li>
+</ul>
+<h3 id="4-ssh-proof"><a class="header" href="#4-ssh-proof">4. SSH proof</a></h3>
+<p>The fourth proof boots with SSH port forwarding.</p>
+<p>The host connects to:</p>
+<pre><code class="language-text">127.0.0.1:7627
+</code></pre>
+<p>as the bootstrap SSH user:</p>
+<pre><code class="language-text">onix
+</code></pre>
+<p>The remote SSH command deliberately runs:</p>
+<pre><code class="language-text">/usr/bin/busybox sh -c ...
+</code></pre>
+<p>and expects:</p>
+<pre><code class="language-text">ONIX_STONE_BUSYBOX_SSH_OK user=onix uid=1000 ... busybox=/usr/bin/busybox
+</code></pre>
+<p>This proves:</p>
+<ul>
+<li>Dropbear still starts,</li>
+<li>public-key authentication still works,</li>
+<li>the non-root SSH account can run commands,</li>
+<li>the command path can use <code>busybox</code>.</li>
+</ul>
+<h2 id="why-the-proof-uses-several-boots"><a class="header" href="#why-the-proof-uses-several-boots">Why the proof uses several boots</a></h2>
+<p>It would be faster to boot once and test everything in one VM.</p>
+<p>We do not do that yet.</p>
+<p>The current probe scripts are intentionally small and specialized:</p>
+<ul>
+<li>serial proof,</li>
+<li>network proof,</li>
+<li>remote inspection proof,</li>
+<li>SSH proof.</li>
+</ul>
+<p>Phase 411 composes those existing proofs instead of inventing a larger test
+harness too early.</p>
+<p>That costs time, especially without KVM acceleration, but it keeps each failure
+easier to understand.</p>
+<p>If the serial proof fails, we know the problem is early shell/service startup.</p>
+<p>If the SSH proof fails, we know serial and network probably already worked, and
+the bug is closer to Dropbear/account/key behavior.</p>
+<p>Later ONIX can combine these into a faster single-boot integration probe.</p>
+<h2 id="expected-output"><a class="header" href="#expected-output">Expected output</a></h2>
+<p>You should see:</p>
+<pre><code class="language-text">==&gt; Phase 411 stone BusyBox live proof
+==&gt; probe 1/4: serial shell uses busybox
+==&gt; probe 2/4: network scripts use busybox commands
+==&gt; probe 3/4: remote inspection listener uses busybox nc/netstat
+==&gt; probe 4/4: SSH session uses busybox commands
+</code></pre>
+<p>Each sub-proof prints its own success message.</p>
+<p>The final success block is:</p>
+<pre><code class="language-text">==&gt; success
+Phase 411 proved the booted ONIX image can use busybox for:
+
+  - serial bootstrap shell
+  - bootstrap QEMU user networking
+  - host-to-guest TCP inspection
+  - authenticated SSH command execution
+</code></pre>
+<h2 id="evidence-logs"><a class="header" href="#evidence-logs">Evidence logs</a></h2>
+<p>The logs are written under:</p>
+<pre><code class="language-text">vm/state/
+</code></pre>
+<p>with Phase 411 names:</p>
+<pre><code class="language-text">phase411.serial-boot.log
+phase411.serial-shell.log
+phase411.network-boot.log
+phase411.network-serial.log
+phase411.remote-boot.log
+phase411.remote-serial.log
+phase411.ssh-boot.log
+phase411.ssh-serial.log
+</code></pre>
+<p>If a proof fails, those logs are usually more useful than the final error line.</p>
+<p>The boot logs show kernel/systemd progress.</p>
+<p>The serial logs show what the bootstrap shell printed and what commands the
+host sent.</p>
+<h2 id="how-to-stop-a-stuck-probe"><a class="header" href="#how-to-stop-a-stuck-probe">How to stop a stuck probe</a></h2>
+<p>If a QEMU probe gets stuck, run:</p>
+<pre><code class="language-sh">make stop
+</code></pre>
+<p>or directly:</p>
+<pre><code class="language-sh">vm/phase4/stone-busybox-probe.sh --kill
+</code></pre>
+<p>The stop path knows about the Phase 411 QEMU probe names and keeps generated
+disk/image state. Use <code>make cleanup</code> only for an intentional destructive reset.</p>
+<h2 id="what-this-phase-does-not-prove"><a class="header" href="#what-this-phase-does-not-prove">What this phase does not prove</a></h2>
+<p>Phase 411 does not prove that all Nix-sourced machine-plane payloads are gone.</p>
+<p>It proves only:</p>
+<pre><code class="language-text">the active BusyBox runtime path works through busybox
+</code></pre>
+<p>The old copied Nix BusyBox closure may still exist on disk.</p>
+<p>That is okay for now.</p>
+<p>The safe order is:</p>
+<pre><code class="language-text">410 — switch active BusyBox path
+411 — boot-prove the replacement works
+later — remove/audit leftover Nix-sourced machine-plane payloads
+</code></pre>
+<p>Do not delete fallback-looking data before the replacement has a live proof.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../vm/phase4/docs/410_install_use_onix_busybox.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../vm/phase4/docs/412_build_onix_dropbear_stone.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../vm/phase4/docs/410_install_use_onix_busybox.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../vm/phase4/docs/412_build_onix_dropbear_stone.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr-ef4e11c1.min.js"></script>
+        <script src="../../../mark-09e88c2c.min.js"></script>
+        <script src="../../../searcher-09f2665d.js"></script>
+
+        <script src="../../../clipboard-1626706a.min.js"></script>
+        <script src="../../../highlight-abc7f01d.js"></script>
+        <script src="../../../book-609e4cb8.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

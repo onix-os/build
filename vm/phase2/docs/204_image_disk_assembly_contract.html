@@ -1,0 +1,483 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>204 — define image/disk assembly contract - ONIX Book</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Step-by-step build book for the ONIX operating system.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="../../../favicon-8114d1fc.png">
+        <link rel="stylesheet" href="../../../css/variables-8adf115d.css">
+        <link rel="stylesheet" href="../../../css/general-e96d0476.css">
+        <link rel="stylesheet" href="../../../css/chrome-d279d366.css">
+        <link rel="stylesheet" href="../../../css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="../../../highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../../../tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../../../ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../../searchindex-37c19fff.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc-ee5fb59a.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">ONIX Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/onix-os/build" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="phase-204--define-imagedisk-assembly-contract"><a class="header" href="#phase-204--define-imagedisk-assembly-contract">Phase 204 — define image/disk assembly contract</a></h1>
+<h2 id="at-a-glance"><a class="header" href="#at-a-glance">At a glance</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td>Phase family</td><td>Phase 2 — bootable image</td></tr>
+<tr><td>Run command</td><td><code>make phase 204</code></td></tr>
+<tr><td>Underlying make target/script</td><td><code>vm/phase2/verify-image-contract.sh</code></td></tr>
+<tr><td>Runs on</td><td>host</td></tr>
+<tr><td>Main proof/artifact</td><td>Verifies the disk/image contract before loop devices, filesystems, or mounts.</td></tr>
+</tbody>
+</table>
+</div>
+<p>Phase 204 is deliberately boring and important.</p>
+<p>It does <strong>not</strong> create a disk image.
+It does <strong>not</strong> partition anything.
+It does <strong>not</strong> format filesystems.
+It does <strong>not</strong> mount anything.
+It does <strong>not</strong> use sudo.</p>
+<p>It only verifies that this book page contains the contract for the next layer.</p>
+<p>The reason is simple: before we ask Linux for loop devices, partitions, mounts,
+and filesystems, we want the target shape written down in human language.
+Disk-building mistakes are easy to make and annoying to debug. A contract phase
+lets us agree on the shape first.</p>
+<h3 id="background-a-contract-phase-is-a-design-gate"><a class="header" href="#background-a-contract-phase-is-a-design-gate">Background: a contract phase is a design gate</a></h3>
+<p>Several Phase 2 steps (204, 207, 208, 210) build nothing. They are <strong>contract
+phases</strong>: their script reads <em>this very book page</em> plus the relevant build script
+and checks that the two still agree on the plan — the paths, labels, filesystem
+types, and boot arguments. If someone edits the disk builder to use a different
+label but forgets to update the plan, the contract phase fails. It is a test that
+the documentation and the code have not drifted apart.</p>
+<p>Why bother? Because the destructive, rootful work is a few steps away, and the
+cheapest possible moment to catch “we disagree about the layout” is <em>before</em> any
+disk exists. Writing the shape down in prose first, then having a script enforce
+that the prose matches reality, is much cheaper than debugging a mangled
+partition table. So Phase 204 verifies that this page contains the contract text —
+<code>verify-image-contract.sh</code> literally greps this file for every label, mount point,
+and filesystem type below.</p>
+<h4 id="the-artifact-names"><a class="header" href="#the-artifact-names">The artifact names</a></h4>
+<p>The canonical root tree input is still:</p>
+<pre><code class="language-text">artifacts/onix-root-tree/
+</code></pre>
+<p>The future raw disk image will be:</p>
+<pre><code class="language-text">artifacts/onix-image/onix.raw
+</code></pre>
+<p>Temporary mount/work state for image assembly should live under:</p>
+<pre><code class="language-text">artifacts/onix-image-work/
+</code></pre>
+<p>All of these paths are under <code>artifacts/</code>, so they are generated local build
+outputs and are gitignored.</p>
+<h4 id="root-tree-vs-disk-image-again"><a class="header" href="#root-tree-vs-disk-image-again">Root tree vs disk image, again</a></h4>
+<p>The root tree is a directory on the host:</p>
+<pre><code class="language-text">artifacts/onix-root-tree/
+</code></pre>
+<p>The disk image is a fake disk file:</p>
+<pre><code class="language-text">artifacts/onix-image/onix.raw
+</code></pre>
+<p>The future Phase 205 job is to copy the root tree into a filesystem inside the
+disk image:</p>
+<pre><code class="language-text">artifacts/onix-root-tree/
+   │
+   │ copied into the root partition
+   ▼
+artifacts/onix-image/onix.raw
+</code></pre>
+<p>That raw image can later be attached to QEMU as if it were a real disk.</p>
+<h4 id="planned-gpt-partition-table"><a class="header" href="#planned-gpt-partition-table">Planned GPT partition table</a></h4>
+<p>The first ONIX image should use GPT.</p>
+<p>GPT is the modern partition-table format used by UEFI systems. It lets one disk
+contain several named partitions. Names matter here because ONIX will mount
+partitions by label instead of by fragile device names.</p>
+<blockquote>
+<p><strong>GPT, ESP, and XBOOTLDR, defined.</strong> A <strong>partition table</strong> is the map at the
+start of a disk that says “bytes X to Y are partition 1”, and so on. <strong>GPT</strong>
+(GUID Partition Table) is the UEFI-era format; it replaced the old MBR scheme
+and supports many partitions, each with a name and a type GUID. Two of ONIX’s
+partitions have special roles the firmware and bootloader know about:</p>
+<ul>
+<li>The <strong>ESP</strong> (EFI System Partition) is the FAT partition UEFI firmware reads at
+power-on to find an <code>.efi</code> program to run. It is small and firmware-facing.
+ONIX mounts it at <code>/efi</code>.</li>
+<li><strong>XBOOTLDR</strong> is an optional second boot partition defined by the Boot Loader
+Specification. It holds the bulky kernels and initramfs images, so the ESP can
+stay small. ONIX mounts it at <code>/boot</code> (label <code>ONIX-BOOT</code>). systemd-boot reads
+BLS entries and kernels from here.</li>
+</ul>
+<p>Splitting ESP from XBOOTLDR is why ONIX has <em>two</em> FAT boot partitions instead of
+one — it keeps the firmware-visible surface tiny while giving the kernels room.</p>
+</blockquote>
+<p>The contract is:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>#</th><th>Label</th><th>Filesystem</th><th>Mount point</th><th>Early purpose</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td><code>ONIX-ESP</code></td><td><code>vfat</code></td><td><code>/efi</code></td><td>EFI System Partition for firmware-visible boot files later</td></tr>
+<tr><td>2</td><td><code>ONIX-BOOT</code></td><td><code>vfat</code></td><td><code>/boot</code></td><td>kernel/initramfs/BLS/systemd-boot files later</td></tr>
+<tr><td>3</td><td><code>onix-root</code></td><td><code>xfs</code></td><td><code>/</code></td><td>generated ONIX root filesystem from <code>artifacts/onix-root-tree/</code></td></tr>
+<tr><td>4</td><td><code>ONIX-PERSIST</code></td><td><code>xfs</code></td><td><code>/persist</code></td><td>persistent machine data such as homes and Nix store later</td></tr>
+</tbody>
+</table>
+</div>
+<p>Proposed early sizes:</p>
+<pre><code class="language-text">ONIX-ESP      512 MiB
+ONIX-BOOT       1 GiB
+onix-root       8 GiB minimum for the first image
+ONIX-PERSIST    rest of the disk
+</code></pre>
+<p>Those sizes can change later, but the labels and mount roles are the important
+contract.</p>
+<h4 id="why-vfat-for-efi-and-boot"><a class="header" href="#why-vfat-for-efi-and-boot">Why <code>vfat</code> for <code>/efi</code> and <code>/boot</code></a></h4>
+<p>UEFI firmware understands the EFI System Partition as a FAT filesystem. In
+Linux tools that usually means <code>vfat</code>.</p>
+<p>So <code>/efi</code> must be <code>vfat</code>.</p>
+<p>For the first image, <code>/boot</code> is also planned as <code>vfat</code> because it keeps the boot
+partition simple and readable by the early boot tooling. Later we can revisit
+that if the real boot model needs a different split.</p>
+<p>The first fstab marks <code>/efi</code> and <code>/boot</code> as <code>nofail</code>.</p>
+<p>That is deliberate. The machine can reach userspace without those partitions
+mounted. During early bootstrap we may not yet have the final kernel-module and
+<code>modprobe</code> policy needed for vfat mounts after switch-root. A failed <code>/efi</code> or
+<code>/boot</code> mount should be visible in logs, but it should not force the whole boot
+into emergency mode.</p>
+<h4 id="why-xfs-for--and-persist"><a class="header" href="#why-xfs-for--and-persist">Why <code>xfs</code> for <code>/</code> and <code>/persist</code></a></h4>
+<p>The root and persist partitions are Linux-owned filesystems. They need normal
+Unix permissions, symlinks, device-node support, and good behavior for large
+trees.</p>
+<p>So the contract uses <code>xfs</code> for:</p>
+<pre><code class="language-text">/
+/persist
+</code></pre>
+<p>The Phase 1 <code>filesystem</code> package already emits the same policy in the
+default fstab template:</p>
+<pre><code class="language-text">LABEL=ONIX-ESP      /efi      vfat  rw,relatime,noatime,nofail,x-systemd.device-timeout=10s
+LABEL=ONIX-BOOT     /boot     vfat  rw,relatime,noatime,nofail,x-systemd.device-timeout=10s
+LABEL=onix-root     /         xfs
+LABEL=ONIX-PERSIST  /persist  xfs
+</code></pre>
+<p>That is the reason Phase 200 checks for <code>mkfs.xfs</code>.</p>
+<h4 id="why-labels-instead-of-devvda3"><a class="header" href="#why-labels-instead-of-devvda3">Why labels instead of <code>/dev/vda3</code></a></h4>
+<p>Inside Linux, disks appear with names like:</p>
+<pre><code class="language-text">/dev/vda
+/dev/sda
+/dev/nvme0n1
+</code></pre>
+<p>Partitions appear as:</p>
+<pre><code class="language-text">/dev/vda1
+/dev/vda2
+/dev/vda3
+</code></pre>
+<p>Those names depend on the virtual hardware, boot order, and driver timing.
+They are not the identity of the filesystem.</p>
+<p>Filesystem labels are much more stable:</p>
+<pre><code class="language-text">LABEL=onix-root
+LABEL=ONIX-PERSIST
+</code></pre>
+<p>That is why the ONIX fstab contract mounts by label.</p>
+<h4 id="what-gets-copied-into-"><a class="header" href="#what-gets-copied-into-">What gets copied into <code>/</code></a></h4>
+<p>The root partition labeled <code>onix-root</code> receives the contents of:</p>
+<pre><code class="language-text">artifacts/onix-root-tree/
+</code></pre>
+<p>That means this host file:</p>
+<pre><code class="language-text">artifacts/onix-root-tree/usr/lib/os-release
+</code></pre>
+<p>becomes this file inside the future machine:</p>
+<pre><code class="language-text">/usr/lib/os-release
+</code></pre>
+<p>And this host symlink:</p>
+<pre><code class="language-text">artifacts/onix-root-tree/etc/os-release -&gt; ../usr/lib/os-release
+</code></pre>
+<p>becomes:</p>
+<pre><code class="language-text">/etc/os-release -&gt; ../usr/lib/os-release
+</code></pre>
+<h4 id="what-does-not-get-copied-as-real-data"><a class="header" href="#what-does-not-get-copied-as-real-data">What does not get copied as real data</a></h4>
+<p>Some directories are mount points or runtime filesystems:</p>
+<pre><code class="language-text">/dev
+/proc
+/sys
+/run
+</code></pre>
+<p>They should exist as directories in the image, but their contents are created or
+mounted at boot. We do not copy host <code>/dev</code> into the image. We do not copy host
+<code>/proc</code>. Those are views of the running host kernel, not package payload.</p>
+<p><code>/persist</code> is also a mount point. The image will have an <code>ONIX-PERSIST</code>
+partition mounted there. Later ONIX can bind persistent paths from it:</p>
+<pre><code class="language-text">/persist/home -&gt; /home
+/persist/nix  -&gt; /nix
+</code></pre>
+<blockquote>
+<p><strong>Why one persistence partition.</strong> ONIX’s whole design goal is that the machine
+plane (<code>/usr</code>, kernel, boot) is disposable and atomically rolled back, while the
+things you actually <em>care about</em> live somewhere a rollback never touches. That
+somewhere is <code>ONIX-PERSIST</code>. <code>/home</code> (your files) and <code>/nix</code> (the Nix toolbox’s
+store, added in Phase 3) are bind-mounted out of it, so a single partition is the
+one surface to back up. A moss rollback rewinds <code>/usr</code>; it does not touch
+<code>/persist</code>. This is the concrete shape of the “two planes” split — the machine
+plane on <code>onix-root</code>, the durable state on <code>ONIX-PERSIST</code>.</p>
+</blockquote>
+<h4 id="what-phase-204-checks"><a class="header" href="#what-phase-204-checks">What Phase 204 checks</a></h4>
+<p><code>make phase 204</code> verifies:</p>
+<ul>
+<li>this Phase 204 section exists</li>
+<li>the future disk path is <code>artifacts/onix-image/onix.raw</code></li>
+<li>the source root tree path is <code>artifacts/onix-root-tree/</code></li>
+<li>all required labels are documented:
+<ul>
+<li><code>ONIX-ESP</code></li>
+<li><code>ONIX-BOOT</code></li>
+<li><code>onix-root</code></li>
+<li><code>ONIX-PERSIST</code></li>
+</ul>
+</li>
+<li>all required mount points are documented:
+<ul>
+<li><code>/efi</code></li>
+<li><code>/boot</code></li>
+<li><code>/</code></li>
+<li><code>/persist</code></li>
+</ul>
+</li>
+<li>the contract mentions both <code>vfat</code> and <code>xfs</code></li>
+<li>the current root tree still contains <code>/usr/lib/os-release</code></li>
+<li>the current root tree fstab still references the planned labels</li>
+</ul>
+<p>This makes Phase 204 a safe checkpoint between “we can assemble files” and “we
+are about to create filesystems”.</p>
+<h4 id="what-phase-204-does-not-prove"><a class="header" href="#what-phase-204-does-not-prove">What Phase 204 does not prove</a></h4>
+<p>Phase 204 does not prove booting.</p>
+<p>At this point ONIX still does not have:</p>
+<pre><code class="language-text">kernel package
+initramfs policy
+systemd package
+systemd-boot installation
+BLS entries
+real first userspace path
+</code></pre>
+<p>So the next disk phase should be a <strong>non-booting</strong> skeleton first. That lets us
+verify partition creation and root-tree copy before mixing in boot complexity.</p>
+<p>The immediate sequence after this contract is:</p>
+<pre><code class="language-text">Phase 205 -&gt; create the non-booting disk/root skeleton
+Phase 206 -&gt; install the systemd-boot/BLS skeleton
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../vm/phase2/docs/203_assemble_root_tree_with_host_moss_only.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../vm/phase2/docs/205_create_non_booting_disk_root_skeleton.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../vm/phase2/docs/203_assemble_root_tree_with_host_moss_only.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../vm/phase2/docs/205_create_non_booting_disk_root_skeleton.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr-ef4e11c1.min.js"></script>
+        <script src="../../../mark-09e88c2c.min.js"></script>
+        <script src="../../../searcher-09f2665d.js"></script>
+
+        <script src="../../../clipboard-1626706a.min.js"></script>
+        <script src="../../../highlight-abc7f01d.js"></script>
+        <script src="../../../book-609e4cb8.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,519 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Phase 5 — Rust-first musl package/repository plane - ONIX Book</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Step-by-step build book for the ONIX operating system.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="../../../favicon-8114d1fc.png">
+        <link rel="stylesheet" href="../../../css/variables-8adf115d.css">
+        <link rel="stylesheet" href="../../../css/general-e96d0476.css">
+        <link rel="stylesheet" href="../../../css/chrome-d279d366.css">
+        <link rel="stylesheet" href="../../../css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="../../../highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../../../tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../../../ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../../../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../../../searchindex-37c19fff.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc-ee5fb59a.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">ONIX Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/onix-os/build" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="phase-5-overview--rust-first-musl-packagerepository-plane"><a class="header" href="#phase-5-overview--rust-first-musl-packagerepository-plane">Phase 5 overview — Rust-first musl package/repository plane</a></h1>
+<p>Phase 5 starts after the Phase 4 booted-base acceptance gate.</p>
+<p>Phase 4 proved:</p>
+<pre><code class="language-text">ONIX can boot, run native systemd as PID 1, accept SSH login, and use
+stone-owned base packages for the current machine plane.
+</code></pre>
+<p>Phase 5 asks a different question:</p>
+<pre><code class="language-text">Can ONIX build, collect, verify, and publish its own system packages?
+</code></pre>
+<p>This is the package/repository plane.</p>
+<h2 id="where-phase-5-sits-in-the-onix-story"><a class="header" href="#where-phase-5-sits-in-the-onix-story">Where Phase 5 sits in the ONIX story</a></h2>
+<p>Every earlier phase was about <em>making one machine work</em>. The forge built moss and
+boulder (Phase 0). The base stones were authored and installed (Phase 1). An image
+booted (Phase 2). The Nix plane and native systemd matured (Phases 3–4). By the end
+of Phase 4 there was a real, bootable, SSH-reachable ONIX machine.</p>
+<p>But “a machine that boots” and “a distribution” are not the same thing. A
+distribution is the <em>supply chain</em> behind the machine: a place recipes live, a way
+to build them into packages, a way to verify those packages are honest, and a
+repository the machine can install from by name. Phase 5 is where ONIX grows that
+supply chain.</p>
+<p>Two vocabulary anchors used throughout Phase 5:</p>
+<ul>
+<li><strong><code>.stone</code></strong> — ONIX’s package file format (from AerynOS tooling). A <code>.stone</code> is a
+compressed, content-addressed archive of a <em>payload</em> (the files a package installs,
+like <code>/usr/bin/busybox</code>) plus metadata (name, version, the paths it owns). It is
+the unit moss installs and removes atomically.</li>
+<li><strong>moss / boulder</strong> — the two Rust tools ONIX borrows. <strong>boulder</strong> <em>builds</em> a
+<code>.stone</code> from a recipe. <strong>moss</strong> <em>installs</em> <code>.stone</code> files, tracks system state,
+and can roll transactions back. Phase 5 leans on both: boulder to cut packages,
+moss to <code>index</code>, <code>inspect</code>, and <code>install</code> them from a repository.</li>
+</ul>
+<h2 id="the-important-phase-5-law"><a class="header" href="#the-important-phase-5-law">The important Phase 5 law</a></h2>
+<p>ONIX system packages are:</p>
+<pre><code class="language-text">Rust-first, musl-only, and runtime-clean.
+</code></pre>
+<p>That sentence is intentionally strict.</p>
+<p>It means:</p>
+<ul>
+<li>if a serious Rust implementation exists, prefer it;</li>
+<li>system binaries target musl, not glibc;</li>
+<li>installed system packages must not need <code>/nix/store</code> at runtime;</li>
+<li>installed system files come from <code>.stone</code> packages consumed by moss;</li>
+<li>Nix may help us build during bootstrap, but Nix must not become the runtime
+owner of the system.</li>
+</ul>
+<h3 id="why-a-law-and-why-now"><a class="header" href="#why-a-law-and-why-now">Why a <em>law</em>, and why now</a></h3>
+<p>A young distribution is most vulnerable to one failure: quietly becoming a pile of
+copied host artifacts. The forge had glibc tools around. The build host has Nix,
+which is glibc-based, all over <code>/nix/store</code>. Without a written, <em>enforced</em> rule, it
+is disturbingly easy to <code>cp</code> a working binary out of <code>/nix/store</code> into a payload,
+watch it run once, and ship it — carrying an invisible <code>/nix/store</code> runtime
+dependency and a glibc loader into a system that is supposed to be pure musl.</p>
+<p>That would break the two central ONIX promises at once: the machine plane is meant
+to be <strong>musl-only</strong> (so there are no accidental glibc/ABI surprises), and it is meant
+to be <strong>self-owned</strong> (moss controls the machine; Nix controls only the toolbox). A
+system binary that reaches into <code>/nix/store</code> at runtime hands machine ownership to
+Nix. Phase 5 exists so that can never happen by accident — the law turns a vibe into
+a checkable contract, and steps 502–508 turn the contract into scripts that fail
+loudly.</p>
+<h2 id="rust-first-does-not-mean-rust-blind"><a class="header" href="#rust-first-does-not-mean-rust-blind">Rust-first does not mean Rust-blind</a></h2>
+<p>Rust-first means ONIX should choose Rust when a serious Rust implementation
+exists.</p>
+<p>Examples:</p>
+<pre><code class="language-text">coreutils -&gt; prefer uutils coreutils
+sudo-class privilege -&gt; prefer RootAsRole, with dosr as the native command
+ONIX tools -&gt; Rust by default
+repo tooling -&gt; Rust by default where practical
+</code></pre>
+<p>But Rust-first does not mean pretending that everything has a mature Rust
+replacement today.</p>
+<p>Some system pieces may remain non-Rust for now:</p>
+<ul>
+<li>the Linux kernel,</li>
+<li>musl libc,</li>
+<li>systemd,</li>
+<li>low-level boot components,</li>
+<li>temporary bootstrap components while we cross gaps.</li>
+</ul>
+<p>When ONIX chooses a non-Rust implementation, the package should explain why.</p>
+<p>The mechanism for “explain why” is the <strong><code>PACKAGE.md</code> contract</strong> (defined in step
+501). Rust-first stays honest only because every non-Rust choice has to be written
+down and justified in a reviewable file, not silently accepted.</p>
+<h2 id="musl-only-system-packages"><a class="header" href="#musl-only-system-packages">Musl-only system packages</a></h2>
+<p>ONIX is a musl system.</p>
+<p>That means Phase 5 must reject accidental glibc dependencies.</p>
+<p>Bad signs include:</p>
+<pre><code class="language-text">/lib64/ld-linux-x86-64.so.2
+glibc
+RPATH into /nix/store
+RUNPATH into /nix/store
+</code></pre>
+<p>Good signs include:</p>
+<pre><code class="language-text">musl
+static
+static-pie
+/lib/ld-musl-x86_64.so.1
+no /nix/store
+</code></pre>
+<p>The exact acceptable linker model may differ by package, but the policy is
+stable:</p>
+<pre><code class="language-text">no glibc runtime in ONIX system packages
+try static/static-PIE musl first by default
+allow only a minimal ONIX-owned shared-library surface when static is not right
+</code></pre>
+<h3 id="background-static-vs-dynamic-musl-vs-glibc"><a class="header" href="#background-static-vs-dynamic-musl-vs-glibc">Background: static vs dynamic, musl vs glibc</a></h3>
+<p>Every compiled Linux program is <em>linked</em> one of two ways. A <strong>dynamically linked</strong>
+binary defers to shared libraries at run time: the kernel first loads a small
+program called the <strong>dynamic loader</strong> (the “ELF interpreter”) named in the binary’s
+header, and that loader finds and maps the shared libraries. A <strong>statically linked</strong>
+binary bakes everything it needs into the file, so there is no loader path to follow
+and no external library to miss.</p>
+<p>The loader path is the tell-tale. A glibc binary asks for
+<code>/lib64/ld-linux-x86-64.so.2</code>; a musl binary asks for <code>/lib/ld-musl-x86_64.so.1</code>; a
+fully static binary asks for nothing. ONIX prefers <strong>static or static-pie musl</strong> for
+system packages precisely because it removes the whole class of “which libc, which
+version, whose <code>/nix/store</code>” questions — a static musl binary carries its own answer.
+That is why the audit helper in step 502 reads exactly these headers.</p>
+<p>This is a default, not a religion. Some real system pieces are designed around
+shared objects: PAM, seccomp-using helpers, systemd internals, graphics stacks,
+audio stacks, and plugin frameworks. ONIX allows those only as a <strong>minimal managed
+shared surface</strong>: the package must try or justify the static build first, list every
+needed soname, and make sure every shared object is owned by an ONIX stone. The
+forbidden case is not “shared library exists”; the forbidden case is “random host
+library leaked into the machine.”</p>
+<h2 id="build-dependency-versus-runtime-dependency"><a class="header" href="#build-dependency-versus-runtime-dependency">Build dependency versus runtime dependency</a></h2>
+<p>Phase 5 allows a very important distinction:</p>
+<pre><code class="language-text">build dependency != runtime dependency
+</code></pre>
+<p>During bootstrap, Nix may provide tools such as:</p>
+<pre><code class="language-text">rustc
+cargo
+gcc
+make
+pkg-config
+cmake
+</code></pre>
+<p>That is acceptable if the final <code>.stone</code> payload is clean.</p>
+<p>For example:</p>
+<pre><code class="language-text">Nix cargo helps build uutils-coreutils
+uutils-coreutils is installed into a .stone payload
+moss installs that .stone into /usr/bin/coreutils
+the installed binary has no /nix/store runtime dependency
+</code></pre>
+<p>That is acceptable.</p>
+<p>This would not be acceptable:</p>
+<pre><code class="language-text">/usr/bin/sudo -&gt; /nix/store/.../bin/sudo
+</code></pre>
+<p>or:</p>
+<pre><code class="language-text">/usr/bin/sudo has RPATH=/nix/store/...
+</code></pre>
+<p>The package was built with Nix in both cases, but only the first model produces
+an ONIX-owned system package.</p>
+<p>The line to hold: <strong>the build environment is disposable; the payload is forever.</strong>
+A compiler that lived in <code>/nix/store</code> during the build is fine, because it does not
+follow the binary onto the installed system. A <em>reference</em> to <code>/nix/store</code> embedded
+inside the shipped binary — a loader path, an RPATH, a shebang, a systemd
+<code>ExecStart</code> — does follow it, and that is what the audit rejects.</p>
+<h2 id="what-phase-5-should-build-first"><a class="header" href="#what-phase-5-should-build-first">What Phase 5 should build first</a></h2>
+<p>Phase 5 should not start with public hosting.</p>
+<p>It should start locally:</p>
+<pre><code class="language-text">source recipe -&gt; .stone -&gt; local repo -&gt; image consumes repo
+</code></pre>
+<p>Only after that is boring and repeatable should ONIX publish the same layout to:</p>
+<pre><code class="language-text">repo.onix-os.com
+</code></pre>
+<p>“Make it boring locally first” is the recurring Phase 5 method. Every network,
+signing, DNS, and CDN question is deliberately deferred; the same <em>directory shape</em>
+that a web server will one day serve is first proven with <code>file://</code> URLs on the
+build host. If the shape works over <code>file://</code>, uploading it later is a transport
+detail, not a redesign.</p>
+<p>The first package set should be small and essential:</p>
+<pre><code class="language-text">branding
+filesystem
+busybox
+uutils-coreutils
+dropbear
+systemd
+bootstrap
+musl
+linux-pam
+libseccomp
+rootasrole
+moss
+fish
+</code></pre>
+<p>Some entries started as earlier phase/lab stones. Phase 5 turns them into one
+canonical ONIX package/repo workflow and then keeps extending that workflow with
+Rust-first essentials, the minimal shared-library surface needed by privilege
+tools and systemd, RootAsRole policy, uutils command ownership, and packaged
+<code>moss</code> itself. The shell work also belongs here: <code>fish</code> is a system package, and
+the default login shell is a base runtime policy, so 516–518 extend Phase 5
+instead of opening the nix phase.</p>
+<h2 id="package-metadata-should-explain-implementation-choice"><a class="header" href="#package-metadata-should-explain-implementation-choice">Package metadata should explain implementation choice</a></h2>
+<p>Every new system package should answer:</p>
+<pre><code class="language-text">Implementation language:
+Rust alternative considered:
+Why this implementation:
+Musl/runtime-clean status:
+Runtime dependencies:
+Static attempt/result:
+Allowed shared-library surface, if any:
+</code></pre>
+<p>This makes Rust-first enforceable instead of vague.</p>
+<p>It also prevents a quiet slide back into random C packages when a Rust package
+would be a better ONIX fit.</p>
+<h2 id="proposed-phase-5-path"><a class="header" href="#proposed-phase-5-path">Proposed Phase 5 path</a></h2>
+<pre><code class="language-text">500 — Phase 5 package/repo direction and Rust-first musl-only static-first law
+501 — canonical recipe layout and package metadata contract
+502 — runtime-clean stone audit helper
+503 — copy existing package recipes into canonical layout
+504 — build essential package set from canonical recipes
+505 — assemble local ONIX repo from canonical packages
+506 — fix essential package ownership collisions
+507 — make the image consume only the canonical local repo
+508 — local public repository layout without upload
+509 — build/audit first Rust essential stones
+510 — build/audit PAM + seccomp shared-library surface stones
+511 — build RootAsRole against the owned shared surface
+512 — materialize live RootAsRole policy as an owned stone
+513 — move coreutils command links from BusyBox to uutils
+514 — inspect the booted VM for Phase 5 runtime ownership
+515 — package moss and prove in-VM repo consumption
+516 — define BusyBox sh for scripts and fish for humans
+517 — build/audit the fish shell stone
+518 — install fish and prove the default login shell at boot
+</code></pre>
+<p>The exact list can change as we learn.</p>
+<p>The boundary should not change:</p>
+<pre><code class="language-text">Phase 5 owns packages and repositories.
+Phase 5 does not own kernel work, desktop work, or general user toolboxes.
+</code></pre>
+<h3 id="how-the-steps-build-on-each-other"><a class="header" href="#how-the-steps-build-on-each-other">How the steps build on each other</a></h3>
+<p>The current steps are not independent chores; they are one pipeline assembled left to
+right, each step relying on the guarantees the previous one established:</p>
+<pre><code class="language-text">500  law                 -&gt; what a package is allowed to be
+501  layout + contract    -&gt; where packages live, what they must document
+502  audit helper         -&gt; a script that enforces part of the law
+503  copy recipes         -&gt; real recipes moved into the canonical tree
+504  canonical build lane -&gt; builders read from the canonical tree
+505  local repo           -&gt; built stones collected into one moss repo
+506  ownership fix        -&gt; BusyBox/systemd reboot/poweroff collision fixed
+507  image consumes repo  -&gt; the bootable image installs from that one repo
+508  public-shaped repo   -&gt; the same content in a publishable tree layout
+509  Rust essentials      -&gt; first Rust core package plus RootAsRole gate
+510  shared surface       -&gt; PAM/seccomp become ONIX-owned stones
+511  RootAsRole package   -&gt; dosr/chsr become ONIX-owned stones
+512  RootAsRole policy    -&gt; live /etc policy becomes package-owned
+513  uutils wiring        -&gt; common coreutils commands point at uutils
+514  runtime proof        -&gt; the booted VM exposes the Phase 5 ownership model
+515  moss runtime         -&gt; the booted VM can run packaged moss against an ONIX repo
+516  shell policy         -&gt; BusyBox remains sh; fish becomes the human shell
+517  fish package         -&gt; fish is cut and audited as an ONIX-owned stone
+518  shell runtime        -&gt; the booted VM logs the normal user into fish
+</code></pre>
+<p>Read top to bottom, the arrow from “a rule on paper” (500) to “an image that boots
+from a publish-shaped repository and accepts its first Rust/shared-surface packages” (507–514)
+is the first Phase 5 deliverable. Phase 515 then gives that booted image its own
+package-manager binary and proves it can consume the same repository from inside
+the VM. Phases 516–518 finish the immediate base-user shell story before Phase 6
+focuses only on nix.</p>
+<h2 id="steps"><a class="header" href="#steps">Steps</a></h2>
+<ul>
+<li><a href="./500_rust_first_musl_only_static_first_package_law.html">500 — Rust-first musl-only static-first package law</a></li>
+<li><a href="./501_canonical_package_layout_metadata_contract.html">501 — canonical package layout and metadata contract</a></li>
+<li><a href="./502_runtime_clean_stone_payload_audit_helper.html">502 — runtime-clean stone payload audit helper</a></li>
+<li><a href="./503_copy_existing_recipes_into_canonical_package_layout.html">503 — copy existing recipes into canonical package layout</a></li>
+<li><a href="./504_canonical_essential_package_build_lane.html">504 — canonical essential package build lane</a></li>
+<li><a href="./505_canonical_local_onix_package_repo.html">505 — canonical local ONIX package repo</a></li>
+<li><a href="./506_essential_package_ownership_collision_fix.html">506 — essential package ownership collision fix</a></li>
+<li><a href="./507_canonical_repo_image_consumption.html">507 — make the image consume the canonical local repo</a></li>
+<li><a href="./508_local_public_repository_layout.html">508 — local public repository layout</a></li>
+<li><a href="./509_first_rust_essential_stones.html">509 — first Rust essential stones</a></li>
+<li><a href="./510_privilege_shared_library_surface.html">510 — privilege shared-library surface</a></li>
+<li><a href="./511_rootasrole_privilege_stone.html">511 — RootAsRole privilege stone</a></li>
+<li><a href="./512_rootasrole_integrated_policy.html">512 — RootAsRole integrated policy</a></li>
+<li><a href="./513_uutils_command_ownership.html">513 — uutils command ownership</a></li>
+<li><a href="./514_booted_phase_5_runtime_proof.html">514 — booted Phase 5 runtime proof</a></li>
+<li><a href="./515_moss_runtime_package_and_self_repo_probe.html">515 — <code>moss</code> runtime package and self-repo probe</a></li>
+<li><a href="./516_busybox_sh_and_fish_shell_policy.html">516 — BusyBox <code>sh</code> and fish shell policy</a></li>
+<li><a href="./517_fish_shell_stone.html">517 — fish shell stone</a></li>
+<li><a href="./518_default_login_shell_runtime_proof.html">518 — default login shell runtime proof</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../vm/phase4/docs/425_final_phase_4_acceptance_check.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../vm/phase5/docs/500_rust_first_musl_only_static_first_package_law.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../vm/phase4/docs/425_final_phase_4_acceptance_check.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../vm/phase5/docs/500_rust_first_musl_only_static_first_package_law.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr-ef4e11c1.min.js"></script>
+        <script src="../../../mark-09e88c2c.min.js"></script>
+        <script src="../../../searcher-09f2665d.js"></script>
+
+        <script src="../../../clipboard-1626706a.min.js"></script>
+        <script src="../../../highlight-abc7f01d.js"></script>
+        <script src="../../../book-609e4cb8.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,545 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Architecture - ONIX Book</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Step-by-step build book for the ONIX operating system.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-e96d0476.css">
+        <link rel="stylesheet" href="css/chrome-d279d366.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-37c19fff.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-ee5fb59a.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">ONIX Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/onix-os/build" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="onix--architecture--build-plan"><a class="header" href="#onix--architecture--build-plan">ONIX — Architecture &amp; Build Plan</a></h1>
+<p><strong>An atomic, moss-managed machine with a persistent Nix toolbox — built from scratch on musl.</strong>
+ONIX is the hard machine layer everything else sits on. The moss-managed machine plane is the foundation; the Nix toolbox is the living soil on top. It borrows AerynOS’s <em>tooling</em> (moss, boulder, the <code>.stone</code> format) and its naming world — you’re extending the geology, not breaking it.</p>
+<p><strong>Core rule:</strong> <em>moss controls the machine. Nix controls the toolbox.</em></p>
+<blockquote>
+<p><strong>Bootstrap exception, not architecture.</strong> During early phases, ONIX may copy
+pinned Nix-built musl payloads into the image to prove behavior before the
+real <code>.stone</code> package exists. Examples: <code>pkgsMusl.systemd</code>, <code>pkgsMusl.busybox</code>,
+and <code>pkgsMusl.dropbear</code>. These are <strong>temporary bootstrap payloads only</strong>.
+Nix-sourced system payloads are bootstrap-only; final system packages and
+daemons must become moss-installed <code>.stone</code> packages owned by the machine
+plane.</p>
+</blockquote>
+<blockquote>
+<p><strong>Direction change (2026-07).</strong> ONIX does <strong>not</strong> consume AerynOS’s ISO or its glibc package repos. Their live image is desktop-first (GNOME) and their whole <code>volatile</code> repo is glibc; neither fits. ONIX keeps only the <em>tooling</em> — <strong>moss</strong> (atomic package/state manager) and <strong>boulder</strong> (the <code>.stone</code> builder) — and bootstraps its <strong>own smallest-possible base on musl, from scratch</strong>. <strong>Alpine</strong> is the throwaway <em>forge</em>: a tiny musl host where moss+boulder are built and the first stones are cut. The endgame is our own musl distro, managed by moss, with Nix supplying the (glibc) software long tail on top.</p>
+</blockquote>
+<blockquote>
+<p>Naming rule: public branding is always <code>ONIX</code>; machine IDs and package names use <code>onix</code>.</p>
+</blockquote>
+<hr>
+<h2 id="0-identity--naming-conventions"><a class="header" href="#0-identity--naming-conventions">0. Identity &amp; naming conventions</a></h2>
+<p>Locked in up front so every later artifact is consistent.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Thing</th><th>Name</th><th>Notes</th></tr>
+</thead>
+<tbody>
+<tr><td>Distro name</td><td><code>ONIX</code></td><td>Pretty name</td></tr>
+<tr><td>Machine-readable ID</td><td><code>onix</code></td><td>Lowercase everywhere machine-readable</td></tr>
+<tr><td>C library</td><td><strong>musl</strong></td><td>Non-negotiable; the whole base is musl. Nix apps bring their own glibc (see §3)</td></tr>
+<tr><td>Magic number</td><td><code>6649</code></td><td>“ONIX” on a phone keypad — nixbld GID, VM MAC suffix, port offsets</td></tr>
+<tr><td>Git org</td><td><code>onix-os</code></td><td>Repos: <code>image</code>, <code>recipes</code> (musl <code>.stone</code> recipes), <code>nix-integration</code>, <code>docs</code></td></tr>
+<tr><td>Package namespace</td><td><code>onix-*</code></td><td>All custom .stone packages: <code>onix-base</code>, <code>onix-nix-integration</code>, <code>onix-cli</code>, <code>branding</code>, <code>onix-desktop</code></td></tr>
+<tr><td>Moss repo</td><td><code>onix</code></td><td><code>moss repo add onix &lt;url&gt;</code> — the <strong>only</strong> repo; there is no upstream repo beneath it</td></tr>
+<tr><td>Upstream tooling</td><td><code>os-tools</code></td><td><code>github.com/AerynOS/os-tools</code> — moss + boulder, pinned. The one external dependency</td></tr>
+<tr><td>CLI wrapper</td><td><code>onix</code></td><td>Thin wrapper over moss + nix (see §6). <code>onix update</code>, <code>onix rollback</code>, <code>onix status</code></td></tr>
+<tr><td>Boot entry token</td><td><code>onix</code></td><td>BLS Type #1 entries: <code>onix-&lt;txid&gt;.conf</code></td></tr>
+<tr><td>Volume labels</td><td><code>ONIX-ESP</code>, <code>ONIX-BOOT</code>, <code>onix-root</code>, <code>ONIX-PERSIST</code></td><td></td></tr>
+<tr><td>Forge</td><td>Alpine musl VM, hostname <code>quarry</code></td><td>Throwaway bootstrap host — builds moss+boulder and the first stones.</td></tr>
+</tbody>
+</table>
+</div>
+<p><strong>/usr/lib/os-release</strong> (shipped by <code>branding</code>):</p>
+<pre><code class="language-ini">NAME="ONIX"
+ID=onix
+PRETTY_NAME="ONIX (atomic musl base + Nix toolbox)"
+VERSION_ID=rolling
+BUILD_ID=&lt;txid injected at image build&gt;
+HOME_URL="https://onix-os.com"
+ANSI_COLOR="38;2;140;120;100"
+</code></pre>
+<p>No <code>ID_LIKE</code>: ONIX is not a downstream of any distro’s package set — it shares AerynOS’s <em>tooling</em>, not its packages, and its libc (musl) diverges from AerynOS (glibc). It stands on its own foundation.</p>
+<hr>
+<h2 id="1-architecture-overview"><a class="header" href="#1-architecture-overview">1. Architecture overview</a></h2>
+<p>Two planes with a hard ownership contract:</p>
+<pre><code>┌─────────────────────────────────────────────────────────┐
+│  USER TOOLBOX PLANE (persistent, user-driven)           │
+│  /nix  ·  nix-daemon  ·  per-user profiles              │
+│  nix shell / develop / profile · home-manager (opt)     │
+│  GUI leaf apps, dev environments, the long tail         │
+│  (nixpkgs is glibc — apps are self-contained, run on    │
+│   the musl base because they carry their own libc)      │
+├─────────────────────────────────────────────────────────┤
+│  INTEGRATION SEAM (owned by onix-* stone packages)      │
+│  /etc/nix/nix.conf · nixbld sysusers · nix-daemon unit  │
+│  /run/opengl-driver · XDG/fontconfig/locale glue        │
+├─────────────────────────────────────────────────────────┤
+│  MACHINE PLANE (moss-owned, transactional, atomic)      │
+│  MUSL base · /usr (stateless, renameat2-swapped)        │
+│  /.moss store · kernel + initrd + BLS entries (blsforme)│
+│  init, udev, Mesa/DRM, PipeWire, portals, compositor    │
+│  — all built from our own musl .stone recipes           │
+└─────────────────────────────────────────────────────────┘
+</code></pre>
+<h3 id="ownership-contract-the-constitution"><a class="header" href="#ownership-contract-the-constitution">Ownership contract (the constitution)</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Surface</th><th>Owner</th><th>Never touched by</th></tr>
+</thead>
+<tbody>
+<tr><td><code>/usr</code>, kernel, initrd, boot entries</td><td>moss</td><td>Nix</td></tr>
+<tr><td><code>/.moss</code> content store &amp; fstx history</td><td>moss</td><td>Nix</td></tr>
+<tr><td>Mesa/libdrm/firmware, compositor, D-Bus, PipeWire, portals</td><td>moss (base packages, musl-built)</td><td>Nix (system-wide)</td></tr>
+<tr><td><code>/etc</code> baseline defaults</td><td>moss via <code>/usr/share/defaults</code></td><td>Nix</td></tr>
+<tr><td><code>/etc/nix/*</code></td><td><code>onix-nix-integration</code> stone seeds it; nix daemon reads it</td><td>manual drift</td></tr>
+<tr><td><code>/nix</code>, <code>/nix/store</code>, <code>/nix/var</code></td><td>Nix</td><td>moss</td></tr>
+<tr><td>Per-user profiles, dev shells, user services</td><td>Nix</td><td>moss</td></tr>
+<tr><td>setuid/setcap binaries, kernel modules</td><td>moss only</td><td>Nix — hard rule</td></tr>
+</tbody>
+</table>
+</div>
+<p>The single most important consequence: <strong>a moss rollback and a Nix profile rollback are independent operations that must never corrupt each other.</strong> Phase 5 validation exists specifically to prove this.</p>
+<hr>
+<h2 id="2-bootstrapping-the-machine-plane"><a class="header" href="#2-bootstrapping-the-machine-plane">2. Bootstrapping the machine plane</a></h2>
+<p>This is the section the pivot rewrote most. There is no upstream to consume — the base is built from zero on musl, with boulder.</p>
+<h3 id="21-the-forge-alpine-musl-bootstrap-host"><a class="header" href="#21-the-forge-alpine-musl-bootstrap-host">2.1 The forge (Alpine musl bootstrap host)</a></h3>
+<p>You cannot build <code>.stone</code> packages without moss + boulder, and you can’t run them meaningfully without a musl host to build <em>in</em>. Alpine is that host:</p>
+<ol>
+<li><strong>Build a minimal Alpine/musl VM from scratch</strong> — from the 3.7 MB minirootfs tarball, not their ISO — into a bootable disk (<code>vm/</code> in this repo already does this). Hostname <code>quarry</code>.</li>
+<li><strong>Build moss + boulder</strong> from <code>github.com/AerynOS/os-tools</code> (<code>just get-started</code>). They’re ordinary Rust binaries; they build and run on musl. boulder explicitly supports non-AerynOS hosts (<code>--data-dir</code>, <code>--config-dir</code>, <code>--moss-root</code>).</li>
+<li>Alpine is <strong>scaffolding, thrown away</strong> in the final design. During the
+current Phase 2 boot proof, ONIX temporarily borrows Alpine’s virt
+kernel/initramfs/module payload so image assembly and systemd-on-musl can be
+proved before kernel ownership becomes its own project. Phase 3 exists to
+remove that shortcut later. The forge still provides the musl toolchain and
+userns environment used to run boulder.</li>
+</ol>
+<h3 id="22-bootstrap-the-musl-base-as-stone-packages"><a class="header" href="#22-bootstrap-the-musl-base-as-stone-packages">2.2 Bootstrap the musl base as <code>.stone</code> packages</a></h3>
+<p>No AerynOS recipe is musl — a musl base is a <strong>genuine bootstrap</strong>, and that is the point of the project.</p>
+<ol>
+<li><strong>Author <code>.stone</code> recipes</strong> (<code>stone.yaml</code>) for the core musl userland: musl, a compiler toolchain, the base command set, the handful of packages <code>onix-base</code> needs. Use Alpine’s <code>APKBUILD</code>s as a reference for the musl-specific patches; keep the base set <em>short</em> — the long tail is Nix’s job (§3).
+<ul>
+<li><strong>Coreutils strategy (Rust-first, matches the moss/boulder ethos):</strong> ship <strong>busybox</strong> as the working base first — it is small, musl-native, and already proven in the forge. Then bring in <a href="https://github.com/uutils/coreutils"><strong>uutils/coreutils</strong></a> (Rust) alongside it. Once uutils is proven, the plain tool names (<code>ls</code>, <code>cp</code>, …) resolve to <strong>uutils</strong>, and busybox stays <em>reachable but not default</em> — invoked as <code>busybox &lt;tool&gt;</code>, not removed. Sequenced for Phase 1, after the forge builds stones.</li>
+</ul>
+</li>
+<li>boulder supports bootstrapping explicitly: a shared control file can disable tests during initial rounds, then be removed for final builds with tests re-enabled.</li>
+<li><strong>Stand up the <code>onix</code> moss repo</strong> — a static, locally-served index of your boulder-built stones. Start as <code>file:///var/lib/onix/repo/</code> on the forge; graduate to static HTTPS (any dumb file server; no vessel needed at this scale). It is the <em>only</em> repo — nothing sits beneath it.</li>
+<li><strong>Pin <code>os-tools</code>.</strong> The one external dependency is the tooling. The forge records this as <code>OS_TOOLS_REF</code> in <code>vm/phase0/config.sh</code>; an <code>onix mirror</code> habit later hedges against upstream churn.</li>
+</ol>
+<h3 id="23-image-building"><a class="header" href="#23-image-building">2.3 Image building</a></h3>
+<p>Assemble a bootable image from the musl base stones (an <code>onix-os/image</code> repo):</p>
+<ul>
+<li>moss-install <code>onix-base</code> + <code>branding</code> (os-release above) into a fresh root: kernel, initrd tooling, init, udev, dbus, a network stack, busybox/coreutils, filesystem tools (xfsprogs, dosfstools), moss itself.</li>
+<li>Keep a QEMU/OVMF smoke-test — that’s CI from day one (the <code>vm/</code> harness generalizes to boot the built image).</li>
+<li>Every image build records: <code>os-tools</code> commit, <code>onix</code> repo commit, resulting fstx ID. That triple is the reproducible build pin for a rolling personal distro.</li>
+</ul>
+<h3 id="24-boot-artifacts"><a class="header" href="#24-boot-artifacts">2.4 Boot artifacts</a></h3>
+<p>Target <strong>BLS Type #1 entries</strong> exactly as moss/blsforme do: entries named <code>onix-&lt;txid&gt;.conf</code>, kernel+initrd promoted to <code>$BOOT</code> (XBOOTLDR), transaction ID on the kernel cmdline, old entries pruned by moss. blsforme is a bootloader-spec tool and does not itself require systemd as PID 1 — but the surrounding glue (sysusers/tmpfiles) is systemd-flavored, which forces the <strong>init decision</strong> below. UKI + Secure Boot is later future work.</p>
+<blockquote>
+<p><strong>Init decision.</strong> ONIX uses <strong>systemd as PID 1</strong> plus <strong>systemd-boot/BLS</strong>
+rather than GRUB for the real image. Phase 209 showed that the pinned Nix
+universe contains a musl-targeted <code>pkgsMusl.systemd</code>, so the current project
+path is systemd-on-musl. Phase 0’s Alpine OpenRC/GRUB setup remains throwaway
+forge scaffolding only.</p>
+</blockquote>
+<hr>
+<h2 id="3-the-nix-plane-and-the-integration-seam"><a class="header" href="#3-the-nix-plane-and-the-integration-seam">3. The Nix plane and the integration seam</a></h2>
+<h3 id="31-do-not-run-the-nix-installer"><a class="header" href="#31-do-not-run-the-nix-installer">3.1 Do not run the Nix installer</a></h3>
+<p>Neither the official curl installer nor the Determinate installer fits a stateless-<code>/usr</code> system: they mutate <code>/etc</code>, drop init units imperatively, and <code>useradd</code>. That’s exactly the drift ONIX exists to avoid. (They also assume glibc/systemd — doubly wrong here.)</p>
+<p>Instead, the linchpin deliverable is one package:</p>
+<h3 id="32-onix-nix-integration-stone"><a class="header" href="#32-onix-nix-integration-stone">3.2 <code>onix-nix-integration</code> (.stone)</a></h3>
+<p>Ships everything Nix needs, declaratively, through the machine plane:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Component</th><th>Path</th><th>Content</th></tr>
+</thead>
+<tbody>
+<tr><td>Nix binaries</td><td>via <code>/nix</code></td><td>One-time seed <code>/nix</code> from a Nix release; Nix then upgrades itself. The stone ships <em>integration</em>, not Nix — keeps moss out of tracking Nix releases. Default profile <code>bin</code> on PATH.</td></tr>
+<tr><td>Build users</td><td><code>sysusers.d</code> (or boot-script equiv. under init-(b))</td><td><code>g nixbld 6649</code> + <code>u nixbld1..32 -:nixbld</code> (GID 6649 — “ONIX”). Materialized every boot; survives an ephemeral-/etc future.</td></tr>
+<tr><td>Daemon unit</td><td><code>nix-daemon.service</code> + <code>.socket</code> (or native service)</td><td>Ordering hardened: after <code>/nix</code> mount, <code>ConditionPathIsDirectory=/nix/store</code>.</td></tr>
+<tr><td>Mount unit</td><td><code>nix.mount</code></td><td>Or generated from fstab — see §4.</td></tr>
+<tr><td>Runtime dirs</td><td><code>tmpfiles.d</code> (or equiv.)</td><td><code>/nix/var/nix/daemon-socket</code>, gcroots dirs, <code>profiles/per-user</code>.</td></tr>
+<tr><td>System config</td><td><code>/usr/share/defaults/nix/nix.conf</code> → <code>/etc/nix/nix.conf</code> overrides</td><td><code>build-users-group = nixbld</code>, <code>sandbox = true</code>, <code>auto-optimise-store = true</code>, <code>allowed-users = @users</code>, <code>trusted-users = root</code>, <code>experimental-features = nix-command flakes</code>.</td></tr>
+<tr><td>Shell hooks</td><td><code>/usr/share/defaults/etc/profile.d/onix-nix.sh</code></td><td>PATH, <code>NIX_REMOTE=daemon</code> default, <code>XDG_DATA_DIRS</code>, <code>LOCALE_ARCHIVE</code> guard, fontconfig include.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="33-graphics-runopengl-driver-as-a-first-class-feature"><a class="header" href="#33-graphics-runopengl-driver-as-a-first-class-feature">3.3 Graphics: <code>/run/opengl-driver</code> as a first-class feature</a></h3>
+<p>The classic failure mode of Nix GUI apps on foreign distros: they load nixpkgs’ Mesa, which mismatches the host kernel/DRM stack → llvmpipe or crashes. <strong>ONIX fixes this at the machine layer</strong> — the distro’s genuinely distinguishing feature:</p>
+<ul>
+<li><code>onix-opengl-driver</code> glue in <code>onix-nix-integration</code> populates <code>/run/opengl-driver/lib</code> at boot with symlinks into the <strong>moss-managed</strong> Mesa/libdrm/Vulkan ICDs under <code>/usr</code>.</li>
+<li>Nixpkgs apps honor the NixOS <code>/run/opengl-driver</code> convention, so they pick up host-matched userspace drivers with zero per-app wrapping.</li>
+<li>Because the symlink farm is rebuilt each boot from active <code>/usr</code> state, <strong>a moss rollback of the graphics stack re-coheres the Nix GUI world on next boot.</strong> No nixGL, no per-app hacks.</li>
+<li>Same glue handles <code>/run/opengl-driver/share/vulkan/icd.d</code> and EGL vendor files.</li>
+</ul>
+<p><strong>musl-specific caveat (bigger than the original glibc-skew note).</strong> Our base Mesa is <strong>musl-built</strong>; nixpkgs GL apps are <strong>glibc</strong>. Nix apps carry their own glibc and most libraries from the store, so they <em>run</em> on a musl base — but the <code>/run/opengl-driver</code> seam is exactly where a musl-built Mesa meets a glibc GL app, and that boundary can break (symbol/ABI mismatch). Mitigation to carry forward: the opengl-driver bridge may need to expose a <strong>glibc-built Mesa variant</strong> for the Nix world (built as its own stone, or pulled from nixpkgs), rather than symlinking the musl base Mesa directly. Resolve in Phase 7; keep it in mind from Phase 5.</p>
+<h3 id="34-optional-home-manager-standalone"><a class="header" href="#34-optional-home-manager-standalone">3.4 Optional: home-manager standalone</a></h3>
+<p>Fine from Phase 5 onward, standalone mode only — manages <code>~/.config</code> and user services, never system state. Composes cleanly with the contract. Personal preference, not architecture.</p>
+<hr>
+<h2 id="4-filesystem-layout--persistence"><a class="header" href="#4-filesystem-layout--persistence">4. Filesystem layout &amp; persistence</a></h2>
+<h3 id="41-partitions-vm-prototype-same-shape-on-hardware"><a class="header" href="#41-partitions-vm-prototype-same-shape-on-hardware">4.1 Partitions (VM prototype; same shape on hardware)</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Partition</th><th>FS</th><th>Size (VM)</th><th>Label</th><th>Mount</th></tr>
+</thead>
+<tbody>
+<tr><td>ESP</td><td>FAT32</td><td>512 MiB</td><td><code>ONIX-ESP</code></td><td><code>/efi</code></td></tr>
+<tr><td>XBOOTLDR</td><td>FAT32</td><td>2 GiB</td><td><code>ONIX-BOOT</code></td><td><code>/boot</code></td></tr>
+<tr><td>Root</td><td><strong>XFS</strong></td><td>40 GiB+</td><td><code>onix-root</code></td><td><code>/</code> (holds <code>/.moss</code>; bigger = more rollback states)</td></tr>
+<tr><td>Persist</td><td>XFS or ext4</td><td>rest</td><td><code>ONIX-PERSIST</code></td><td><code>/persist</code></td></tr>
+</tbody>
+</table>
+</div>
+<ul>
+<li><code>/nix</code> = bind mount from <code>/persist/nix</code> (mount unit ordered before local-fs, nix-daemon after it as in §3.2). One persistence surface to snapshot/back up.</li>
+<li><code>/home</code> = bind from <code>/persist/home</code>.</li>
+</ul>
+<p>(The <strong>forge</strong> disk is simpler — a plain GPT ESP + ext4 root; the table above is the <em>ONIX</em> image target.)</p>
+<h3 id="42-persistence-policy--phase-appropriate"><a class="header" href="#42-persistence-policy--phase-appropriate">4.2 Persistence policy — Phase-appropriate</a></h3>
+<p><strong>Phases 2–8: fully persistent <code>/etc</code> and <code>/var</code>.</strong> The <code>/usr/share/defaults</code> + <code>/etc</code>-overrides model bounds drift; ephemeral overlays add early-boot ordering complexity for marginal gain now. Add drift <em>visibility</em> instead: <code>onix status</code> diffs <code>/etc</code> against shipped defaults and reports every override.</p>
+<p><strong>Later optional, post-daily-driver:</strong> ephemeral <code>/etc</code>+<code>/var</code> overlays with an explicit allowlist. Must-persist set, documented now:</p>
+<p><code>/etc/machine-id</code> · <code>/etc/ssh/ssh_host_*</code> · <code>/etc/nix/</code> · init/service state (<code>/var/lib/…</code>) · NetworkManager/bluetooth state · <code>/var/log</code> (your choice) · <code>/home</code> · <code>/nix</code> · <code>/.moss</code></p>
+<hr>
+<h2 id="5-phased-roadmap"><a class="header" href="#5-phased-roadmap">5. Phased roadmap</a></h2>
+<p>Each phase has an exit gate. Don’t advance until the gate passes — the gates are the real deliverable.</p>
+<h3 id="phase-0--the-forge-musl-tooling-host"><a class="header" href="#phase-0--the-forge-musl-tooling-host">Phase 0 — The forge (musl tooling host)</a></h3>
+<p>Build a minimal Alpine/musl VM from the minirootfs (this repo’s <code>vm/</code>). Build <strong>moss + boulder</strong> from <code>os-tools</code>. Cut a trivial first <code>.stone</code> with boulder; install/remove it with moss into a test root; inspect <code>moss state list</code>.
+<strong>Gate:</strong> moss + boulder run on musl; you can boulder-build a hello-world <code>.stone</code>, moss-install it, roll the moss state back, and remove it — cleanly.</p>
+<p>Current smoke-test command:</p>
+<pre><code class="language-sh">make doctor     # common health check
+make phase 004  # once per fresh forge image: build moss + boulder
+make phase 005  # build/check/extract/index/install/run onix-hello
+make phase 006  # real moss state install/remove/rollback smoke test
+</code></pre>
+<p>Recipe gotcha learned in the forge: Boulder build directories inherit <code>g+s</code>.
+If a recipe creates <code>/usr</code>/<code>/usr/bin</code> with the setgid bit still present, Boulder
+treats those directories as special and emits a <code>/usr/</code> layout entry. Moss
+currently rejects that path during extract/install. For simple recipes that
+install directly into <code>/usr/bin</code>, clear setgid in <code>install</code>:</p>
+<pre><code class="language-yaml">install     : |
+    install -Dm00755 my-tool %(installroot)%(bindir)/my-tool
+    chmod g-s %(installroot)/usr %(installroot)%(bindir)
+</code></pre>
+<h3 id="phase-1--bootstrap-the-musl-base-stones"><a class="header" href="#phase-1--bootstrap-the-musl-base-stones">Phase 1 — Bootstrap the musl base stones</a></h3>
+<p>Author <code>stone.yaml</code> recipes for the core musl userland (musl, toolchain, busybox/coreutils, essentials). Stand up the <code>onix</code> moss repo (<code>file://</code> then static HTTPS). Keep the base set short.
+<strong>Gate:</strong> the <code>onix</code> repo carries a self-consistent base stone set; moss installs it into a fresh root that chroots and runs a shell + coreutils.</p>
+<h3 id="phase-2--first-bootable-onix-image"><a class="header" href="#phase-2--first-bootable-onix-image">Phase 2 — First bootable ONIX image</a></h3>
+<p>Assemble and boot the first ONIX disk image in QEMU/OVMF. This phase proves the
+image layout, systemd-boot/BLS path, systemd-on-musl userspace, root filesystem,
+persistent partitions, and first module-loading payload. It temporarily borrows
+the Alpine forge’s virt kernel/initramfs/modules so the boot proof can move
+without starting kernel work too early.
+<strong>Gate:</strong> the image boots through systemd to multi-user mode; <code>/boot</code>, <code>/efi</code>,
+<code>/persist</code>, <code>/home</code>, and <code>/nix</code> mount; the boot log has no missing <code>modprobe</code>
+or module-compression errors.</p>
+<h3 id="phase-3--onix-owned-kernelinitramfsmodules-reserved"><a class="header" href="#phase-3--onix-owned-kernelinitramfsmodules-reserved">Phase 3 — ONIX-owned kernel/initramfs/modules (reserved)</a></h3>
+<p>Replace the borrowed Alpine kernel payload with ONIX-owned kernel artifacts.
+This phase owns the kernel config, kernel build, module package, initramfs
+generation, and boot-entry/update policy. It is intentionally deferred while
+Phase 4 makes the already-booting image usable.
+<strong>Gate:</strong> kernel, initramfs, and modules are built and packaged by ONIX; their
+versions match; boot entries select coherent generations; rollback behavior is
+understood.</p>
+<h3 id="phase-4--booted-onix-base-userspace"><a class="header" href="#phase-4--booted-onix-base-userspace">Phase 4 — Booted ONIX base userspace</a></h3>
+<p>Turn the Phase 2 boot proof into a usable base system while still using the
+borrowed kernel payload. Materialize live <code>/etc</code> from <code>/usr/share/defaults</code>;
+define users/groups/shell policy; prove a bootstrap serial console; add minimal
+networking and remote inspection.
+<strong>Gate:</strong> a booted ONIX image can be logged into and inspected intentionally;
+base identity, fstab, users, shells, hostname, and early services are owned by
+ONIX policy rather than ad-hoc image glue.</p>
+<h3 id="phase-5--nix-plane-the-critical-phase"><a class="header" href="#phase-5--nix-plane-the-critical-phase">Phase 5 — Nix plane (the critical phase)</a></h3>
+<p>Ship <code>onix-nix-integration</code>; seed <code>/persist/nix</code> from a Nix release tarball; verify daemon-mode multi-user builds, <code>nix shell</code>/<code>develop</code>/<code>profile install</code>. Confirm glibc nixpkgs apps run on the musl base.
+<strong>Gate — the composition matrix, all green:</strong></p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Test</th><th>Expected</th></tr>
+</thead>
+<tbody>
+<tr><td><code>nix profile install nixpkgs#ripgrep</code> → reboot</td><td>tool still on PATH, runs on musl base</td></tr>
+<tr><td>Install Nix tool → <strong>moss rollback</strong> → reboot</td><td>machine state rolled back, Nix tool untouched</td></tr>
+<tr><td>moss update → <strong>nix profile rollback</strong></td><td>both planes at chosen generations, no interference</td></tr>
+<tr><td><code>moss state prune</code> + <code>nix store gc</code> back-to-back</td><td>no cross-corruption, both stores intact</td></tr>
+<tr><td>Kill nix-daemon mid-build → restart</td><td>store consistent</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="phase-6--recipe-set--overlay-matures"><a class="header" href="#phase-6--recipe-set--overlay-matures">Phase 6 — Recipe set &amp; overlay matures</a></h3>
+<p>boulder workflow for the growing musl recipe set (<code>onix-cli</code>, base additions — keep short; the long tail is Nix). Static HTTPS hosting; <code>onix mirror</code> snapshot habit (mirror <code>os-tools</code> + your stones).
+<strong>Gate:</strong> clean-room rebuild from the pinned snapshot triple (§2.3) boots identically.</p>
+<h3 id="phase-7--desktop"><a class="header" href="#phase-7--desktop">Phase 7 — Desktop</a></h3>
+<p>Pick one desktop (start minimal — a Wayland compositor). All of: compositor, Mesa, PipeWire + WirePlumber, xdg-desktop-portal backend, fonts — from the <strong>machine plane</strong> (musl-built). Enable the <code>/run/opengl-driver</code> glue.
+<strong>Gate:</strong> a Nix-installed GL app renders hardware-accelerated with no wrapper (this is where the musl-Mesa vs glibc-app seam of §3.3 gets solved); portals work from a Nix app; <code>~/.nix-profile</code> desktop entries appear; then <strong>roll back a Mesa update</strong> and confirm the Nix app still renders on the previous stack after reboot.</p>
+<h3 id="phase-8--hardware"><a class="header" href="#phase-8--hardware">Phase 8 — Hardware</a></h3>
+<p>AMD/Intel graphics strongly preferred (NVIDIA complicates both musl and the <code>/run/opengl-driver</code> story). Dedicated drive — no same-disk dual boot at this maturity. Migrate <code>/persist</code> by restore-from-backup, not disk surgery.
+<strong>Gate:</strong> two weeks of daily driving with at least one rollback drill and one restore-from-backup drill of <code>/persist</code>.</p>
+<h3 id="later--optional"><a class="header" href="#later--optional">Later / optional</a></h3>
+<p>Init decision revisited &amp; musl recipes contributed upstream · UKI + Secure Boot · disk encryption (initrd unlock) · ephemeral <code>/etc</code> allowlist mode · <code>onix</code> from shell script to small Rust binary.</p>
+<hr>
+<h2 id="6-the-onix-cli"><a class="header" href="#6-the-onix-cli">6. The <code>onix</code> CLI</a></h2>
+<p>Thin, honest wrapper — it must never hide which plane a command touches:</p>
+<pre><code>onix update      # moss sync + report pending reboot
+onix rollback    # moss state activation to previous, prints boot instructions
+onix status      # active fstx, boot entry, /etc drift vs defaults, nix-daemon health,
+                 # /run/opengl-driver coherence check
+onix gc          # moss state prune + nix store gc, sequenced, with guardrails
+onix mirror      # snapshot os-tools + depended-on stones to /persist/mirror
+onix doctor      # runs the Phase 5 composition matrix as an automated self-test
+</code></pre>
+<p>Ships as <code>onix-cli</code> from the <code>onix</code> repo. Start as ~200 lines of shell; rewrite in Rust when it stops being embarrassing to. (<code>onix solid</code> as an alias for a fully-green <code>onix doctor</code> run is optional but encouraged.)</p>
+<hr>
+<h2 id="7-risks--maintenance-posture"><a class="header" href="#7-risks--maintenance-posture">7. Risks &amp; maintenance posture</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Risk</th><th>Exposure</th><th>Mitigation</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>From-scratch musl bootstrap is a large effort</strong></td><td><strong>High — this is the whole project now</strong></td><td>Phase gates; Alpine forge does the heavy lifting for the toolchain; keep the base <em>tiny</em> — Nix covers the long tail so the base recipe set stays small</td></tr>
+<tr><td><strong>No musl <code>.stone</code> recipes exist upstream</strong></td><td>High</td><td>Author/port them, using Alpine <code>APKBUILD</code>s as the musl-patch reference; ruthless minimalism on the base set</td></tr>
+<tr><td><strong>systemd-on-musl maintenance</strong></td><td>High / structural</td><td>ONIX keeps the systemd-on-musl path while it remains feasible; package it intentionally as <code>systemd</code> and test PID 1, udev, tmpfiles, sysusers, and service startup in QEMU. §2.4</td></tr>
+<tr><td>moss/boulder are alpha &amp; glibc-tested</td><td>Medium</td><td>They’re open Rust you can read/patch; pin <code>os-tools</code>; fix any glibc assumptions and upstream them</td></tr>
+<tr><td>glibc skew: musl base Mesa vs glibc Nix apps</td><td>Medium, intermittent</td><td>Nix apps are self-contained so most run; concentrate the fix at the <code>/run/opengl-driver</code> seam — possibly a glibc Mesa variant for the Nix world (§3.3)</td></tr>
+<tr><td>Branding drift</td><td>Medium during early development</td><td>Keep public names as ONIX or onix only; grep tracked docs/scripts before commits</td></tr>
+<tr><td>NVIDIA</td><td>High if chosen</td><td>Don’t. AMD/Intel for this project</td></tr>
+<tr><td>Solo-maintainer burden</td><td>Real, and higher than a derivative would be</td><td>Budget honestly; keep base scope minimal; if it trends high, cut base scope and lean harder on Nix</td></tr>
+<tr><td><strong>Data loss</strong></td><td><strong>Transactional /usr protects nothing you care about</strong></td><td><code>/persist</code> (= <code>/home</code> + <code>/nix</code> + configs) gets real backups — borg/restic to external target — from Phase 5, not Phase 8. moss rollback is not a backup</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="8-what-onix-is-in-one-paragraph"><a class="header" href="#8-what-onix-is-in-one-paragraph">8. What ONIX is, in one paragraph</a></h2>
+<p>A small, auditable, atomic base you build yourself on <strong>musl</strong> — using AerynOS’s excellent tooling (moss + boulder) but none of its packages — that you can always roll back; a huge optional software universe on top through persistent multi-user Nix (glibc apps riding on a musl base, carrying their own libc); and a machine-layer <code>/run/opengl-driver</code> bridge that makes Nix GUI apps first-class in a way almost no foreign distro manages. Alpine is the forge where the tooling is built and the first stones are cut, then discarded. The machine plane is the foundation; everything you actually live in grows on top of it — and the ground never shifts under you without your say-so. The machine manager controls the machine. Nix controls the toolbox.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="vm/QUICKSTART.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="vm/RECIPES.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="vm/QUICKSTART.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="vm/RECIPES.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-09f2665d.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-609e4cb8.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>
